@@ -1,4 +1,4 @@
-package com.example.recipebook;
+package com.jaf.recipebook.recipebook;
 
 import org.junit.Test;
 
