@@ -1,6 +1,7 @@
 package com.jaf.recipebook;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Environment;
@@ -23,10 +24,39 @@ public class Helper {
 
     public final String TAG = "JAF-HELPER";
 
+    public final int EXTERNAL_STORAGE_PREFERENCE = 0;
+
     public Helper(Context context){
         this.context = context;
         appPreferences = context.getSharedPreferences(context.getString(R.string.preference_file_key),
                 Context.MODE_PRIVATE);
+    }
+
+    public void setPreference(int preference, boolean b){
+        switch(preference){
+            case EXTERNAL_STORAGE_PREFERENCE:
+                appPreferences.edit()
+                        .putBoolean(context.getString(R.string.preference_local_storage_key), b)
+                        .apply();
+
+            default:
+                Log.w(TAG, "setPreference: Unknown Preference Int Provided: "
+                        + Integer.toString(preference));
+        }
+
+    }
+
+    public boolean getPreference(int preference, boolean defaultRtn){
+        switch(preference){
+            case EXTERNAL_STORAGE_PREFERENCE:
+                return appPreferences.getBoolean(context.getString(R.string.preference_local_storage_key), defaultRtn);
+
+            default:
+                Log.w(TAG, "getPreference: Unknown Preference Int Provided: "
+                        + Integer.toString(preference));
+                return defaultRtn;
+        }
+
     }
 
     public Uri[] getAllFileUris(){
