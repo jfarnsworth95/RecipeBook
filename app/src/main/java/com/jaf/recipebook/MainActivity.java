@@ -1,8 +1,10 @@
 package com.jaf.recipebook;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.splashscreen.SplashScreen;
 
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -10,10 +12,14 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
     Helper helper;
+    public final String TAG = "JAF-MAIN";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
 
         SplashScreen.installSplashScreen(this);
         helper = new Helper(this);
+
+        ActionBar actionBar = getActionBar();
+
         setContentView(R.layout.activity_start);
     }
 
@@ -43,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void validateExternalPermission(){
-        if (helper.appPreferences.getBoolean(this.getString(R.string.preference_local_storage_key), true)
+        if (helper.getPreference(helper.EXTERNAL_STORAGE_PREFERENCE, true)
                 && !Environment.isExternalStorageManager()) {
             // Permission missing, but the user has indicated that they want external storage
             //      Could also be their first time starting up the app.
@@ -58,20 +67,43 @@ public class MainActivity extends AppCompatActivity {
                                 .addCategory("android.intent.category.DEFAULT")
                                 .setData(uri)
                         );
+                        helper.setPreference(helper.EXTERNAL_STORAGE_PREFERENCE, true);
                         dialogInterface.dismiss();
                     })
-                    .setNegativeButton(this.getString(R.string.dialog_deny), (dialogInterface, i) ->
-                            helper.appPreferences.edit().putBoolean(
-                                    helper.context.getString(R.string.preference_local_storage_key),
-                                    false)
-                                    .apply())
+                    .setNegativeButton(this.getString(R.string.dialog_deny), (dialogInterface, i) -> {
+                                helper.setPreference(helper.EXTERNAL_STORAGE_PREFERENCE, true);
+                    })
                     .show();
-        } else if (Environment.isExternalStorageManager() &&
-                !helper.appPreferences.getBoolean(this.getString(R.string.preference_local_storage_key), false)){
-            helper.appPreferences.edit()
-                    .putBoolean(this.getString(R.string.preference_local_storage_key), true)
-                    .apply();
+        } else if (Environment.isExternalStorageManager() && !helper.getPreference(helper.EXTERNAL_STORAGE_PREFERENCE, false)){
+            helper.setPreference(helper.EXTERNAL_STORAGE_PREFERENCE, true);
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        switch(item.getItemId()){
+
+            case R.id.action_settings:
+                // Open Settings Activity
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+
+            case R.id.search_btn:
+                // Open Search Bar
+                return true;
+
+            default:
+                Log.w(TAG, "onOptionsItemSelected: Unknown Item ID for selected item: "
+                        + item.toString());
+                return super.onOptionsItemSelected(item);
+        }
+    }
 }
