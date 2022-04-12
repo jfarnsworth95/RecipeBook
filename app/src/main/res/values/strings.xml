@@ -13,7 +13,10 @@
     <string name="action_settings">Settings</string>
 
     <!-- Settings Page Strings -->
-    <string name="google_signin_header">Connect to Google Drive</string>
+    <string name="google_sign_in_header">Connect to Google Drive</string>
     <string name="toggle_preferences_header">My Preferences</string>
     <string name="option_toggle_external_text">Change Storage Method</string>
+    <string name="google_sign_in_button">SIGN IN WITH GOOGLE</string>
+    <string name="google_sign_out_button">SIGN OUT OF GOOGLE</string>
+    <string name="google_sign_in_descriptor">You are signed in as</string>
 </resources>
