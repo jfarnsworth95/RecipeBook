@@ -13,9 +13,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RecipeBook">
         <activity
+            android:name=".GoogleSignInActivity"
+            android:exported="false" />
+        <activity
             android:name=".SettingsActivity"
             android:exported="false"
-            android:parentActivityName=".MainActivity"/>
+            android:parentActivityName=".MainActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

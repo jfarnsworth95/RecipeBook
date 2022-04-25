@@ -16,6 +16,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 public class MainActivity extends AppCompatActivity {
 
     Helper helper;
@@ -37,6 +40,11 @@ public class MainActivity extends AppCompatActivity {
         ActionBar actionBar = getActionBar();
 
         setContentView(R.layout.activity_start);
+
+        findViewById(R.id.breakItem).setOnClickListener(view -> {
+            Log.i(TAG, "Begin the problems");
+            startActivity(new Intent(this, GoogleSignInActivity.class));
+        });
     }
 
     @Override
