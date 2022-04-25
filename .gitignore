@@ -11,3 +11,4 @@ captures
 .cxx
 app/build/*
 app/libs/*
+app/src/main/res/raw/credentials.json

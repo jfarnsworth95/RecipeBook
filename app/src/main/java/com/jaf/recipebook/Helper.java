@@ -1,12 +1,13 @@
 package com.jaf.recipebook;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+
+import com.google.api.services.drive.Drive;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -59,7 +60,7 @@ public class Helper {
 
     }
 
-    public Uri[] getAllFileUris(){
+    public File[] getAllFiles(){
         File[] files;
         if(Environment.isExternalStorageManager()){
             // Fetch all external app files
@@ -69,6 +70,12 @@ public class Helper {
             files = context.getFilesDir().listFiles();
         }
 
+        return files;
+    }
+
+    public Uri[] getAllFileUris(){
+        File[] files = getAllFiles();
+
         Uri[] uris = new Uri[files.length];
         for (int x = 0; x < files.length; x ++){
             uris[x] = Uri.fromFile(files[x]);
@@ -77,17 +84,27 @@ public class Helper {
     }
 
     public Uri getFileUri(String filename){
-        File file;
+        return Uri.fromFile(getFile(filename));
+    }
+
+    public File getFile(String filename){
         if(Environment.isExternalStorageManager()){
             // Fetch external app file
             Log.i(TAG, "getFileUri: Grabbing External");
-            file = new File(context.getExternalFilesDir(null), filename);
+            return new File(context.getExternalFilesDir(null), filename);
         } else {
             // Fetch internal app file
             Log.i(TAG, "getFileUri: Grabbing Internal");
-            file = new File(context.getFilesDir(), filename);
+            return new File(context.getFilesDir(), filename);
         }
-        return Uri.fromFile(file);
+    }
+
+    public File getAppLocalDataFolder(){
+        if(Environment.isExternalStorageManager()){
+            return context.getExternalFilesDir(null);
+        } else {
+            return context.getFilesDir();
+        }
     }
 
     public boolean deleteFile(String filename){
@@ -145,4 +162,5 @@ public class Helper {
     public boolean doesFileExist(String filename){
         return new File(getFileUri(filename).getPath()).exists();
     }
+
 }
