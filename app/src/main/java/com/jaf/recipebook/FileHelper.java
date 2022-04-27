@@ -7,8 +7,6 @@ import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import com.google.api.services.drive.Drive;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,8 +16,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Objects;
 
-public class Helper {
+public class FileHelper {
 
+    private DriveServiceHelper dsh;
     public SharedPreferences appPreferences;
     public Context context;
 
@@ -27,7 +26,7 @@ public class Helper {
 
     public final int EXTERNAL_STORAGE_PREFERENCE = 0;
 
-    public Helper(Context context){
+    public FileHelper(Context context){
         this.context = context;
         appPreferences = context.getSharedPreferences(context.getString(R.string.preference_file_key),
                 Context.MODE_PRIVATE);
@@ -83,10 +82,6 @@ public class Helper {
         return uris;
     }
 
-    public Uri getFileUri(String filename){
-        return Uri.fromFile(getFile(filename));
-    }
-
     public File getFile(String filename){
         if(Environment.isExternalStorageManager()){
             // Fetch external app file
@@ -97,6 +92,10 @@ public class Helper {
             Log.i(TAG, "getFileUri: Grabbing Internal");
             return new File(context.getFilesDir(), filename);
         }
+    }
+
+    public Uri getFileUri(String filename){
+        return Uri.fromFile(getFile(filename));
     }
 
     public File getAppLocalDataFolder(){
@@ -133,7 +132,7 @@ public class Helper {
         return stringBuilder.toString();
     }
 
-    public void editFileUri(Uri uri, String newContent) {
+    public void saveFileUri(Uri uri, String newContent) {
         try {
             ParcelFileDescriptor pfd = context.getContentResolver().
                     openFileDescriptor(uri, "w");
@@ -156,7 +155,7 @@ public class Helper {
     public void createFileUri(String filename, String content){
         Log.i(TAG, "createFileUri: creating file...");
         Uri uri = getFileUri(filename);
-        editFileUri(uri, content);
+        saveFileUri(uri, content);
     }
 
     public boolean doesFileExist(String filename){
