@@ -11,7 +11,6 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,7 +28,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    Helper helper;
+    FileHelper fileHelper;
     public final String TAG = "JAF-SETTINGS";
     public final int signInCode = 101;
     GoogleSignInClient gsc;
@@ -42,7 +41,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        helper = new Helper(this);
+        fileHelper = new FileHelper(this);
         setContentView(R.layout.activity_settings);
 
         //Initialize CircleImageView
@@ -77,7 +76,7 @@ public class SettingsActivity extends AppCompatActivity {
         super.onResume();
         // On return from permission request activity, set preference
         // based on if the permission was granted or not
-        helper.setPreference(helper.EXTERNAL_STORAGE_PREFERENCE,
+        fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE,
                                 Environment.isExternalStorageManager());
     }
 

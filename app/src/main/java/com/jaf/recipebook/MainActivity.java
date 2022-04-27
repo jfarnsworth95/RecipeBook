@@ -14,14 +14,10 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 
 public class MainActivity extends AppCompatActivity {
 
-    Helper helper;
+    FileHelper fileHelper;
     public final String TAG = "JAF-MAIN";
 
     @Override
@@ -35,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         SplashScreen.installSplashScreen(this);
-        helper = new Helper(this);
+        fileHelper = new FileHelper(this);
 
         ActionBar actionBar = getActionBar();
 
@@ -60,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void validateExternalPermission(){
-        if (helper.getPreference(helper.EXTERNAL_STORAGE_PREFERENCE, true)
+        if (fileHelper.getPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true)
                 && !Environment.isExternalStorageManager()) {
             // Permission missing, but the user has indicated that they want external storage
             //      Could also be their first time starting up the app.
@@ -75,15 +71,15 @@ public class MainActivity extends AppCompatActivity {
                                 .addCategory("android.intent.category.DEFAULT")
                                 .setData(uri)
                         );
-                        helper.setPreference(helper.EXTERNAL_STORAGE_PREFERENCE, true);
+                        fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true);
                         dialogInterface.dismiss();
                     })
                     .setNegativeButton(this.getString(R.string.dialog_deny), (dialogInterface, i) -> {
-                                helper.setPreference(helper.EXTERNAL_STORAGE_PREFERENCE, true);
+                                fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true);
                     })
                     .show();
-        } else if (Environment.isExternalStorageManager() && !helper.getPreference(helper.EXTERNAL_STORAGE_PREFERENCE, false)){
-            helper.setPreference(helper.EXTERNAL_STORAGE_PREFERENCE, true);
+        } else if (Environment.isExternalStorageManager() && !fileHelper.getPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, false)){
+            fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true);
         }
     }
 

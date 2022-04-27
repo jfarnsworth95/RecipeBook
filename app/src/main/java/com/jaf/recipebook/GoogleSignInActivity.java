@@ -20,7 +20,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.services.drive.model.FileList;
 import com.google.gson.Gson;
 
@@ -34,7 +33,7 @@ public class GoogleSignInActivity extends AppCompatActivity {
 
     private GoogleSignInClient mGoogleSignInClient;
     private DriveServiceHelper mDriveServiceHelper;
-    private Helper helper;
+    private FileHelper fileHelper;
 
     private LinearLayout gDriveAction;
     private Button searchFile;
@@ -164,7 +163,7 @@ public class GoogleSignInActivity extends AppCompatActivity {
                 if (mDriveServiceHelper == null) {
                     return;
                 }
-                mDriveServiceHelper.uploadFile(helper.getFile("test.txt"), "text/plain", null)
+                mDriveServiceHelper.uploadFile(fileHelper.getFile("test.txt"), "text/plain", null)
                         .addOnSuccessListener(new OnSuccessListener<GoogleDriveFileHolder>() {
                             @Override
                             public void onSuccess(GoogleDriveFileHolder googleDriveFileHolder) {
@@ -187,7 +186,7 @@ public class GoogleSignInActivity extends AppCompatActivity {
                 if (mDriveServiceHelper == null) {
                     return;
                 }
-                mDriveServiceHelper.downloadFile(new File(helper.getAppLocalDataFolder(),
+                mDriveServiceHelper.downloadFile(new File(fileHelper.getAppLocalDataFolder(),
                                                                 "downloaded.txt"),
                                             "1q9ooCmF8sEz2bpscbua9D-LusmJST1Fe")
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -264,7 +263,7 @@ public class GoogleSignInActivity extends AppCompatActivity {
         createLocalFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                helper.createFileUri("test.txt", "My test content.");
+                fileHelper.createFileUri("test.txt", "My test content.");
             }
         });
 
@@ -327,7 +326,7 @@ public class GoogleSignInActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        helper = new Helper(this);
+        fileHelper = new FileHelper(this);
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
         if (account == null) {
             signIn();
@@ -339,7 +338,6 @@ public class GoogleSignInActivity extends AppCompatActivity {
     }
 
     private void signIn() {
-
         mGoogleSignInClient = buildGoogleSignInClient();
         startActivityForResult(mGoogleSignInClient.getSignInIntent(), REQUEST_CODE_SIGN_IN);
     }
