@@ -8,17 +8,16 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.OpenableColumns;
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.http.AbstractInputStreamContent;
@@ -98,19 +97,6 @@ public class DriveServiceHelper {
                 });
 
         return tcs.getTask();
-//        return Tasks.call(mExecutor, () -> {
-//            File metadata = new File()
-//                    .setParents(Collections.singletonList("root"))
-//                    .setMimeType("text/plain")
-//                    .setName("Untitled file");
-//
-//            File googleFile = mDriveService.files().create(metadata).execute();
-//            if (googleFile == null) {
-//                throw new IOException("Null result when requesting file creation.");
-//            }
-//
-//            return googleFile.getId();
-//        });
     }
 
     /**
@@ -157,25 +143,6 @@ public class DriveServiceHelper {
                 });
 
         return tcs.getTask();
-//        return Tasks.call(mExecutor, () -> {
-//            // Retrieve the metadata as a File object.
-//            File metadata = mDriveService.files().get(fileId).execute();
-//            String name = metadata.getName();
-//
-//            // Stream the file contents to a String.
-//            try (InputStream is = mDriveService.files().get(fileId).executeMediaAsInputStream();
-//                 BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
-//                StringBuilder stringBuilder = new StringBuilder();
-//                String line;
-//
-//                while ((line = reader.readLine()) != null) {
-//                    stringBuilder.append(line);
-//                }
-//                String contents = stringBuilder.toString();
-//
-//                return Pair.create(name, contents);
-//            }
-//        });
     }
 
     /**
@@ -209,17 +176,6 @@ public class DriveServiceHelper {
                 });
 
         return tcs.getTask();
-//        return Tasks.call(mExecutor, () -> {
-//            // Create a File containing any metadata changes.
-//            File metadata = new File().setName(name);
-//
-//            // Convert content to an AbstractInputStreamContent instance.
-//            ByteArrayContent contentStream = ByteArrayContent.fromString("text/plain", content);
-//
-//            // Update the metadata and contents.
-//            mDriveService.files().update(fileId, metadata, contentStream).execute();
-//            return null;
-//        });
     }
 
     public Task<List<GoogleDriveFileHolder>> searchFolder(final String folderName) {
@@ -257,28 +213,6 @@ public class DriveServiceHelper {
                 });
 
         return tcs.getTask();
-//        return Tasks.call(mExecutor, new Callable<List<GoogleDriveFileHolder>>() {
-//            @Override
-//            public List<GoogleDriveFileHolder> call() throws Exception {
-//                List<GoogleDriveFileHolder> googleDriveFileHolderList = new ArrayList<>();
-//                // Retrive the metadata as a File object.
-//                FileList result = mDriveService.files().list()
-//                        .setQ("mimeType = '" + DriveFolder.MIME_TYPE + "' and name = '" + folderName + "' ")
-//                        .setSpaces("drive")
-//                        .execute();
-//
-//                for (int i = 0; i < result.getFiles().size(); i++) {
-//
-//                    GoogleDriveFileHolder googleDriveFileHolder = new GoogleDriveFileHolder();
-//                    googleDriveFileHolder.setId(result.getFiles().get(i).getId());
-//                    googleDriveFileHolder.setName(result.getFiles().get(i).getName());
-//
-//                    googleDriveFileHolderList.add(googleDriveFileHolder);
-//                }
-//
-//                return googleDriveFileHolderList;
-//            }
-//        });
     }
 
     public Task<GoogleDriveFileHolder> createTextFile(final String fileName, final String content, @Nullable final String folderId) {
@@ -318,32 +252,6 @@ public class DriveServiceHelper {
                 });
 
         return tcs.getTask();
-//        return Tasks.call(mExecutor, new Callable<GoogleDriveFileHolder>() {
-//            @Override
-//            public GoogleDriveFileHolder call() throws Exception {
-//
-//                List<String> root;
-//                if (folderId == null) {
-//                    root = Collections.singletonList("root");
-//                } else {
-//                    root = Collections.singletonList(folderId);
-//                }
-//
-//                File metadata = new File()
-//                        .setParents(root)
-//                        .setMimeType("text/plain")
-//                        .setName(fileName);
-//                ByteArrayContent contentStream = ByteArrayContent.fromString("text/plain", content);
-//
-//                File googleFile = mDriveService.files().create(metadata, contentStream).execute();
-//                if (googleFile == null) {
-//                    throw new IOException("Null result when requesting file creation.");
-//                }
-//                GoogleDriveFileHolder googleDriveFileHolder = new GoogleDriveFileHolder();
-//                googleDriveFileHolder.setId(googleFile.getId());
-//                return googleDriveFileHolder;
-//            }
-//        });
     }
 
     public Task<GoogleDriveFileHolder> createFolder(final String folderName, @Nullable final String folderId) {
@@ -381,31 +289,6 @@ public class DriveServiceHelper {
                 });
 
         return tcs.getTask();
-//        return Tasks.call(mExecutor, new Callable<GoogleDriveFileHolder>() {
-//            @Override
-//            public GoogleDriveFileHolder call() throws Exception {
-//                GoogleDriveFileHolder googleDriveFileHolder = new GoogleDriveFileHolder();
-//
-//                List<String> root;
-//                if (folderId == null) {
-//                    root = Collections.singletonList("root");
-//                } else {
-//
-//                    root = Collections.singletonList(folderId);
-//                }
-//                File metadata = new File()
-//                        .setParents(root)
-//                        .setMimeType(DriveFolder.MIME_TYPE)
-//                        .setName(folderName);
-//
-//                File googleFile = mDriveService.files().create(metadata).execute();
-//                if (googleFile == null) {
-//                    throw new IOException("Null result when requesting file creation.");
-//                }
-//                googleDriveFileHolder.setId(googleFile.getId());
-//                return googleDriveFileHolder;
-//            }
-//        });
     }
 
     /**
@@ -436,10 +319,6 @@ public class DriveServiceHelper {
             });
 
         return tcs.getTask();
-//    public Task<FileList> queryFiles() {
-//        return Tasks.call(mExecutor, () ->
-//                mDriveService.files().list().setSpaces("drive").execute());
-//    }
     }
 
     public Task<List<GoogleDriveFileHolder>> searchFile(final String fileName, final String mimeType) {
@@ -478,30 +357,6 @@ public class DriveServiceHelper {
                 });
 
         return tcs.getTask();
-//        return Tasks.call(mExecutor, new Callable<List<GoogleDriveFileHolder>>() {
-//            @Override
-//            public List<GoogleDriveFileHolder> call() throws Exception {
-//                List<GoogleDriveFileHolder> googleDriveFileHolderList = new ArrayList<>();
-//                // Retrive the metadata as a File object.
-//                FileList result = mDriveService.files().list()
-//                        .setQ("name = '" + fileName + "' and mimeType ='" + mimeType + "'")
-//                        .setSpaces("drive")
-//                        .setFields("files(id, name,size,createdTime,modifiedTime,starred)")
-//                        .execute();
-//
-//                for (int i = 0; i < result.getFiles().size(); i++) {
-//                    GoogleDriveFileHolder googleDriveFileHolder = new GoogleDriveFileHolder();
-//                    googleDriveFileHolder.setId(result.getFiles().get(i).getId());
-//                    googleDriveFileHolder.setName(result.getFiles().get(i).getName());
-//                    googleDriveFileHolder.setModifiedTime(result.getFiles().get(i).getModifiedTime());
-//                    googleDriveFileHolder.setSize(result.getFiles().get(i).getSize());
-//                    googleDriveFileHolderList.add(googleDriveFileHolder);
-//
-//                }
-//
-//                return googleDriveFileHolderList;
-//            }
-//        });
     }
 
     public Task<GoogleDriveFileHolder> uploadFile(final File googleDiveFile, final AbstractInputStreamContent content) {
@@ -527,17 +382,6 @@ public class DriveServiceHelper {
                 });
 
         return tcs.getTask();
-//        return Tasks.call(mExecutor, new Callable<GoogleDriveFileHolder>() {
-//            @Override
-//            public GoogleDriveFileHolder call() throws Exception {
-//                // Retrieve the metadata as a File object.
-//                File fileMeta = mDriveService.files().create(googleDiveFile, content).execute();
-//                GoogleDriveFileHolder googleDriveFileHolder = new GoogleDriveFileHolder();
-//                googleDriveFileHolder.setId(fileMeta.getId());
-//                googleDriveFileHolder.setName(fileMeta.getName());
-//                return googleDriveFileHolder;
-//            }
-//        });
     }
 
     public Task<GoogleDriveFileHolder> uploadFile(final java.io.File localFile, final String mimeType, @Nullable final String folderId) {
@@ -575,33 +419,6 @@ public class DriveServiceHelper {
                 });
 
         return tcs.getTask();
-//        return Tasks.call(mExecutor, new Callable<GoogleDriveFileHolder>() {
-//            @Override
-//            public GoogleDriveFileHolder call() throws Exception {
-//                // Retrieve the metadata as a File object.
-//
-//                List<String> root;
-//                if (folderId == null) {
-//                    root = Collections.singletonList("root");
-//                } else {
-//
-//                    root = Collections.singletonList(folderId);
-//                }
-//
-//                File metadata = new File()
-//                        .setParents(root)
-//                        .setMimeType(mimeType)
-//                        .setName(localFile.getName());
-//
-//                FileContent fileContent = new FileContent(mimeType, localFile);
-//
-//                File fileMeta = mDriveService.files().create(metadata, fileContent).execute();
-//                GoogleDriveFileHolder googleDriveFileHolder = new GoogleDriveFileHolder();
-//                googleDriveFileHolder.setId(fileMeta.getId());
-//                googleDriveFileHolder.setName(fileMeta.getName());
-//                return googleDriveFileHolder;
-//            }
-//        });
     }
 
     /**
@@ -647,32 +464,6 @@ public class DriveServiceHelper {
                 });
 
         return tcs.getTask();
-//        return Tasks.call(mExecutor, () -> {
-//            // Retrieve the document's display name from its metadata.
-//            String name;
-//            try (Cursor cursor = contentResolver.query(uri, null, null, null, null)) {
-//                if (cursor != null && cursor.moveToFirst()) {
-//                    int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-//                    name = cursor.getString(nameIndex);
-//                } else {
-//                    throw new IOException("Empty cursor returned for file.");
-//                }
-//            }
-//
-//            // Read the document's contents as a String.
-//            String content;
-//            try (InputStream is = contentResolver.openInputStream(uri);
-//                 BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
-//                StringBuilder stringBuilder = new StringBuilder();
-//                String line;
-//                while ((line = reader.readLine()) != null) {
-//                    stringBuilder.append(line);
-//                }
-//                content = stringBuilder.toString();
-//            }
-//
-//            return Pair.create(name, content);
-//        });
     }
 
     public Task<Void> downloadFile(final java.io.File fileSaveLocation, final String fileId) {
@@ -694,15 +485,6 @@ public class DriveServiceHelper {
                 }
             });
         return tcs.getTask();
-//        return Tasks.call(mExecutor, new Callable<Void>() {
-//            @Override
-//            public Void call() throws Exception {
-//                // Retrieve the metadata as a File object.
-//                OutputStream outputStream = new FileOutputStream(fileSaveLocation);
-//                mDriveService.files().get(fileId).executeMediaAndDownloadTo(outputStream);
-//                return null;
-//            }
-//        });
     }
 
     public Task<InputStream> downloadFile(final String fileId) {
@@ -725,13 +507,6 @@ public class DriveServiceHelper {
                 });
 
         return tcs.getTask();
-//        return Tasks.call(mExecutor, new Callable<InputStream>() {
-//            @Override
-//            public InputStream call() throws Exception {
-//                // Retrieve the metadata as a File object.
-//                return mDriveService.files().get(fileId).executeMediaAsInputStream();
-//            }
-//        });
     }
 
     public Task<Void> deleteFolderOrFile(final String fileId) {
@@ -754,17 +529,6 @@ public class DriveServiceHelper {
                 });
 
         return tcs.getTask();
-//        return Tasks.call(mExecutor, new Callable<Void>() {
-//            @Override
-//            public Void call() throws Exception {
-//                // Retrieve the metadata as a File object.
-//                if (fileId != null) {
-//                    mDriveService.files().delete(fileId).execute();
-//                }
-//
-//                return null;
-//            }
-//        });
     }
 
     /**
