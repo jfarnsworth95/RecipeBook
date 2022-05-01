@@ -342,7 +342,9 @@ public class DriveServiceHelper {
                                 googleDriveFileHolder.setId(result.getFiles().get(i).getId());
                                 googleDriveFileHolder.setName(result.getFiles().get(i).getName());
                                 googleDriveFileHolder.setModifiedTime(result.getFiles().get(i).getModifiedTime());
-                                googleDriveFileHolder.setSize(result.getFiles().get(i).getSize());
+                                if (result.getFiles().get(i).getSize() != null) {
+                                    googleDriveFileHolder.setSize(result.getFiles().get(i).getSize());
+                                }
                                 googleDriveFileHolderList.add(googleDriveFileHolder);
 
                             }
