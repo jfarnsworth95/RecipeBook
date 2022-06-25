@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">RecipeBook</string>
+    <string name="recipe_file_extension">rp</string>
     <string name="preference_file_key">com.recipebook.user_preferences</string>
     <string name="preference_local_storage_key">is_external_manager</string>
     <string name="preference_cloud_storage_active_key">is_connected_to_cloud</string>
@@ -14,8 +15,10 @@
 
     <!-- Settings Page Strings -->
     <string name="google_sign_in_header">Connect to Google Drive</string>
-    <string name="toggle_preferences_header">My Preferences</string>
+    <string name="toggle_preferences_header">Options &amp; Preferences</string>
     <string name="option_toggle_external_text">Change Storage Method</string>
+    <string name="option_import_downloaded_text">Import Downloaded Recipes</string>
+    <string name="confirm_imports_btn_text">Confirm Imports</string>
     <string name="google_sign_in_button">SIGN IN WITH GOOGLE</string>
     <string name="google_sign_out_button">SIGN OUT OF GOOGLE</string>
     <string name="google_sign_in_descriptor">You are signed in as</string>
