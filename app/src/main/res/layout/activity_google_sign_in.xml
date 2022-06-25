@@ -19,102 +19,122 @@
 
 
         <Button
-            android:id="@+id/create_text_file"
+            android:id="@+id/delete_all_files_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="10dp"
             android:layout_marginTop="15dp"
             android:layout_marginBottom="2dp"
-            android:text="create text file" />
-
-        <Button
-            android:id="@+id/create_folder"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginVertical="2dp"
-            android:text="create folder" />
+            android:text="DELETE ALL FILES" />
 
 
         <Button
-            android:id="@+id/search_file"
+            android:id="@+id/run_current_test_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="10dp"
-            android:layout_marginVertical="2dp"
-            android:text="search file" />
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="2dp"
+            android:text="Run Test" />
 
-        <Button
-            android:id="@+id/search_folder"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginVertical="2dp"
-            android:text="search folder" />
 
-        <Button
-            android:id="@+id/upload_file"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginVertical="2dp"
-            android:text="upload file" />
+<!--        <Button-->
+<!--            android:id="@+id/create_text_file"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:layout_marginTop="15dp"-->
+<!--            android:layout_marginBottom="2dp"-->
+<!--            android:text="create text file" />-->
 
-        <Button
-            android:id="@+id/download_file"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginVertical="2dp"
-            android:text="download file" />
+<!--        <Button-->
+<!--            android:id="@+id/create_folder"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:layout_marginVertical="2dp"-->
+<!--            android:text="create folder" />-->
 
-        <Button
-            android:id="@+id/delete_file_folder"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginVertical="2dp"
-            android:text="delete file" />
 
-        <Button
-            android:id="@+id/view_file_folder"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginVertical="2dp"
-            android:text="view folder" />
+<!--        <Button-->
+<!--            android:id="@+id/search_file"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:layout_marginVertical="2dp"-->
+<!--            android:text="search file" />-->
 
-        <Button
-            android:id="@+id/query_files_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginVertical="2dp"
-            android:text="query files" />
+<!--        <Button-->
+<!--            android:id="@+id/search_folder"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:layout_marginVertical="2dp"-->
+<!--            android:text="search folder" />-->
 
-        <Button
-            android:id="@+id/create_local_file"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginVertical="2dp"
-            android:text="create local file" />
+<!--        <Button-->
+<!--            android:id="@+id/upload_file"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:layout_marginVertical="2dp"-->
+<!--            android:text="upload file" />-->
 
-        <Button
-            android:id="@+id/read_file"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginVertical="2dp"
-            android:text="read file" />
+<!--        <Button-->
+<!--            android:id="@+id/download_file"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:layout_marginVertical="2dp"-->
+<!--            android:text="download file" />-->
 
-        <Button
-            android:id="@+id/save_file"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginVertical="2dp"
-            android:text="save file" />
+<!--        <Button-->
+<!--            android:id="@+id/delete_file_folder"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:layout_marginVertical="2dp"-->
+<!--            android:text="delete drive file" />-->
+
+<!--        <Button-->
+<!--            android:id="@+id/sync_drive"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:layout_marginVertical="2dp"-->
+<!--            android:text="sync with drive" />-->
+
+<!--        <Button-->
+<!--            android:id="@+id/query_files_btn"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:layout_marginVertical="2dp"-->
+<!--            android:text="query files" />-->
+
+<!--        <Button-->
+<!--            android:id="@+id/create_local_file"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:layout_marginVertical="2dp"-->
+<!--            android:text="create local file" />-->
+
+<!--        <Button-->
+<!--            android:id="@+id/read_file"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:layout_marginVertical="2dp"-->
+<!--            android:text="read file" />-->
+
+<!--        <Button-->
+<!--            android:id="@+id/save_file"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="10dp"-->
+<!--            android:layout_marginVertical="2dp"-->
+<!--            android:text="save file" />-->
 
     </LinearLayout>
 
