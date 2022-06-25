@@ -8,11 +8,11 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.OpenableColumns;
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -24,6 +24,7 @@ import com.google.api.client.http.AbstractInputStreamContent;
 import com.google.api.client.http.ByteArrayContent;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.util.DateTime;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
@@ -38,9 +39,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -307,7 +306,11 @@ public class DriveServiceHelper {
                 public void run() {
                     FileList result = null;
                     try {
-                        result = mDriveService.files().list().setSpaces("drive").execute();
+                        result = mDriveService.files()
+                                    .list()
+                                    .setSpaces("drive")
+                                    .setFields("files(id, name, mimeType, size, md5Checksum, modifiedTime)")
+                                    .execute();
                     } catch (UserRecoverableAuthIOException ex) {
                         context.startActivity(ex.getIntent());
                     } catch (IOException ex) {
@@ -386,7 +389,8 @@ public class DriveServiceHelper {
         return tcs.getTask();
     }
 
-    public Task<GoogleDriveFileHolder> uploadFile(final java.io.File localFile, final String mimeType, @Nullable final String folderId) {
+    public Task<GoogleDriveFileHolder> uploadFile(final java.io.File localFile, final String mimeType,
+                                                  @Nullable final DateTime modifiedTime, @Nullable final String folderId) {
         final TaskCompletionSource<GoogleDriveFileHolder> tcs = new TaskCompletionSource<GoogleDriveFileHolder>();
         mExecutor.execute(
                 new Runnable() {
@@ -399,10 +403,18 @@ public class DriveServiceHelper {
                         } else {
                             root = Collections.singletonList(folderId);
                         }
-                        File metadata = new File()
-                                .setParents(root)
-                                .setMimeType(mimeType)
-                                .setName(localFile.getName());
+
+                        File metadata = new File();
+                        if (modifiedTime == null) {
+                            metadata.setParents(root)
+                                    .setMimeType(mimeType)
+                                    .setName(localFile.getName());
+                        } else {
+                            metadata.setParents(root)
+                                    .setMimeType(mimeType)
+                                    .setName(localFile.getName())
+                                    .setModifiedTime(modifiedTime);
+                        }
                         FileContent fileContent = new FileContent(mimeType, localFile);
 
                         GoogleDriveFileHolder googleDriveFileHolder = new GoogleDriveFileHolder();
@@ -468,20 +480,24 @@ public class DriveServiceHelper {
         return tcs.getTask();
     }
 
-    public Task<Void> downloadFile(final java.io.File fileSaveLocation, final String fileId) {
+    public Task<Void> downloadFile(final java.io.File fileSaveLocationParent, final String fileId, final String fileName) {
+        final java.io.File fileSaveLocation = new java.io.File(fileSaveLocationParent, fileName);
         final TaskCompletionSource<Void> tcs = new TaskCompletionSource<Void>();
         mExecutor.execute(
             new Runnable() {
                 @Override
                 public void run() {
+                    OutputStream outputStream = null;
                     try {
-                        OutputStream outputStream = new FileOutputStream(fileSaveLocation);
+                        outputStream = new FileOutputStream(fileSaveLocation);
                         mDriveService.files().get(fileId).executeMediaAndDownloadTo(outputStream);
-                        outputStream.close();
                     } catch (UserRecoverableAuthIOException ex) {
                         context.startActivity(ex.getIntent());
                     } catch (IOException ex) {
                         ex.printStackTrace();
+                    } finally {
+                        try { if (outputStream != null) outputStream.close(); }
+                        catch (IOException ex){ Log.e(TAG, "DSH - downloadFile: Failed to close stream", ex); }
                     }
                     new Handler(Looper.getMainLooper()).postDelayed(() -> tcs.setResult(null), 1000);
                 }
