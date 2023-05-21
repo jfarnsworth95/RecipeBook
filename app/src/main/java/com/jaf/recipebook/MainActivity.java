@@ -15,6 +15,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.jaf.recipebook.helpers.FileHelper;
+
 public class MainActivity extends AppCompatActivity {
 
     FileHelper fileHelper;
@@ -37,10 +39,6 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_start);
 
-        findViewById(R.id.breakItem).setOnClickListener(view -> {
-            Log.i(TAG, "Begin the problems");
-            startActivity(new Intent(this, GoogleSignInActivity.class));
-        });
     }
 
     @Override

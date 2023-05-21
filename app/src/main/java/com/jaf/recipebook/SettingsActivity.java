@@ -32,14 +32,29 @@ import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.Task;
+import com.google.api.services.drive.Drive;
+import com.google.gson.Gson;
+import com.jaf.recipebook.db.RecipeBookDatabase;
+import com.jaf.recipebook.db.RecipeBookRepo;
+import com.jaf.recipebook.db.directions.DirectionsModel;
+import com.jaf.recipebook.db.ingredients.IngredientsModel;
+import com.jaf.recipebook.db.recipes.RecipesModel;
+import com.jaf.recipebook.db.tags.TagsModel;
+import com.jaf.recipebook.events.DbRefreshEvent;
+import com.jaf.recipebook.events.DbShutdownEvent;
+import com.jaf.recipebook.events.RecipeAddedEvent;
+import com.jaf.recipebook.helpers.FileHelper;
+import com.jaf.recipebook.helpers.GoogleSignInHelper;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -51,9 +66,12 @@ public class SettingsActivity extends AppCompatActivity {
     GoogleSignInClient gsc;
     GoogleSignInOptions gso;
     GoogleSignInAccount gsa;
+    private RecipeBookDatabase rbdb;
+    private RecipeBookRepo rbr;
 
     private CircleImageView googlePhotoImg;
     private ArrayList<String> filesToImport;
+    private ArrayList<String> currentRecipes;
 
 
     @Override
@@ -66,11 +84,7 @@ public class SettingsActivity extends AppCompatActivity {
         googlePhotoImg = findViewById(R.id.google_account_image);
 
         // Google Sign-in vars
-        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .requestScopes(new Scope(Scopes.DRIVE_APPFOLDER))
-                .build();
-        gsc = GoogleSignIn.getClient(this, gso);
+        gsc = GoogleSignInHelper.getGoogleSignInClient(this);
 
         // Add button listener for Changing External Storage
         findViewById(R.id.toggle_external_storage_btn).setOnClickListener(view ->
@@ -82,6 +96,9 @@ public class SettingsActivity extends AppCompatActivity {
         // Add button listener for Importing Downloaded recipes
         findViewById(R.id.import_downloaded_files_btn).setOnClickListener(this::onImportFilesButtonClicked);
 
+        // Add button listener for moving to the Drive Settings Activity, and hide it if user isn't signed in
+        findViewById(R.id.go_to_drive_settings_btn).setOnClickListener(this::onGoToDriveSettingsButtonClicked);
+
         // Add button listener for Google Sign In
         findViewById(R.id.google_sign_in_button).setOnClickListener(view -> {
             if (gsa == null) {
@@ -92,6 +109,19 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
+    private void refreshRecipeNameList() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<RecipesModel> recipesModels = rbdb.recipeDao().getAllRecipes();
+                currentRecipes = new ArrayList<>();
+                for (RecipesModel m : recipesModels) {
+                    currentRecipes.add(m.getName());
+                }
+            }
+        }).start();
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -99,16 +129,29 @@ public class SettingsActivity extends AppCompatActivity {
         // based on if the permission was granted or not
         fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE,
                                 Environment.isExternalStorageManager());
+        refreshRecipeNameList();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        rbdb = RecipeBookDatabase.getInstance(this);
+        rbr = new RecipeBookRepo(rbdb);
+
+        if(!EventBus.getDefault().isRegistered(this)){
+            EventBus.getDefault().register(this);
+        }
 
         // Check for existing Google Sign In account, if the user is already signed in
         // the GoogleSignInAccount will be non-null.
         gsa = GoogleSignIn.getLastSignedInAccount(this);
         updateUi();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -135,6 +178,7 @@ public class SettingsActivity extends AppCompatActivity {
             ((Button) findViewById(R.id.google_sign_in_button)).setText(R.string.google_sign_in_button);
             findViewById(R.id.google_user_name).setVisibility(View.GONE);
             findViewById(R.id.sign_in_descriptor).setVisibility(View.GONE);
+            findViewById(R.id.go_to_drive_settings_btn).setVisibility(View.GONE);
             googlePhotoImg.setVisibility(View.GONE);
         }else{
             ((Button) findViewById(R.id.google_sign_in_button)).setText(R.string.google_sign_out_button);
@@ -146,6 +190,7 @@ public class SettingsActivity extends AppCompatActivity {
                 userDisplayName.setText(gsa.getDisplayName());
                 userDisplayName.setVisibility(View.VISIBLE);
                 findViewById(R.id.sign_in_descriptor).setVisibility(View.VISIBLE);
+                findViewById(R.id.go_to_drive_settings_btn).setVisibility(View.VISIBLE);
             } else {
                 Log.i(TAG, "updateUi: No user profile photo found.");
             }
@@ -153,13 +198,55 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     /**
-     * Copies over a list of file(s) from the Downloads folder of the user's device to save in the
-     * app folder.
+     * Interprets files from the Downloads folder of the user's device to JSON data, then saves
+     * that to the database.
      */
-    private void importLocalFiles(ArrayList<String> filesToImport) throws IOException{
+    private void importLocalFiles() throws IOException{
         for (String filePath : filesToImport){
-            File sourceFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), filePath);
-            fileHelper.copyFile(sourceFile, fileHelper.getFile(sourceFile.getName()));
+            File recipeFile = new File(fileHelper.getDownloadsDir().getPath() + "/" + filePath);
+            HashMap<String, Object> jsonData = fileHelper.returnGsonFromFile(recipeFile);
+
+            // Create Recipe Model
+            Float servings = null;
+            if (jsonData.containsKey("SERVINGS")){
+                servings = (float) jsonData.get("SERVINGS");
+            }
+            String category = null;
+            if (jsonData.containsKey("CATEGORY")){
+                category = (String) jsonData.get("CATEGORY");
+            }
+            String sourceUrl = null;
+            if (jsonData.containsKey("SOURCE_URL")){
+                sourceUrl = (String) jsonData.get("SOURCE_URL");
+            }
+            RecipesModel rm = new RecipesModel(
+                    (String) jsonData.get("NAME"),
+                    category,
+                    servings,
+                    sourceUrl
+            );
+
+            // Create Ingredient Model
+            ArrayList<IngredientsModel> ingredients = new ArrayList<>();
+            int i = 0;
+            for (String ingredientEntry : (ArrayList<String>) jsonData.get("INGREDIENTS")) {
+                ingredients.add(new IngredientsModel(rm.getId(), i, ingredientEntry));
+                i++;
+            }
+
+            // Create Directions Model
+            DirectionsModel dm = new DirectionsModel(rm.getId(), (String) jsonData.get("DIRECTIONS"));
+
+            // Optionally create Tag Models (if present)
+            ArrayList<TagsModel> tags = new ArrayList<>();
+            if (jsonData.containsKey("TAGS")){
+                i = 0;
+                for (String tag : (ArrayList<String>) jsonData.get("TAGS")){
+                    tags.add(new TagsModel(rm.getId(), tag));
+                }
+            }
+
+            rbr.insertRecipe(rm, ingredients, tags, dm);
         }
     }
 
@@ -187,16 +274,27 @@ public class SettingsActivity extends AppCompatActivity {
     private HashMap<File, String> returnInvalidImports(ArrayList<File> availableImports){
         HashMap<File, String> invalidImports = new HashMap<>();
         for (File potentialImport : availableImports){
-            if (fileHelper.getFile(potentialImport.getName()).exists()){
-                invalidImports.put(potentialImport, "A recipe by that name already exists.");
-                continue;
-            }
             if (!fileHelper.validateRecipeFileFormat(potentialImport)){
                 invalidImports.put(potentialImport, "The file structure is corrupted, and can't be imported.");
+            }
+            if (checkForName(potentialImport)){
+                invalidImports.put(potentialImport, "A recipe by that name already exists.");
+                continue;
             }
         }
 
         return invalidImports;
+    }
+
+    private boolean checkForName(File potentialImportFile) {
+        try {
+            HashMap<String, Object> jsonData =
+                    new Gson().fromJson(fileHelper.readFile(potentialImportFile), HashMap.class);
+            return currentRecipes.contains((String) jsonData.get("NAME"));
+        } catch (Exception ex){
+            Log.e(TAG, "validateRecipeFileFormat: Failed to interpret JSON content.", ex);
+            return false;
+        }
     }
 
     /**
@@ -296,7 +394,7 @@ public class SettingsActivity extends AppCompatActivity {
                         ).show();
                         return;
                     }
-                    importLocalFiles(filesToImport);
+                    importLocalFiles();
                     Toast.makeText(
                             view.getContext(),
                             "Selected file(s) imported successfully!",
@@ -317,4 +415,24 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
+    private void onGoToDriveSettingsButtonClicked(View view){
+        startActivity(new Intent(this, DriveSettingsActivity.class));
+    }
+
+    @Subscribe
+    public void onDbRefresh(DbRefreshEvent dbRefreshEvent){
+        rbdb = RecipeBookDatabase.getInstance(this);
+        rbr = new RecipeBookRepo(rbdb);
+    }
+
+    @Subscribe
+    public void onDbShutdown(DbShutdownEvent dbShutdownEvent){
+        rbdb.close();
+        rbr = null;
+    }
+
+    @Subscribe
+    public void onRecipeAdded(RecipeAddedEvent recipeAddedEvent){
+        refreshRecipeNameList();
+    }
 }

@@ -39,6 +39,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toggle_external_storage_btn" />
 
+    <Button
+        android:id="@+id/go_to_drive_settings_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/secondary"
+        android:text="@string/options_go_to_drive_settings"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/import_downloaded_files_btn" />
+
     <TextView
         android:id="@+id/settings_header_signin"
         android:layout_width="wrap_content"
@@ -48,7 +59,7 @@
         android:text="@string/google_sign_in_header"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/import_downloaded_files_btn" />
+        app:layout_constraintTop_toBottomOf="@+id/go_to_drive_settings_btn" />
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/google_account_image"

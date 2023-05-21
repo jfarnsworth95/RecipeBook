@@ -18,8 +18,23 @@
     <string name="toggle_preferences_header">Options &amp; Preferences</string>
     <string name="option_toggle_external_text">Change Storage Method</string>
     <string name="option_import_downloaded_text">Import Downloaded Recipes</string>
+    <string name="options_go_to_drive_settings">Go to Drive Settings</string>
     <string name="confirm_imports_btn_text">Confirm Imports</string>
     <string name="google_sign_in_button">SIGN IN WITH GOOGLE</string>
     <string name="google_sign_out_button">SIGN OUT OF GOOGLE</string>
     <string name="google_sign_in_descriptor">You are signed in as</string>
+
+    <!-- Drive Settings Page Strings -->
+    <string name="last_synced_text">Checking the last time you saved to your Drive…</string>
+    <string name="upload_local_to_drive">Upload Local to Google Drive</string>
+    <string name="download_drive_to_local">Download Drive data to Local</string>
+    <string name="delete_drive_data">DELETE ALL DRIVE DATA</string>
+    <string name="final_warning">You are about to delete all app data in your Google Drive for this application. This cannot be undone. Are you sure you want to continue?</string>
+    <string name="final_delete_btn">Press and hold to delete drive data</string>
+
+    <!-- Other -->
+    <string name="database_name">recipeBookDatabase</string>
+    <string name="database_not_backed_up">Recipes are not currently backed up</string>
+    <string name="database_last_backed_up">Recipes were backed up</string>
+
 </resources>
