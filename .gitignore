@@ -12,3 +12,6 @@ captures
 app/build/*
 app/libs/*
 app/src/main/res/raw/credentials.json
+app/debug/*
+*rsa
+*rsa.pub
