@@ -36,6 +36,7 @@ android {
     packagingOptions {
         pickFirst "META-INF/DEPENDENCIES"
     }
+    namespace 'com.jaf.recipebook'
 }
 
 dependencies {
