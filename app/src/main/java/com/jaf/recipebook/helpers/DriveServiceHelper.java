@@ -450,7 +450,11 @@ public class DriveServiceHelper {
                     }
 
                 } else {
-                    Log.e(TAG, "Not all DB files were downloaded to the temp folder, aborting...");
+                    Log.e(TAG, "Not all DB files were downloaded to the temp folder, aborting... " +
+                        "(tmpFileDb:" + tmpFileDb.exists() +
+                        ", tmpFileShm:" + tmpFileShm.exists() +
+                        ", tmpFileWal:" + tmpFileWal.exists() +
+                        ")");
                 }
             } else {
                 Log.e(TAG, "Failed to download DB files from user drive before time expired");
