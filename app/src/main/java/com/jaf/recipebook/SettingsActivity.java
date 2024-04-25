@@ -28,11 +28,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.Task;
-import com.google.api.services.drive.Drive;
 import com.google.gson.Gson;
 import com.jaf.recipebook.db.RecipeBookDatabase;
 import com.jaf.recipebook.db.RecipeBookRepo;
@@ -42,7 +39,7 @@ import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.db.tags.TagsModel;
 import com.jaf.recipebook.events.DbRefreshEvent;
 import com.jaf.recipebook.events.DbShutdownEvent;
-import com.jaf.recipebook.events.RecipeAddedEvent;
+import com.jaf.recipebook.events.RecipeSavedEvent;
 import com.jaf.recipebook.helpers.FileHelper;
 import com.jaf.recipebook.helpers.GoogleSignInHelper;
 
@@ -432,7 +429,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     @Subscribe
-    public void onRecipeAdded(RecipeAddedEvent recipeAddedEvent){
+    public void onRecipeAdded(RecipeSavedEvent recipeSavedEvent){
         refreshRecipeNameList();
     }
 }

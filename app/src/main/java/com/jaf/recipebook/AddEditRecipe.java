@@ -1,27 +1,38 @@
 package com.jaf.recipebook;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.textfield.TextInputEditText;
+import com.jaf.recipebook.db.FullRecipeTuple;
 import com.jaf.recipebook.db.RecipeBookDatabase;
 import com.jaf.recipebook.db.RecipeBookRepo;
 import com.jaf.recipebook.db.directions.DirectionsModel;
 import com.jaf.recipebook.db.ingredients.IngredientsModel;
 import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.db.tags.TagsModel;
+import com.jaf.recipebook.events.RecipeSavedEvent;
 import com.jaf.recipebook.tagAdapters.TagViewAdapter;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +64,8 @@ public class AddEditRecipe extends AppCompatActivity {
     private TextInputEditText tagsInput;
     private RecyclerView chipGroup;
 
+    private Animation flashField;
+
     private Handler mainHandler;
     private final Executor mExecutor = Executors.newSingleThreadExecutor();
 
@@ -72,12 +85,37 @@ public class AddEditRecipe extends AppCompatActivity {
             Objects.requireNonNull(this.getSupportActionBar()).setTitle(R.string.add_new_recipe);
         }
 
+        flashField = new AlphaAnimation(1.0f, 0.0f);
+        flashField.setDuration(300);
+        flashField.setStartOffset(100);
+        flashField.setRepeatMode(Animation.REVERSE);
+        flashField.setRepeatCount(3);
+
         getInputFields();
         setupServingsListener();
+        setupTagsOnBlurListener();
         setupChipRecycler();
         setupTagTextWatcher();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if(!EventBus.getDefault().isRegistered(this)){
+            EventBus.getDefault().register(this);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    /**
+     * Initialize the handles for all edit fields and other required views
+     */
     private void getInputFields(){
         titleInput = findViewById(R.id.textInput_RecipeTitleInput);
         ingredientInput = findViewById(R.id.textInput_RecipeIngredientsInput);
@@ -89,6 +127,9 @@ public class AddEditRecipe extends AppCompatActivity {
         tagsInput = findViewById(R.id.textInput_RecipeTagsInput);
     }
 
+    /**
+     * Adds listener to Servings field, removes unnecessary decimal or trailing zeros.
+     */
     private void setupServingsListener(){
         servingsInput.setOnKeyListener((v, keyCode, event) -> {
             if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
@@ -102,6 +143,21 @@ public class AddEditRecipe extends AppCompatActivity {
         });
     }
 
+    /**
+     * Remind user to apply tag if they change focus with text in the Tags Edit Field
+     */
+    private void setupTagsOnBlurListener(){
+        tagsInput.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus && !((TextInputEditText) v).getText().toString().isEmpty()){
+                Toast.makeText(this, getString(R.string.recipe_tag_remind_user_to_apply), Toast.LENGTH_LONG).show();
+                tagsInput.startAnimation(flashField);
+            }
+        });
+    }
+
+    /**
+     * Add adapter and recycler for adding/removing tags as chips onscreen.
+     */
     private void setupChipRecycler(){
         final TagViewAdapter tla = new TagViewAdapter(new TagViewAdapter.TagDiff(),
                 new View.OnClickListener() {
@@ -136,29 +192,49 @@ public class AddEditRecipe extends AppCompatActivity {
         return true;
     }
 
-    private void queryForData(){
-//        mExecutor.execute(() -> {
-//            FullRecipeTuple frt = null;
-//            try {
-//                frt = rbr.getFullRecipeData(recipeId);
-//            } catch (Exception ex){
-//                Log.e(TAG, "Failed to query recipe", ex);
-//            } finally {
-//                if (frt != null) {
-//                    rm = frt.recipesModel;
-//                    ims = frt.ingredientsModel;
-//                    dm = frt.directionsModel;
-//                    tms = frt.tagsModel;
-//                    mainHandler.post(this::renderRecipe);
-//                } else {
-//                    // TODO Kick back to main activity with error Toast
-//                    setResult(Activity.RESULT_CANCELED);
-//                    this.finish();
-//                }
-//            }
-//        });
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.save_recipe_btn:
+                onSave();
+                return true;
+
+            default:
+                Log.w(TAG, "onOptionsItemSelected: Unknown Item ID for selected item: "
+                        + item.toString());
+                return super.onOptionsItemSelected(item);
+        }
     }
 
+    /**
+     * If editing existing recipe, this fetches its information.
+     */
+    private void queryForData(){
+        mExecutor.execute(() -> {
+            FullRecipeTuple frt = null;
+            try {
+                frt = rbr.getFullRecipeData(recipeId);
+            } catch (Exception ex){
+                Log.e(TAG, "Failed to query recipe", ex);
+            } finally {
+                if (frt != null) {
+                    rm = frt.recipesModel;
+                    ims = frt.ingredientsModel;
+                    dm = frt.directionsModel;
+                    tms = frt.tagsModel;
+                    mainHandler.post(this::renderRecipe);
+                } else {
+                    //Kick back to main activity with error Toast
+                    setResult(Activity.RESULT_CANCELED);
+                    this.finish();
+                }
+            }
+        });
+    }
+
+    /**
+     * After getting the recipe information from the DB, render it onscreen.
+     */
     private void renderRecipe(){
         setContentView(R.layout.activity_add_edit_recipe);
         Objects.requireNonNull(this.getSupportActionBar()).setTitle(rm.getName());
@@ -205,6 +281,9 @@ public class AddEditRecipe extends AppCompatActivity {
         }
     }
 
+    /**
+     * On keyboard "Enter", populate tag if it doesn't already exist in tag list
+     */
     private void setupTagTextWatcher(){
         tagsInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -226,6 +305,11 @@ public class AddEditRecipe extends AppCompatActivity {
         });
     }
 
+    /**
+     * Check if tag is currently in the tag list
+     * @param inputtedTag tag user is attempting to add
+     * @return true if tag is in the list
+     */
     private boolean tagInList(String inputtedTag){
         for(TagsModel tag : Objects.requireNonNull(mutable_tms.getValue())){
             if (tag.getTag().equals(inputtedTag)){
@@ -235,8 +319,123 @@ public class AddEditRecipe extends AppCompatActivity {
         return false;
     }
 
+    /**
+     * Validates that all the required fields are filled, calls animation if any are empty
+     * @return true is fields are filled
+     */
+    private boolean validateRequiredFieldsFilled(){
+        boolean titleEmpty = titleInput.getText().toString().equals("");
+        boolean ingredientEmpty = ingredientInput.getText().toString().equals("");
+        boolean directionEmpty = directionInput.getText().toString().equals("");
+
+        if (titleEmpty || ingredientEmpty || directionEmpty){
+            flashEmptyRequiredFields(titleEmpty, ingredientEmpty, directionEmpty);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Runs animation to flash empty required fields
+     * @param isTitleEmpty
+     * @param isIngredientEmpty
+     * @param isDirectionEmpty
+     */
+    private void flashEmptyRequiredFields(boolean isTitleEmpty, boolean isIngredientEmpty, boolean isDirectionEmpty){
+
+        Toast.makeText(this, getString(R.string.recipe_save_missing_req), Toast.LENGTH_SHORT).show();
+
+        if(isTitleEmpty){
+            Log.d(TAG, "Missing Title field, aborting save...");
+            titleInput.startAnimation(flashField);
+        }
+        if(isIngredientEmpty){
+            Log.d(TAG, "Missing Ingredients field, aborting save...");
+            ingredientInput.startAnimation(flashField);
+        }
+        if(isDirectionEmpty) {
+            Log.d(TAG, "Missing Directions field, aborting save...");
+            directionInput.startAnimation(flashField);
+        }
+    }
+
+    /**
+     * Convert multi-line edit field into list of Ingredient models to be saved
+     * @param recipeId Recipe to associate the ingredients with
+     * @return List of ordered Ingredient models
+     */
+    private ArrayList<IngredientsModel> getIngredientList(long recipeId){
+        ArrayList<IngredientsModel> ingredientsModels = new ArrayList<>();
+        int order_id = 0;
+        for(String line : ingredientInput.getText().toString().trim().split(System.lineSeparator())){
+            ingredientsModels.add(new IngredientsModel(recipeId, order_id, line));
+            order_id += 1;
+        }
+        return ingredientsModels;
+    }
+
+    /**
+     * Validates fields, and saves recipe to database.
+     */
     private void onSave(){
-        //servingsInputAsFloat = Float.valueOf(servingsInput.getText().toString());
-        //RecipesModel recipesModel = new RecipesModel(titleInput.toString(), categoryInput.toString(), servingsInput.getDecimal())
+        Log.d(TAG, "Attempting to save...");
+        if (!validateRequiredFieldsFilled()) {
+            Log.d(TAG, "Missing required fields, save aborted");
+            return;
+        }
+
+        String titleSave = titleInput.getText().toString();
+        String directionsSave = directionInput.getText().toString().trim();
+        Float servingsSave = null;
+        String sourceUrlSave = null;
+        String categorySave = null;
+
+        if (!servingsInput.getText().toString().equals("")){
+            servingsSave = Float.valueOf(servingsInput.getText().toString());
+        }
+        if (!sourceUrlInput.getText().toString().equals("")){
+            sourceUrlSave = sourceUrlInput.getText().toString();
+        }
+        if(!categoryInput.getText().toString().equals("")){
+            categorySave = categoryInput.getText().toString();
+        }
+
+        RecipesModel rm;
+        if (this.rm == null) {
+            rm = new RecipesModel(titleSave, categorySave, servingsSave, sourceUrlSave);
+        } else {
+            rm = this.rm;
+            rm.setName(titleSave);
+            rm.setCategory(categorySave);
+            rm.setServings(servingsSave);
+            rm.setSource_url(sourceUrlSave);
+        }
+        ArrayList<IngredientsModel> ims = getIngredientList(recipeId);
+        DirectionsModel dm = new DirectionsModel(recipeId, directionsSave);
+        ArrayList<TagsModel> tms = new ArrayList<>(mutable_tms.getValue());
+
+        if (recipeId == -1){
+            Log.d(TAG, "Attempting to INSERT new recipe");
+            rbr.insertRecipe(rm, ims, tms, dm);
+        } else {
+            Log.d(TAG, "Updating recipe with ID: " + recipeId);
+            rbr.updateRecipe(rm, ims, tms, dm);
+        }
+
+        setContentView(R.layout.activity_is_loading);
+    }
+
+    @Subscribe
+    public void onRecipeSaved(RecipeSavedEvent recipeSavedEvent){
+        Log.i(TAG, "EVENT IS: " + recipeSavedEvent.recipeAdded);
+        if(recipeSavedEvent.recipeAdded){
+            Intent intent = new Intent();
+            intent.putExtra("requestCode", MainActivity.ADD_EDIT_ACTIVITY_REQUEST_CODE);
+            setResult(Activity.RESULT_OK, intent);
+            finish();
+        } else {
+            Toast.makeText(this, getString(R.string.recipe_save_failed), Toast.LENGTH_LONG).show();
+            setContentView(R.layout.activity_add_edit_recipe);
+        }
     }
 }

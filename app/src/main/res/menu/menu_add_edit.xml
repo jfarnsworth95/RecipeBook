@@ -6,7 +6,7 @@
     tools:context="com.jaf.recipebook.AddEditRecipe">
 
     <item
-        android:id="@+id/search_btn"
+        android:id="@+id/save_recipe_btn"
         android:icon="@drawable/ic_baseline_save_24"
         android:orderInCategory="10"
         android:title="@string/search_btn_title"

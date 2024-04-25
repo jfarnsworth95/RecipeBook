@@ -13,6 +13,10 @@
     <string name="search_btn_title">Search Button</string>
     <string name="action_settings">Settings</string>
 
+    <!-- Main Activity Strings -->
+    <string name="recipe_saved">Recipe Saved</string>
+    <string name="failed_to_open_recipe">Failed to open recipe, data may be corrupted…</string>
+
     <!-- Settings Page Strings -->
     <string name="google_sign_in_header">Connect to Google Drive</string>
     <string name="toggle_preferences_header">Options &amp; Preferences</string>
@@ -34,14 +38,17 @@
 
     <!-- Add/Edit Page Strings -->
     <string name="add_new_recipe">Add New Recipe</string>
-    <string name="recipe_title_hint">Recipe Title</string>
-    <string name="recipe_ingredients_hint">Ingredients</string>
-    <string name="recipe_directions_hint">Directions</string>
+    <string name="recipe_title_hint">Recipe Title*</string>
+    <string name="recipe_ingredients_hint">Ingredients*</string>
+    <string name="recipe_directions_hint">Directions*</string>
     <string name="recipe_servings_hint">Servings</string>
     <string name="recipe_source_url_hint">Source URL</string>
     <string name="recipe_add_tags_hint">Tags</string>
     <string name="recipe_category_hint">Category</string>
+    <string name="recipe_tag_remind_user_to_apply">Press enter on the Tags field to save your tag!</string>
     <string name="recipe_tag_already_exists">This recipe already has that tag</string>
+    <string name="recipe_save_missing_req">Please fill out the required fields</string>
+    <string name="recipe_save_failed">Something went wrong when trying to save, restart the app and try again</string>
 
     <!-- Other -->
     <string name="database_name">recipeBookDatabase</string>

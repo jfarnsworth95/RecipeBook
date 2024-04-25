@@ -21,8 +21,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.jaf.recipebook.db.RecipeBookDatabase;
+import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.helpers.FileHelper;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     public static final int ADD_EDIT_ACTIVITY_REQUEST_CODE = 100;
     public static final int VIEW_ACTIVITY_REQUEST_CODE = 200;
     public static final int SETTINGS_ACTIVITY_REQUEST_CODE = 300;
+
+    private RecipeBookDatabase rbd;
 
     public Button btnMainTest;
 
@@ -51,14 +58,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_start);
 
         ActivityResultLauncher<Intent> addEditActivityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(), o -> {} );
+            new ActivityResultContracts.StartActivityForResult(), o -> {
+                if (o.getResultCode() == Activity.RESULT_OK){
+                    Toast.makeText(this, getString(R.string.recipe_saved), Toast.LENGTH_SHORT).show();
+                } else if (o.getResultCode() == Activity.RESULT_CANCELED) {
+                    Toast.makeText(this, getString(R.string.failed_to_open_recipe), Toast.LENGTH_LONG).show();
+                }
+            }
+        );
         btnMainTest = findViewById(R.id.btnMainTest);
         btnMainTest.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddEditRecipe.class);
+            intent.putExtra("requestCode", ADD_EDIT_ACTIVITY_REQUEST_CODE);
             addEditActivityResultLauncher.launch(intent);
         });
 
-
+        rbd = RecipeBookDatabase.getInstance(this);
     }
 
     @Override
@@ -128,4 +143,5 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
 }
