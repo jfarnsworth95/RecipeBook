@@ -24,7 +24,7 @@ public interface IngredientsDao {
     int deleteIngredient(IngredientsModel model);
 
     @Query("SELECT * FROM ingredients WHERE recipe_id = :recipe_id ORDER BY ORDER_ID ASC")
-    List<IngredientsModel> getIngredientsForRecipeId(int recipe_id);
+    List<IngredientsModel> getIngredientsForRecipeId(long recipe_id);
 
     @Query("DELETE FROM ingredients WHERE recipe_id = :recipeId")
     int deleteIngredientsById(long recipeId);

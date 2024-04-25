@@ -242,7 +242,7 @@ public class SettingsActivity extends AppCompatActivity {
             if (jsonData.containsKey("TAGS")){
                 i = 0;
                 for (String tag : (ArrayList<String>) jsonData.get("TAGS")){
-                    tags.add(new TagsModel(rm.getId(), tag));
+                    tags.add(new TagsModel(rm.getId(), tag.toLowerCase()));
                 }
             }
 

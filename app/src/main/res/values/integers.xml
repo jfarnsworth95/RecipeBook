@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="integer" name="ime_add_tag_id" format="integer">100</item>
+</resources>

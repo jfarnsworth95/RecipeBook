@@ -9,6 +9,8 @@ import androidx.room.Update;
 
 import java.util.List;
 
+import io.reactivex.rxjava3.core.Single;
+
 @Dao
 public interface DirectionsDao {
 
@@ -20,7 +22,7 @@ public interface DirectionsDao {
     int deleteDirections(DirectionsModel model);
 
     @Query("SELECT * FROM directions WHERE recipe_id = :recipe_id")
-    List<DirectionsModel> getDirectionsForRecipeId(int recipe_id);
+    Single<DirectionsModel> getDirectionsForRecipeId(long recipe_id);
 
     @Query("DELETE FROM directions WHERE recipe_id = :recipeId")
     int deleteDirectionsById(long recipeId);

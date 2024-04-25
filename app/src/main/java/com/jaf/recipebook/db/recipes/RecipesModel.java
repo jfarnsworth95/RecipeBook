@@ -10,7 +10,6 @@ public class RecipesModel {
 
     @PrimaryKey(autoGenerate = true)
     private long id;
-
     private String name;
     private String category;
     private Float servings;

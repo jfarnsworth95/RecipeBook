@@ -22,7 +22,7 @@ public interface TagsDao {
     int deleteTag(TagsModel model);
 
     @Query("SELECT * FROM tags WHERE recipe_id = :recipe_id")
-    List<TagsModel> getTagsForRecipeId(int recipe_id);
+    List<TagsModel> getTagsForRecipeId(long recipe_id);
 
     @Query("SELECT * FROM tags WHERE tag = :tag")
     List<TagsModel> getRecipesWithTag(String tag);

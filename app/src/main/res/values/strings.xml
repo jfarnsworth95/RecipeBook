@@ -32,8 +32,21 @@
     <string name="final_warning">You are about to delete all app data in your Google Drive for this application. This cannot be undone. Are you sure you want to continue?</string>
     <string name="final_delete_btn">Press and hold to delete drive data</string>
 
+    <!-- Add/Edit Page Strings -->
+    <string name="add_new_recipe">Add New Recipe</string>
+    <string name="recipe_title_hint">Recipe Title</string>
+    <string name="recipe_ingredients_hint">Ingredients</string>
+    <string name="recipe_directions_hint">Directions</string>
+    <string name="recipe_servings_hint">Servings</string>
+    <string name="recipe_source_url_hint">Source URL</string>
+    <string name="recipe_add_tags_hint">Tags</string>
+    <string name="recipe_category_hint">Category</string>
+    <string name="recipe_tag_already_exists">This recipe already has that tag</string>
+
     <!-- Other -->
     <string name="database_name">recipeBookDatabase</string>
+    <string name="default_loading_string">Loading…</string>
+    <string name="ime_add_action">Add</string>
     <string name="database_not_backed_up">Recipes are not currently backed up</string>
     <string name="database_last_backed_up">Recipes were backed up</string>
 

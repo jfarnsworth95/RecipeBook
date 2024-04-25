@@ -32,10 +32,10 @@ public class RecipeBookRepo {
 
     public RecipeBookRepo(RecipeBookDatabase rbdb){
         recipeBookDao = rbdb.recipeBookDao();
-        tagsDao = rbdb.tagsDao();
-        directionsDao = rbdb.directionsDao();
-        ingredientsDao = rbdb.ingredientsDao();
         recipeDao = rbdb.recipeDao();
+        ingredientsDao = rbdb.ingredientsDao();
+        directionsDao = rbdb.directionsDao();
+        tagsDao = rbdb.tagsDao();
     }
 
     // Add Recipe
@@ -69,9 +69,9 @@ public class RecipeBookRepo {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                int deleted = recipeDao.deleteRecipe(rpModel);
+                long deleted = recipeDao.deleteRecipe(rpModel);
                 if (deleted > 0){
-                    int ingDeleted = ingredientsDao.deleteIngredientsById(rpModel.getId());
+                    long ingDeleted = ingredientsDao.deleteIngredientsById(rpModel.getId());
                     int dirDeleted = directionsDao.deleteDirectionsById(rpModel.getId());
                     int tagDeleted = tagsDao.deleteTagsById(rpModel.getId());
                     Log.d(TAG, "Ingredient entries deleted: " + (ingDeleted > 0));
@@ -91,7 +91,7 @@ public class RecipeBookRepo {
                 recipeDao.updateRecipe(rm);
                 directionsDao.updateDirections(dm);
 
-                int ingredientsDeleted = ingredientsDao.deleteIngredientsById(rm.getId());
+                long ingredientsDeleted = ingredientsDao.deleteIngredientsById(rm.getId());
                 if (ingredientsDeleted > 0){
                     ingredientsDao.insertIngredient(ims);
                 }
@@ -102,5 +102,15 @@ public class RecipeBookRepo {
                 }
             }
         });
+    }
+
+    public FullRecipeTuple getFullRecipeData(@NonNull long recipeId){
+        FullRecipeTuple frt = new FullRecipeTuple();
+//        frt.recipesModel = recipeDao.getRecipe(recipeId);
+//        frt.ingredientsModel = ingredientsDao.getIngredientsForRecipeId(recipeId);
+//        frt.directionsModel = directionsDao.getDirectionsForRecipeId(recipeId);
+//        frt.tagsModel = tagsDao.getTagsForRecipeId(recipeId);
+
+        return frt;
     }
 }
