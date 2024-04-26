@@ -1,7 +1,5 @@
 package com.jaf.recipebook;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -19,13 +17,13 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.jaf.recipebook.db.RecipeBookDatabase;
 import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.helpers.FileHelper;
+import com.jaf.recipebook.helpers.GeneralHelper;
 
 import java.util.ArrayList;
 
@@ -33,16 +31,18 @@ public class MainActivity extends AppCompatActivity {
 
     FileHelper fileHelper;
     public final String TAG = "JAF-MAIN";
-    public static final int ADD_EDIT_ACTIVITY_REQUEST_CODE = 100;
-    public static final int VIEW_ACTIVITY_REQUEST_CODE = 200;
-    public static final int SETTINGS_ACTIVITY_REQUEST_CODE = 300;
 
     private RecipeBookDatabase rbd;
 
-    public Button btnMainTest;
+    public Button btnAddRecipe;
+    public Button btnEditLastRecipe;
+    public Button btnViewLastRecipe;
+
+    private long lastRecipeId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate...");
         super.onCreate(savedInstanceState);
 
         try {
@@ -61,23 +61,41 @@ public class MainActivity extends AppCompatActivity {
             new ActivityResultContracts.StartActivityForResult(), o -> {
                 if (o.getResultCode() == Activity.RESULT_OK){
                     Toast.makeText(this, getString(R.string.recipe_saved), Toast.LENGTH_SHORT).show();
-                } else if (o.getResultCode() == Activity.RESULT_CANCELED) {
+                } else if (o.getResultCode() == GeneralHelper.ACTIVITY_RESULT_DB_ERROR) {
                     Toast.makeText(this, getString(R.string.failed_to_open_recipe), Toast.LENGTH_LONG).show();
                 }
             }
         );
-        btnMainTest = findViewById(R.id.btnMainTest);
-        btnMainTest.setOnClickListener(v -> {
+
+        btnAddRecipe = findViewById(R.id.btnMainTest);
+        btnAddRecipe.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddEditRecipe.class);
-            intent.putExtra("requestCode", ADD_EDIT_ACTIVITY_REQUEST_CODE);
+            addEditActivityResultLauncher.launch(intent);
+        });
+
+        btnEditLastRecipe = findViewById(R.id.btnEditLastRecipe);
+        btnEditLastRecipe.setEnabled(false);
+        btnEditLastRecipe.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, AddEditRecipe.class);
+            intent.putExtra("recipe_id", lastRecipeId);
+            addEditActivityResultLauncher.launch(intent);
+        });
+
+        btnViewLastRecipe = findViewById(R.id.btnViewLastRecipe);
+        btnViewLastRecipe.setEnabled(false);
+        btnViewLastRecipe.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, AddEditRecipe.class);
+            intent.putExtra("recipe_id", lastRecipeId);
             addEditActivityResultLauncher.launch(intent);
         });
 
         rbd = RecipeBookDatabase.getInstance(this);
+        TEST_METHOD_REMOVE_LATER();
     }
 
     @Override
     protected void onResume(){
+        Log.i(TAG, "onResume...");
         super.onResume();
 
         // If MANAGE_EXTERNAL_STORAGE permission not granted and the Shared Preference for using
@@ -86,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Check if user wants to connect to their Google Drive to backup the Recipe Files
         // TODO: Add method for adding Google Drive connection
+
+        TEST_METHOD_REMOVE_LATER();
     }
 
     public void validateExternalPermission(){
@@ -142,6 +162,20 @@ public class MainActivity extends AppCompatActivity {
                         + item.toString());
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    public void TEST_METHOD_REMOVE_LATER(){
+        rbd.getQueryExecutor().execute(() -> {
+            ArrayList<RecipesModel> rms = new ArrayList<>(rbd.recipeDao().getAllRecipes());
+            Log.i(TAG, "QUERY RESULT SIZE: " + rms.size());
+            if (rms.size() > 0) {
+                lastRecipeId = rms.get(rms.size() - 1).getId();
+                runOnUiThread(() -> {
+                    btnViewLastRecipe.setEnabled(true);
+                    btnEditLastRecipe.setEnabled(true);
+                });
+            }
+        });
     }
 
 }

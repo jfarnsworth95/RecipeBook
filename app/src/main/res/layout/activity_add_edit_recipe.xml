@@ -9,6 +9,7 @@
     tools:context=".AddEditRecipe">
 
     <ScrollView
+        android:id="@+id/add_edit_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -50,12 +51,13 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textInput_RecipeSourceUrl">
 
-                <com.google.android.material.textfield.TextInputEditText
+                <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+                    style="@style/Widget.MaterialComponents.AutoCompleteTextView.FilledBox"
+                    android:hint="@string/recipe_category_hint"
                     android:id="@+id/textInput_RecipeCategoryInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/recipe_category_hint"
-                    android:inputType="text|textAutoComplete|textAutoCorrect|textCapSentences|textCapWords" />
+                    android:inputType="text|textAutoCorrect|textCapSentences|textCapWords"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout

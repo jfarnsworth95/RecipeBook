@@ -2,6 +2,7 @@ package com.jaf.recipebook;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatAutoCompleteTextView;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -10,31 +11,38 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.jaf.recipebook.db.FullRecipeTuple;
 import com.jaf.recipebook.db.RecipeBookDatabase;
 import com.jaf.recipebook.db.RecipeBookRepo;
 import com.jaf.recipebook.db.directions.DirectionsModel;
 import com.jaf.recipebook.db.ingredients.IngredientsModel;
+import com.jaf.recipebook.db.recipes.RecipeDao;
 import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.db.tags.TagsModel;
 import com.jaf.recipebook.events.RecipeSavedEvent;
+import com.jaf.recipebook.helpers.GeneralHelper;
 import com.jaf.recipebook.tagAdapters.TagViewAdapter;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -60,7 +68,7 @@ public class AddEditRecipe extends AppCompatActivity {
     private TextInputEditText directionInput;
     private TextInputEditText servingsInput;
     private TextInputEditText sourceUrlInput;
-    private TextInputEditText categoryInput;
+    private AppCompatAutoCompleteTextView categoryInput;
     private TextInputEditText tagsInput;
     private RecyclerView chipGroup;
 
@@ -73,6 +81,7 @@ public class AddEditRecipe extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         recipeId = getIntent().getLongExtra("recipe_id", -1);
+        Log.i(TAG, "onCreate: " + recipeId);
         rbdb = RecipeBookDatabase.getInstance(this);
         rbr = new RecipeBookRepo(rbdb);
         mainHandler = new Handler(getMainLooper());
@@ -83,19 +92,10 @@ public class AddEditRecipe extends AppCompatActivity {
         } else {
             setContentView(R.layout.activity_add_edit_recipe);
             Objects.requireNonNull(this.getSupportActionBar()).setTitle(R.string.add_new_recipe);
+            addEditSetup();
         }
 
-        flashField = new AlphaAnimation(1.0f, 0.0f);
-        flashField.setDuration(300);
-        flashField.setStartOffset(100);
-        flashField.setRepeatMode(Animation.REVERSE);
-        flashField.setRepeatCount(3);
-
-        getInputFields();
-        setupServingsListener();
-        setupTagsOnBlurListener();
-        setupChipRecycler();
-        setupTagTextWatcher();
+        createFlashAnimation();
     }
 
     @Override
@@ -111,6 +111,19 @@ public class AddEditRecipe extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+    }
+
+    /**
+     * Some setup can only be done once we're using the Add/Edit layout
+     */
+    private void addEditSetup(){
+        getInputFields();
+        setupServingsListener();
+        setupTagsOnBlurListener();
+        setupOnEnterCategoryFieldListener();
+        setupChipRecycler();
+        setupTagTextWatcher();
+        setupCategoryAutoComplete();
     }
 
     /**
@@ -155,6 +168,17 @@ public class AddEditRecipe extends AppCompatActivity {
         });
     }
 
+    private void setupOnEnterCategoryFieldListener(){
+        categoryInput.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
+                categoryInput.clearFocus();
+                ((InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE))
+                        .toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
+            }
+           return false;
+        });
+    }
+
     /**
      * Add adapter and recycler for adding/removing tags as chips onscreen.
      */
@@ -182,6 +206,26 @@ public class AddEditRecipe extends AppCompatActivity {
             Log.i(TAG, "OBSERVE TRIGGERED");
             Log.i(TAG, tags.toString());
             tla.submitList(tags);
+        });
+    }
+
+    private void createFlashAnimation(){
+        flashField = new AlphaAnimation(1.0f, 0.0f);
+        flashField.setDuration(300);
+        flashField.setStartOffset(100);
+        flashField.setRepeatMode(Animation.REVERSE);
+        flashField.setRepeatCount(3);
+    }
+
+    private void setupCategoryAutoComplete(){
+        rbdb.getQueryExecutor().execute(() -> {
+            ArrayList<String> categories = new ArrayList<>(rbdb.recipeDao().getDistinctCategories());
+            categories.removeAll(Collections.singleton(null));
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                    this, android.R.layout.select_dialog_item, categories);
+            adapter.setNotifyOnChange(true);
+            categoryInput.setThreshold(1);
+            runOnUiThread(() -> categoryInput.setAdapter(adapter));
         });
     }
 
@@ -225,7 +269,7 @@ public class AddEditRecipe extends AppCompatActivity {
                     mainHandler.post(this::renderRecipe);
                 } else {
                     //Kick back to main activity with error Toast
-                    setResult(Activity.RESULT_CANCELED);
+                    setResult(GeneralHelper.ACTIVITY_RESULT_DB_ERROR);
                     this.finish();
                 }
             }
@@ -239,25 +283,31 @@ public class AddEditRecipe extends AppCompatActivity {
         setContentView(R.layout.activity_add_edit_recipe);
         Objects.requireNonNull(this.getSupportActionBar()).setTitle(rm.getName());
 
+        addEditSetup();
+
         titleInput.setText(rm.getName());
         directionInput.setText(dm.getText());
         sourceUrlInput.setText(rm.getSource_url());
         categoryInput.setText(rm.getCategory());
 
         if (rm.getServings() != null){
-            servingsInput.setText(String.format(String.valueOf(rm.getServings())));
+            String servingStr = String.format(String.valueOf(rm.getServings()));
+            if (Integer.valueOf(servingStr.split("\\.")[1]) != 0){
+                servingsInput.setText(servingStr);
+            } else {
+                servingsInput.setText(servingStr.split("\\.")[0]);
+            }
         }
 
         StringBuilder ingredientSb = new StringBuilder();
         for (IngredientsModel im : ims){
             ingredientSb.append(im.getText());
-            ingredientSb.append("\n");
+            ingredientSb.append(System.lineSeparator());
         }
         ingredientSb.deleteCharAt(ingredientSb.length() - 1);
         ingredientInput.setText(ingredientSb);
 
-//        tla = new TagViewAdapter(this, new ArrayList<>(tms));
-
+        mutable_tms.setValue(tms);
     }
 
     private void ensurePaddedSeparator(){
@@ -429,9 +479,7 @@ public class AddEditRecipe extends AppCompatActivity {
     public void onRecipeSaved(RecipeSavedEvent recipeSavedEvent){
         Log.i(TAG, "EVENT IS: " + recipeSavedEvent.recipeAdded);
         if(recipeSavedEvent.recipeAdded){
-            Intent intent = new Intent();
-            intent.putExtra("requestCode", MainActivity.ADD_EDIT_ACTIVITY_REQUEST_CODE);
-            setResult(Activity.RESULT_OK, intent);
+            setResult(Activity.RESULT_OK);
             finish();
         } else {
             Toast.makeText(this, getString(R.string.recipe_save_failed), Toast.LENGTH_LONG).show();

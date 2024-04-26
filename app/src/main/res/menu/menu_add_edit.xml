@@ -9,7 +9,7 @@
         android:id="@+id/save_recipe_btn"
         android:icon="@drawable/ic_baseline_save_24"
         android:orderInCategory="10"
-        android:title="@string/search_btn_title"
+        android:title="@string/recipe_save_action"
         app:showAsAction="withText|always" />
 
 </menu>

@@ -49,6 +49,7 @@
     <string name="recipe_tag_already_exists">This recipe already has that tag</string>
     <string name="recipe_save_missing_req">Please fill out the required fields</string>
     <string name="recipe_save_failed">Something went wrong when trying to save, restart the app and try again</string>
+    <string name="recipe_save_action">Save</string>
 
     <!-- Other -->
     <string name="database_name">recipeBookDatabase</string>
