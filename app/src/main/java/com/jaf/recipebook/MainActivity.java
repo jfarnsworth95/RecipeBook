@@ -69,14 +69,14 @@ public class MainActivity extends AppCompatActivity {
 
         btnAddRecipe = findViewById(R.id.btnMainTest);
         btnAddRecipe.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, AddEditRecipe.class);
+            Intent intent = new Intent(MainActivity.this, AddEditRecipeActivity.class);
             addEditActivityResultLauncher.launch(intent);
         });
 
         btnEditLastRecipe = findViewById(R.id.btnEditLastRecipe);
         btnEditLastRecipe.setEnabled(false);
         btnEditLastRecipe.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, AddEditRecipe.class);
+            Intent intent = new Intent(MainActivity.this, AddEditRecipeActivity.class);
             intent.putExtra("recipe_id", lastRecipeId);
             addEditActivityResultLauncher.launch(intent);
         });
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         btnViewLastRecipe = findViewById(R.id.btnViewLastRecipe);
         btnViewLastRecipe.setEnabled(false);
         btnViewLastRecipe.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, AddEditRecipe.class);
+            Intent intent = new Intent(MainActivity.this, AddEditRecipeActivity.class);
             intent.putExtra("recipe_id", lastRecipeId);
             addEditActivityResultLauncher.launch(intent);
         });

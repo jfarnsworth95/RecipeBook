@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RecipeBook">
         <activity
+            android:name=".ViewRecipeActivity"
+            android:exported="false" />
+        <activity
             android:name=".DriveSettingsActivity"
             android:exported="false"
             android:parentActivityName=".SettingsActivity" />
@@ -20,7 +23,7 @@
             android:exported="false"
             android:parentActivityName=".MainActivity" />
         <activity
-            android:name=".AddEditRecipe"
+            android:name=".AddEditRecipeActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
         <activity

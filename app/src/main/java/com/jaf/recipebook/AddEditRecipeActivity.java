@@ -7,11 +7,9 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,13 +23,11 @@ import android.widget.Toast;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import com.jaf.recipebook.db.FullRecipeTuple;
 import com.jaf.recipebook.db.RecipeBookDatabase;
 import com.jaf.recipebook.db.RecipeBookRepo;
 import com.jaf.recipebook.db.directions.DirectionsModel;
 import com.jaf.recipebook.db.ingredients.IngredientsModel;
-import com.jaf.recipebook.db.recipes.RecipeDao;
 import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.db.tags.TagsModel;
 import com.jaf.recipebook.events.RecipeSavedEvent;
@@ -49,7 +45,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
-public class AddEditRecipe extends AppCompatActivity {
+public class AddEditRecipeActivity extends AppCompatActivity {
     final String TAG = "JAF-AddEditRecipe";
 
     long recipeId;
@@ -342,7 +338,7 @@ public class AddEditRecipe extends AppCompatActivity {
                 if (Pattern.compile("^\\s*$").matcher(tagText).find()) {
                     return false;
                 } else if (tagInList(tagText)){
-                    Toast.makeText(AddEditRecipe.this, getString(R.string.recipe_tag_already_exists), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AddEditRecipeActivity.this, getString(R.string.recipe_tag_already_exists), Toast.LENGTH_SHORT).show();
                     return false;
                 }
                 ArrayList<TagsModel> newArray = new ArrayList<>(Objects.requireNonNull(mutable_tms.getValue()));

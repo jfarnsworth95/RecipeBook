@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.jaf.recipebook.AddEditRecipe">
+    tools:context="com.jaf.recipebook.AddEditRecipeActivity">
 
     <item
         android:id="@+id/save_recipe_btn"
