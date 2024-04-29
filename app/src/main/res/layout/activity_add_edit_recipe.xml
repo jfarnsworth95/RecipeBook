@@ -22,43 +22,64 @@
             android:orientation="vertical">
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/textInput_RecipeServings"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="24dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textInput_RecipeDirections">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/textInput_RecipeServingsInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/recipe_servings_hint"
-                    android:inputType="numberDecimal"
-                    android:singleLine="true" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/textInput_RecipeCategory"
+                android:id="@+id/textInput_RecipeTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="16dp"
-                android:paddingBottom="48dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textInput_RecipeSourceUrl">
+                app:layout_constraintTop_toTopOf="parent">
 
-                <androidx.appcompat.widget.AppCompatAutoCompleteTextView
-                    style="@style/Widget.MaterialComponents.AutoCompleteTextView.FilledBox"
-                    android:hint="@string/recipe_category_hint"
-                    android:id="@+id/textInput_RecipeCategoryInput"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInput_RecipeTitleInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text|textAutoCorrect|textCapSentences|textCapWords"/>
+                    android:hint="@string/recipe_title_hint"
+                    android:inputType="text|textCapSentences"
+                    android:singleLine="true"
+                    tools:text="My Title"/>
             </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInput_RecipeTags"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textInput_RecipeTitle">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInput_RecipeTagsInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/recipe_add_tags_hint"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:inputType="text|textCapSentences|textCapWords" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/chipLayout_recipeTags"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:divider="@color/transparent"
+                android:orientation="horizontal"
+
+                app:layoutManager="com.google.android.flexbox.FlexboxLayoutManager"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textInput_RecipeTags"
+                tools:itemCount="10"
+                tools:listitem="@layout/edit_chip"
+                tools:orientation="horizontal" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInput_RecipeIngredients"
@@ -100,23 +121,23 @@
                     android:singleLine="false" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/chipLayout_recipeTags"
-                android:layout_width="0dp"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInput_RecipeServings"
+                android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="16dp"
-                android:divider="@color/transparent"
-                android:orientation="horizontal"
-
-                app:layoutManager="com.google.android.flexbox.FlexboxLayoutManager"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="24dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textInput_RecipeTags"
-                tools:itemCount="10"
-                tools:listitem="@layout/chip"
-                tools:orientation="horizontal" />
+                app:layout_constraintTop_toBottomOf="@+id/textInput_RecipeDirections">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInput_RecipeServingsInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/recipe_servings_hint"
+                    android:inputType="numberDecimal"
+                    android:singleLine="true" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInput_RecipeSourceUrl"
@@ -139,45 +160,24 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/textInput_RecipeTitle"
+                android:id="@+id/textInput_RecipeCategory"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="16dp"
+                android:paddingBottom="48dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toBottomOf="@+id/textInput_RecipeSourceUrl">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/textInput_RecipeTitleInput"
+                <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+                    style="@style/Widget.MaterialComponents.AutoCompleteTextView.FilledBox"
+                    android:hint="@string/recipe_category_hint"
+                    android:id="@+id/textInput_RecipeCategoryInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/recipe_title_hint"
-                    android:inputType="text|textCapSentences"
-                    android:singleLine="true"
-                    tools:text="My Title"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/textInput_RecipeTags"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginEnd="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textInput_RecipeTitle">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/textInput_RecipeTagsInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/recipe_add_tags_hint"
-                    android:singleLine="true"
-                    android:imeOptions="actionDone"
-                    android:inputType="text|textCapSentences|textCapWords" />
+                    android:inputType="text|textAutoCorrect|textCapSentences|textCapWords"/>
             </com.google.android.material.textfield.TextInputLayout>
 
 

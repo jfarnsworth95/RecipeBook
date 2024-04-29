@@ -51,6 +51,14 @@
     <string name="recipe_save_failed">Something went wrong when trying to save, restart the app and try again</string>
     <string name="recipe_save_action">Save</string>
 
+    <!-- View Page Strings -->
+    <string name="recipe_view_servings"><i>Servings</i></string>
+    <string name="recipe_view_ingredients"><i>Ingredients</i></string>
+    <string name="recipe_view_directions"><i>Directions</i></string>
+    <string name="recipe_view_tags"><i>Tags</i></string>
+    <string name="recipe_view_source_url"><i>Source</i></string>
+    <string name="recipe_view_category"><i>Category</i></string>
+
     <!-- Other -->
     <string name="database_name">recipeBookDatabase</string>
     <string name="default_loading_string">Loading…</string>
