@@ -18,7 +18,11 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="24dp"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="0dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="12dp"
+            android:paddingBottom="48dp"
             android:orientation="vertical">
 
             <LinearLayout
@@ -33,7 +37,9 @@
                     android:id="@+id/view_ingredients_header"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
                     android:text="@string/recipe_view_ingredients"
+                    android:textSize="16sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
                 <com.google.android.material.textview.MaterialTextView
@@ -58,9 +64,11 @@
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/view_directions_header"
+                    android:layout_marginBottom="8dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/recipe_view_directions"
+                    android:textSize="16sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
                 <com.google.android.material.textview.MaterialTextView
@@ -75,56 +83,71 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/view_servings_container"
-                android:layout_marginTop="16dp"
-                android:layout_width="100dp"
+                android:id="@+id/view_servings_source_container"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/view_directions_container"
-                android:orientation="vertical" >
+                android:orientation="horizontal">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/view_servings_header"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/recipe_view_servings"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/view_servings_body"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="0dp"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/view_servings_container"
+                    android:layout_marginTop="16dp"
+                    android:layout_width="100dp"
                     android:layout_height="wrap_content"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/view_servings_header" />
+                    app:layout_constraintTop_toBottomOf="@+id/view_directions_container"
+                    android:orientation="vertical" >
 
-            </LinearLayout>
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/view_servings_header"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/recipe_view_servings"
+                        android:textSize="16sp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/view_servings_body"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="0dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/view_servings_header" />
 
-            <LinearLayout
-                android:id="@+id/view_source_container"
-                android:layout_marginTop="16dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toEndOf="@+id/view_servings_container"
-                app:layout_constraintTop_toBottomOf="@+id/view_directions_container"
-                android:orientation="vertical" >
+                </LinearLayout>
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/view_source_url_header"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/view_source_container"
+                    android:layout_marginTop="16dp"
+                    android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/recipe_view_source_url"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/view_source_url_body"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="0dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/view_source_url_header" />
+                    app:layout_constraintStart_toEndOf="@+id/view_servings_container"
+                    app:layout_constraintTop_toBottomOf="@+id/view_directions_container"
+                    android:orientation="vertical" >
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/view_source_url_header"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/recipe_view_source_url"
+                        android:textSize="16sp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/view_source_url_body"
+                        android:autoLink="web"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="4dp"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/view_source_url_header" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -134,8 +157,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="@string/recipe_view_tags"
+                android:textSize="16sp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/view_source_container" />
+                app:layout_constraintTop_toBottomOf="@+id/view_servings_source_container" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/view_chipLayout_RecipeTags"
@@ -143,7 +167,7 @@
                 android:paddingEnd="0dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="0dp"
                 android:divider="@color/transparent"
                 android:orientation="horizontal"
 
@@ -158,20 +182,24 @@
                 android:id="@+id/view_category_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/view_chipLayout_RecipeTags"
                 android:orientation="vertical" >
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/view_category_header"
+                    android:layout_marginBottom="8dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/recipe_view_category"
+                    android:textSize="16sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/view_category_body"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="0dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:layout_constraintStart_toStartOf="parent"

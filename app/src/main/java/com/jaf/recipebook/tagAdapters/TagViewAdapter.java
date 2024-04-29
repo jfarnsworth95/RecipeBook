@@ -16,19 +16,16 @@ public class TagViewAdapter extends ListAdapter<TagsModel, TagViewHolder> {
 
     public TagViewAdapter(@NonNull DiffUtil.ItemCallback<TagsModel> diffCallback, View.OnClickListener tagClickListener) {
         super(diffCallback);
-        Log.i(TAG, "INIT");
         this.tagClickListener = tagClickListener;
     }
 
     @Override
     public TagViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Log.i(TAG, "onCreateViewHolder");
-        return TagViewHolder.create(parent);
+        return TagViewHolder.create(parent, (tagClickListener == null));
     }
 
     @Override
     public void onBindViewHolder(TagViewHolder holder, int position) {
-        Log.i(TAG, "onBindViewHolder");
         TagsModel current = getItem(position);
         holder.bind(current.getTag());
         holder.itemView.setOnClickListener(tagClickListener);
@@ -38,15 +35,11 @@ public class TagViewAdapter extends ListAdapter<TagsModel, TagViewHolder> {
 
         @Override
         public boolean areItemsTheSame(@NonNull TagsModel oldItem, @NonNull TagsModel newItem) {
-            Log.i(TAG, "areItemsTheSame");
-            Log.i(TAG, String.valueOf(oldItem == newItem));
             return oldItem == newItem;
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull TagsModel oldItem, @NonNull TagsModel newItem) {
-            Log.i(TAG, "areContentsTheSame");
-            Log.i(TAG, String.valueOf(oldItem.getTag().equals(newItem.getTag())));
             return oldItem.getTag().equals(newItem.getTag());
         }
     }

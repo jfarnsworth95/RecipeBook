@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     public Button btnViewLastRecipe;
 
     private long lastRecipeId;
+    private String lastRecipeName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +68,16 @@ public class MainActivity extends AppCompatActivity {
             }
         );
 
+        ActivityResultLauncher<Intent> viewActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(), o -> {
+                    if (o.getResultCode() == Activity.RESULT_OK){
+                        Toast.makeText(this, "We done.", Toast.LENGTH_SHORT).show();
+                    } else if (o.getResultCode() == GeneralHelper.ACTIVITY_RESULT_DB_ERROR) {
+                        Toast.makeText(this, getString(R.string.failed_to_open_recipe), Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+
         btnAddRecipe = findViewById(R.id.btnMainTest);
         btnAddRecipe.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddEditRecipeActivity.class);
@@ -84,8 +95,9 @@ public class MainActivity extends AppCompatActivity {
         btnViewLastRecipe = findViewById(R.id.btnViewLastRecipe);
         btnViewLastRecipe.setEnabled(false);
         btnViewLastRecipe.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, AddEditRecipeActivity.class);
+            Intent intent = new Intent(MainActivity.this, ViewRecipeActivity.class);
             intent.putExtra("recipe_id", lastRecipeId);
+            intent.putExtra("recipe_name", lastRecipeName);
             addEditActivityResultLauncher.launch(intent);
         });
 
@@ -169,7 +181,8 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<RecipesModel> rms = new ArrayList<>(rbd.recipeDao().getAllRecipes());
             Log.i(TAG, "QUERY RESULT SIZE: " + rms.size());
             if (rms.size() > 0) {
-                lastRecipeId = rms.get(rms.size() - 1).getId();
+                lastRecipeId = rms.get(0).getId();
+                lastRecipeName = rms.get(0).getName();
                 runOnUiThread(() -> {
                     btnViewLastRecipe.setEnabled(true);
                     btnEditLastRecipe.setEnabled(true);

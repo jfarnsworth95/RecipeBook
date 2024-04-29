@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.jaf.recipebook.ViewRecipeActivity">
+
+    <item
+        android:id="@+id/edit_recipe_btn"
+        android:icon="@drawable/baseline_edit_24"
+        android:orderInCategory="10"
+        android:title="@string/recipe_save_action"
+        app:showAsAction="withText|always" />
+
+</menu>

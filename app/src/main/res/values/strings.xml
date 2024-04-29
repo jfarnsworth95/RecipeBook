@@ -52,12 +52,12 @@
     <string name="recipe_save_action">Save</string>
 
     <!-- View Page Strings -->
-    <string name="recipe_view_servings"><i>Servings</i></string>
-    <string name="recipe_view_ingredients"><i>Ingredients</i></string>
-    <string name="recipe_view_directions"><i>Directions</i></string>
-    <string name="recipe_view_tags"><i>Tags</i></string>
-    <string name="recipe_view_source_url"><i>Source</i></string>
-    <string name="recipe_view_category"><i>Category</i></string>
+    <string name="recipe_view_servings"><b><i>Servings</i></b></string>
+    <string name="recipe_view_ingredients"><b><i>Ingredients</i></b></string>
+    <string name="recipe_view_directions"><b><i>Directions</i></b></string>
+    <string name="recipe_view_tags"><b><i>Tags</i></b></string>
+    <string name="recipe_view_source_url"><b><i>Source</i></b></string>
+    <string name="recipe_view_category"><b><i>Category</i></b></string>
 
     <!-- Other -->
     <string name="database_name">recipeBookDatabase</string>

@@ -180,29 +180,22 @@ public class AddEditRecipeActivity extends AppCompatActivity {
      */
     private void setupChipRecycler(){
         final TagViewAdapter tla = new TagViewAdapter(new TagViewAdapter.TagDiff(),
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String tagText = ((Chip) v).getText().toString();
-                        ArrayList<TagsModel> newArray = new ArrayList<>(mutable_tms.getValue());
-                        TagsModel tagToRemove = null;
-                        for (TagsModel tag: newArray){
-                            if (tag.getTag().equals(tagText)){
-                                tagToRemove = tag;
-                                break;
-                            }
-                        }
-                        newArray.remove(tagToRemove);
-                        mutable_tms.setValue(newArray);
+            v -> {
+                String tagText = ((Chip) v).getText().toString();
+                ArrayList<TagsModel> newArray = new ArrayList<>(mutable_tms.getValue());
+                TagsModel tagToRemove = null;
+                for (TagsModel tag: newArray){
+                    if (tag.getTag().equals(tagText)){
+                        tagToRemove = tag;
+                        break;
                     }
-                });
+                }
+                newArray.remove(tagToRemove);
+                mutable_tms.setValue(newArray);
+            });
         chipGroup.setAdapter(tla);
         chipGroup.setClickable(true);
-        mutable_tms.observe(this, tags -> {
-            Log.i(TAG, "OBSERVE TRIGGERED");
-            Log.i(TAG, tags.toString());
-            tla.submitList(tags);
-        });
+        mutable_tms.observe(this, tla::submitList);
     }
 
     private void createFlashAnimation(){
@@ -237,6 +230,10 @@ public class AddEditRecipeActivity extends AppCompatActivity {
         switch(item.getItemId()) {
             case R.id.save_recipe_btn:
                 onSave();
+                return true;
+
+            case android.R.id.home:
+                finish();
                 return true;
 
             default:
