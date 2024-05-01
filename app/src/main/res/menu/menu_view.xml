@@ -9,7 +9,13 @@
         android:id="@+id/edit_recipe_btn"
         android:icon="@drawable/baseline_edit_24"
         android:orderInCategory="10"
-        android:title="@string/recipe_save_action"
-        app:showAsAction="withText|always" />
+        android:title="@string/recipe_edit_action"
+        app:showAsAction="withText|ifRoom" />
+    <item
+        android:id="@+id/view_recipe_more_options"
+        android:icon="@drawable/baseline_more_vert_24dp"
+        android:orderInCategory="11"
+        android:title="@string/more_options_action"
+        app:showAsAction="withText|ifRoom" />
 
 </menu>

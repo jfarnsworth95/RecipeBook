@@ -4,23 +4,31 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.jaf.recipebook.R;
+import com.jaf.recipebook.db.directions.DirectionsModel;
+import com.jaf.recipebook.db.ingredients.IngredientsModel;
+import com.jaf.recipebook.db.recipes.RecipesModel;
+import com.jaf.recipebook.db.tags.TagsModel;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
-
-import javax.annotation.Nullable;
 
 public class FileHelper {
 
@@ -31,6 +39,13 @@ public class FileHelper {
     public final String TAG = "JAF-FileHelper";
 
     public final int EXTERNAL_STORAGE_PREFERENCE = 0;
+    public final String JSON_NAME = "NAME";
+    public final String JSON_INGREDIENTS = "INGREDIENTS";
+    public final String JSON_DIRECTIONS = "DIRECTIONS";
+    public final String JSON_SERVINGS = "SERVINGS";
+    public final String JSON_SOURCE_URL = "SOURCE_URL";
+    public final String JSON_TAGS = "TAGS";
+    public final String JSON_CATEGORY = "CATEGORY";
 
     public FileHelper(Context context){
         this.context = context;
@@ -250,6 +265,70 @@ public class FileHelper {
         // Record all the failures and log it for future reference, if needed.
         if (failures.size() > 0){
             Log.e(TAG, "validateRecipeFileFormat: Invalid file found. Reasons follow...\n" + failures);
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean saveRecipeToDownloads(RecipesModel rm, List<IngredientsModel> ims, DirectionsModel dm, List<TagsModel> tms){
+        // Expected File Structure:
+        //  {
+        //      "NAME": STRING,
+        //      "INGREDIENTS": [
+        //	    	"MEASUREMENT & INGREDIENT NAME",
+        //	    	"MEASUREMENT & INGREDIENT NAME",
+        //	    	"" <!-- SPACER ROW FOR DISPLAY PURPOSES -->
+        //	    	"MEASUREMENT & INGREDIENT NAME",
+        //	    	...
+        //	    ],
+        //      "DIRECTIONS": "PLAIN TEXT DIRECTIONS",
+        //      "SERVINGS": DOUBLE, *OPTIONAL*
+        //      "SOURCE_URL": STRING URL, *OPTIONAL*
+        //      "TAGS": ["TAG 1", "TAG 2", ... "TAG N"], *OPTIONAL*
+        //      "CATEGORY": STRING *OPTIONAL*
+        //  }
+
+        JsonArray ingredientJsonList = new JsonArray();
+        for (IngredientsModel im : ims){
+            ingredientJsonList.add(im.getText());
+        }
+
+        JsonArray tagsJsonList = new JsonArray();
+        for (TagsModel tm : tms){
+            tagsJsonList.add(tm.getTag());
+        }
+
+        String filename = rm.getName().replaceAll("[^a-zA-Z0-9\\-]", "_");
+        JsonObject json = new JsonObject();
+        json.addProperty(JSON_NAME, rm.getName());
+        json.add(JSON_INGREDIENTS, ingredientJsonList);
+        json.addProperty(JSON_DIRECTIONS, dm.getText());
+
+        if (rm.getServings() != null){
+            json.addProperty(JSON_SERVINGS, rm.getServings());
+        }
+        if (rm.getSource_url() != null){
+            json.addProperty(JSON_SOURCE_URL, rm.getSource_url());
+        }
+        if (tms != null && !tms.isEmpty()){
+            json.add(JSON_TAGS, tagsJsonList);
+        }
+        if (rm.getCategory() != null){
+            json.addProperty(JSON_CATEGORY, rm.getCategory());
+        }
+
+        File newRpFile = new File(getDownloadsDir().getPath() + "/" + filename + "." + context.getString(R.string.recipe_file_extension));
+        try {
+            if (newRpFile.createNewFile()){
+                FileWriter fw = new FileWriter(newRpFile);
+                fw.write(json.toString());
+                fw.close();
+
+                Toast.makeText(context, context.getString(R.string.saved_recipe_in_downloads), Toast.LENGTH_LONG).show();
+            }
+        } catch (IOException e) {
+            Toast.makeText(context, context.getString(R.string.failed_to_open_recipe), Toast.LENGTH_LONG).show();
             return false;
         }
 

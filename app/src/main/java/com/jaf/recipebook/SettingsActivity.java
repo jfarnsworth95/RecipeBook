@@ -206,7 +206,7 @@ public class SettingsActivity extends AppCompatActivity {
             // Create Recipe Model
             Float servings = null;
             if (jsonData.containsKey("SERVINGS")){
-                servings = (float) jsonData.get("SERVINGS");
+                servings = ((Double) jsonData.get("SERVINGS")).floatValue();
             }
             String category = null;
             if (jsonData.containsKey("CATEGORY")){
@@ -274,24 +274,9 @@ public class SettingsActivity extends AppCompatActivity {
             if (!fileHelper.validateRecipeFileFormat(potentialImport)){
                 invalidImports.put(potentialImport, "The file structure is corrupted, and can't be imported.");
             }
-            if (checkForName(potentialImport)){
-                invalidImports.put(potentialImport, "A recipe by that name already exists.");
-                continue;
-            }
         }
 
         return invalidImports;
-    }
-
-    private boolean checkForName(File potentialImportFile) {
-        try {
-            HashMap<String, Object> jsonData =
-                    new Gson().fromJson(fileHelper.readFile(potentialImportFile), HashMap.class);
-            return currentRecipes.contains((String) jsonData.get("NAME"));
-        } catch (Exception ex){
-            Log.e(TAG, "validateRecipeFileFormat: Failed to interpret JSON content.", ex);
-            return false;
-        }
     }
 
     /**
@@ -321,7 +306,7 @@ public class SettingsActivity extends AppCompatActivity {
         // inflate the layout of the popup window
         LayoutInflater inflater = (LayoutInflater)
                 getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popupView = inflater.inflate(R.layout.import_files_popup, null);
+        View popupView = inflater.inflate(R.layout.popup_import_files, null);
         popupView.setBackground(this.getDrawable(android.R.drawable.picture_frame));
 
         // create the popup window

@@ -44,7 +44,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/view_ingredients_body"
-                    android:paddingStart="8dp"
+                    android:paddingStart="4dp"
                     android:paddingEnd="0dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -73,7 +73,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/view_directions_body"
-                    android:paddingStart="8dp"
+                    android:paddingStart="4dp"
                     android:paddingEnd="0dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -109,7 +109,7 @@
                         app:layout_constraintTop_toTopOf="parent" />
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/view_servings_body"
-                        android:paddingStart="8dp"
+                        android:paddingStart="4dp"
                         android:paddingEnd="0dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -138,7 +138,7 @@
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/view_source_url_body"
                         android:autoLink="web"
-                        android:paddingStart="8dp"
+                        android:paddingStart="4dp"
                         android:paddingEnd="4dp"
                         android:singleLine="true"
                         android:ellipsize="end"
@@ -163,7 +163,7 @@
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/view_chipLayout_RecipeTags"
-                android:paddingStart="8dp"
+                android:paddingStart="4dp"
                 android:paddingEnd="0dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -198,7 +198,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/view_category_body"
-                    android:paddingStart="8dp"
+                    android:paddingStart="4dp"
                     android:paddingEnd="0dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

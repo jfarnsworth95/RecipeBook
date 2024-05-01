@@ -29,6 +29,7 @@ import com.jaf.recipebook.events.DriveDataDeletedEvent;
 import com.jaf.recipebook.events.DriveDbLastModifiedEvent;
 import com.jaf.recipebook.events.DriveUploadCompeleteEvent;
 import com.jaf.recipebook.helpers.DriveServiceHelper;
+import com.jaf.recipebook.helpers.GeneralHelper;
 import com.jaf.recipebook.helpers.GoogleSignInHelper;
 
 import org.greenrobot.eventbus.EventBus;
@@ -144,39 +145,14 @@ public class DriveSettingsActivity extends AppCompatActivity {
     }
 
     private void spawnWarningPopup(View view){
-        LayoutInflater inflater = (LayoutInflater)
-                getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popupView = inflater.inflate(R.layout.drive_deletion_warning_popup, null);
-        popupView.setBackground(this.getDrawable(android.R.drawable.picture_frame));
+        PopupWindow popupWindow = GeneralHelper.popupInflator(this, view, R.layout.popup_drive_deletion_warning);
 
-        // create the popup window
-        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
-        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
-        popupWindow.setElevation(10); // Adds shadow to popup
-
-        // show the popup window
-        // which view you pass in doesn't matter, it is only used for the window tolken
-        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
-
-        // dismiss the popup window when touched
-        popupView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                popupWindow.dismiss();
-                return true;
-            }
-        });
-
-        popupView.findViewById(R.id.delete_drive_data_final_btn).setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                Toast.makeText(view.getContext(), "Deleting...", Toast.LENGTH_LONG).show();
-                mDriveServiceHelper.delete();
-                setPendingState(true);
-                popupWindow.dismiss();
-                return false;
-            }
+        popupWindow.getContentView().findViewById(R.id.delete_drive_data_final_btn).setOnLongClickListener(v -> {
+            Toast.makeText(v.getContext(), "Deleting...", Toast.LENGTH_LONG).show();
+            mDriveServiceHelper.delete();
+            setPendingState(true);
+            popupWindow.dismiss();
+            return false;
         });
     }
 

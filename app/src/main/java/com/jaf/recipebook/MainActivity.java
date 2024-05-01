@@ -17,7 +17,9 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.jaf.recipebook.db.RecipeBookDatabase;
@@ -177,17 +179,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void TEST_METHOD_REMOVE_LATER(){
+
         rbd.getQueryExecutor().execute(() -> {
             ArrayList<RecipesModel> rms = new ArrayList<>(rbd.recipeDao().getAllRecipes());
             Log.i(TAG, "QUERY RESULT SIZE: " + rms.size());
             if (rms.size() > 0) {
-                lastRecipeId = rms.get(0).getId();
-                lastRecipeName = rms.get(0).getName();
+                lastRecipeId = rms.get(1).getId();
+                lastRecipeName = rms.get(1).getName();
                 runOnUiThread(() -> {
                     btnViewLastRecipe.setEnabled(true);
                     btnEditLastRecipe.setEnabled(true);
                 });
             }
+//            RecipesModel rm = rbd.recipeDao().getRecipe(11).blockingGet();
+//            lastRecipeId = rm.getId();
+//            lastRecipeName = rm.getName();
+//            runOnUiThread(() -> {
+//                btnViewLastRecipe.setEnabled(true);
+//                btnEditLastRecipe.setEnabled(true);
+//            });
         });
     }
 

@@ -5,6 +5,7 @@
     android:layout_width="fill_parent"
     android:layout_height="50dp"
     android:paddingHorizontal="10dp"
+    android:gravity="center"
     android:stretchColumns="1">
 
     <CheckBox
@@ -19,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_column="1"
-        android:text="TextView" />
+        android:layout_marginEnd="4dp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/import_error_tooltip_btn"

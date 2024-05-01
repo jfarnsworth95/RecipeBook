@@ -1,28 +1,30 @@
 package com.jaf.recipebook;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.chip.Chip;
 import com.google.android.material.textview.MaterialTextView;
 import com.jaf.recipebook.db.FullRecipeTuple;
 import com.jaf.recipebook.db.RecipeBookDatabase;
@@ -31,6 +33,7 @@ import com.jaf.recipebook.db.directions.DirectionsModel;
 import com.jaf.recipebook.db.ingredients.IngredientsModel;
 import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.db.tags.TagsModel;
+import com.jaf.recipebook.helpers.FileHelper;
 import com.jaf.recipebook.helpers.GeneralHelper;
 import com.jaf.recipebook.tagAdapters.TagViewAdapter;
 
@@ -40,6 +43,8 @@ import java.util.Objects;
 
 public class ViewRecipeActivity extends AppCompatActivity {
     final String TAG = "JAF-ViewRecipe";
+
+    FileHelper fh;
 
     long recipeId;
     String recipeName;
@@ -65,6 +70,9 @@ public class ViewRecipeActivity extends AppCompatActivity {
     LinearLayout categoryLl;
     MaterialTextView tagsHeaderTv;
 
+    AlertDialog moreOptionsDialog;
+    AlertDialog deleteConfirmationDialog;
+
     private ActivityResultLauncher<Intent> addEditActivityResultLauncher;
     private MutableLiveData<List<TagsModel>> mutable_tms = new MutableLiveData<>(new ArrayList<>());
     private Handler mainHandler;
@@ -77,7 +85,11 @@ public class ViewRecipeActivity extends AppCompatActivity {
         recipeId = getIntent().getLongExtra("recipe_id", -1);
         recipeName = getIntent().getStringExtra("recipe_name");
 
+        fh = new FileHelper(this);
         Objects.requireNonNull(this.getSupportActionBar()).setTitle(recipeName);
+
+        moreOptionsDialog = setupMoreOptionsDialog();
+        deleteConfirmationDialog = setupDeleteRecipeConfirmationDialog();
 
         prepareRegisterForEditActivity();
     }
@@ -103,6 +115,10 @@ public class ViewRecipeActivity extends AppCompatActivity {
                 Intent intent = new Intent(ViewRecipeActivity.this, AddEditRecipeActivity.class);
                 intent.putExtra("recipe_id", recipeId);
                 addEditActivityResultLauncher.launch(intent);
+                return true;
+
+            case R.id.view_recipe_more_options:
+                moreOptionsDialog.show();
                 return true;
 
             default:
@@ -138,6 +154,41 @@ public class ViewRecipeActivity extends AppCompatActivity {
         sourceLl = findViewById(R.id.view_source_container);
         categoryLl = findViewById(R.id.view_category_container);
         tagsHeaderTv = findViewById(R.id.view_tags_header);
+    }
+
+    private void setupChipRecycler(){
+        final TagViewAdapter tla = new TagViewAdapter(new TagViewAdapter.TagDiff(), null);
+        tagRecyclerView.setAdapter(tla);
+        tagRecyclerView.setClickable(false);
+        mutable_tms.observe(this, tla::submitList);
+    }
+
+    private AlertDialog setupDeleteRecipeConfirmationDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.dialog_recipe_view_delete_confirmation)
+                .setPositiveButton(R.string.affirmative_text, (dialog, which) -> {
+                    deleteRecipe();
+                })
+                .setNegativeButton(R.string.negative_text, (dialog, which) -> {
+                });
+        return builder.create();
+    }
+
+    private AlertDialog setupMoreOptionsDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.more_options_action)
+                .setItems(R.array.view_recipe_more_options_array, (dialog, which) -> {
+                    switch(which){
+                        case 0: // Save to Downloads
+                            fh.saveRecipeToDownloads(rm, ims, dm, tms);
+                            break;
+
+                        case 1: // Delete Recipe
+                            deleteConfirmationDialog.show();
+                            break;
+                    }
+                });
+        return builder.create();
     }
 
     private void refreshData(){
@@ -223,10 +274,12 @@ public class ViewRecipeActivity extends AppCompatActivity {
         }
     }
 
-    private void setupChipRecycler(){
-        final TagViewAdapter tla = new TagViewAdapter(new TagViewAdapter.TagDiff(), null);
-        tagRecyclerView.setAdapter(tla);
-        tagRecyclerView.setClickable(false);
-        mutable_tms.observe(this, tla::submitList);
+    private void deleteRecipe(){
+        setContentView(R.layout.activity_is_loading);
+        rbdb.getQueryExecutor().execute(() -> {
+            rbr.deleteRecipe(rm);
+            setResult(GeneralHelper.ACTIVITY_RESULT_DELETE_RECIPE);
+            this.finish();
+        });
     }
 }
