@@ -96,9 +96,9 @@ public class DriveSettingsActivity extends AppCompatActivity {
         if (isPending){
             lastUpdatedTextView.setText(this.getString(R.string.last_synced_text));
             progressBar.setVisibility(View.VISIBLE);
-            uploadBtn.setBackgroundTintList(null);
-            downloadBtn.setBackgroundTintList(null);
-            deleteBtn.setBackgroundTintList(null);
+            uploadBtn.setBackgroundTintList(ColorStateList.valueOf(this.getColor(R.color.inactive)));
+            downloadBtn.setBackgroundTintList(ColorStateList.valueOf(this.getColor(R.color.inactive)));
+            deleteBtn.setBackgroundTintList(ColorStateList.valueOf(this.getColor(R.color.inactive)));
         } else {
             progressBar.setVisibility(View.GONE);
             uploadBtn.setBackgroundTintList(ColorStateList.valueOf(this.getColor(R.color.secondary)));
