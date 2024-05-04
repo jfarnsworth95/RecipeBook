@@ -4,6 +4,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
@@ -23,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
     ActivityResultLauncher<Intent> viewActivityResultLauncher;
 
     Button addFirstRecipeBtn;
+    ConstraintLayout searchBar;
+    EditText searchBarEditText;
     FloatingActionButton addRecipeFab;
     Fragment isLoadingFrag;
     Fragment listRecipesFrag;
@@ -125,7 +129,8 @@ public class MainActivity extends AppCompatActivity {
         listRecipesFrag = new ListRecipes();
         noSavedRecipesFrag = new NoSavedRecipes();
         searchReturnsEmptyFrag = new SearchReturnsEmpty();
-
+        searchBar = findViewById(R.id.main_search_bar);
+        searchBarEditText = findViewById(R.id.searchbar_edit_text);
     }
 
     @Override
@@ -191,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.search_btn:
                 // Open Search Bar
-                queryForRecipes("Fancy");
+                toggleSearchBarVisible();
                 return true;
 
             default:
@@ -234,13 +239,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupListRecipesListeners(){
-        addRecipeFab = listRecipesFrag.getView().findViewById(R.id.main_fab_add_recipe);
+        View listRecipesFragView = listRecipesFrag.getView();
+
+        addRecipeFab = listRecipesFragView.findViewById(R.id.main_fab_add_recipe);
         addRecipeFab.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddEditRecipeActivity.class);
             addEditActivityResultLauncher.launch(intent);
         });
 
-        mainRecyclerView = listRecipesFrag.getView().findViewById(R.id.main_recipes_recycler);
+        mainRecyclerView = listRecipesFragView.findViewById(R.id.main_recipes_recycler);
         final RecipeViewAdapter rva = new RecipeViewAdapter(new RecipeViewAdapter.RecipeDiff(), v -> {
             String id = ((TextView) v.findViewById(R.id.frag_recipe_list_row_recipe_id)).getText().toString();
             String name = ((TextView) v.findViewById(R.id.frag_recipe_list_row_text_view)).getText().toString();
@@ -347,6 +354,10 @@ public class MainActivity extends AppCompatActivity {
                     .commit();
         }
         currentFrag = swappedTo;
+    }
+
+    private void toggleSearchBarVisible(){
+        searchBar.setVisibility(searchBar.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
     }
 
 }

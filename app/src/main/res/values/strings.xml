@@ -22,6 +22,7 @@
     <string name="no_recipes_found_text">Looks like you don\'t have any recipes yet.\nTap the button below to get started!</string>
     <string name="add_recipe">Add Recipe</string>
     <string name="search_returned_empty">Looks like that search didn\'t return anything.\nTry a different word/phrase or expand where we\'re looking.</string>
+    <string name="search_for">Search for…</string>
 
     <!-- Settings Page Strings -->
     <string name="google_sign_in_header">Connect to Google Drive</string>
