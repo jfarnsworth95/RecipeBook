@@ -2,6 +2,8 @@ package com.jaf.recipebook;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -70,8 +72,6 @@ public class ViewRecipeActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> addEditActivityResultLauncher;
     private MutableLiveData<List<TagsModel>> mutable_tms = new MutableLiveData<>(new ArrayList<>());
     private Handler mainHandler;
-
-    // TODO Add copy recipe option in View Recipe Activity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,9 +179,15 @@ public class ViewRecipeActivity extends AppCompatActivity {
                             fh.saveRecipeToDownloads(rm, ims, dm, tms);
                             break;
 
-                        case 1: // Delete Recipe
+
+                        case 1: // Copy to Clipboard
+                            copyToClipboard();
+                            break;
+
+                        case 2: // Delete Recipe
                             deleteConfirmationDialog.show();
                             break;
+
                     }
                 });
         return builder.create();
@@ -268,6 +274,39 @@ public class ViewRecipeActivity extends AppCompatActivity {
             tagRecyclerView.setVisibility(View.VISIBLE);
             mutable_tms.setValue(tms);
         }
+    }
+
+    private void copyToClipboard(){
+        StringBuilder sb = new StringBuilder();
+
+        // Get Name
+        sb.append(recipeName)
+                .append(System.lineSeparator())
+                .append(System.lineSeparator());
+
+        // Insert Ingredients Header and spacing
+        sb.append(getString(R.string.recipe_view_ingredients))
+                .append(":")
+                .append(System.lineSeparator())
+                .append(System.lineSeparator());
+
+        // Get Ingredients
+        sb.append(ingredientsTv.getText().toString());
+
+        // Insert Directions Header and spacing
+        sb.append(System.lineSeparator())
+                .append(System.lineSeparator())
+                .append(getString(R.string.recipe_view_directions))
+                .append(":")
+                .append(System.lineSeparator())
+                .append(System.lineSeparator());
+
+        // Get Directions
+        sb.append(directionsTv.getText().toString());
+
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Your Recipe as Text Block", sb);
+        clipboard.setPrimaryClip(clip);
     }
 
     private void deleteRecipe(){

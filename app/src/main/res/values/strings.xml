@@ -67,6 +67,7 @@
     <!-- String Arrays for Spinner -->
     <string-array name="view_recipe_more_options_array">
         <item>Save to Downloads</item>
+        <item>Copy to Clipboard</item>
         <item>Delete Recipe</item>
     </string-array>
 

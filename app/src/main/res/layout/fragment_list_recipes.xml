@@ -24,6 +24,7 @@
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/main_fab_add_recipe"
+        android:contentDescription="@string/add_recipe"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_marginEnd="24dp"
