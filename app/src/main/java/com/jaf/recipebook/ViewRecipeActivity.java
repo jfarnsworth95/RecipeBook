@@ -2,26 +2,20 @@ package com.jaf.recipebook;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -35,7 +29,7 @@ import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.db.tags.TagsModel;
 import com.jaf.recipebook.helpers.FileHelper;
 import com.jaf.recipebook.helpers.GeneralHelper;
-import com.jaf.recipebook.tagAdapters.TagViewAdapter;
+import com.jaf.recipebook.adapters.TagViewAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +70,8 @@ public class ViewRecipeActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> addEditActivityResultLauncher;
     private MutableLiveData<List<TagsModel>> mutable_tms = new MutableLiveData<>(new ArrayList<>());
     private Handler mainHandler;
+
+    // TODO Add copy recipe option in View Recipe Activity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -197,7 +193,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
         }
         rbr = new RecipeBookRepo(rbdb);
 
-        rbdb.getQueryExecutor().execute(() -> {
+        rbdb.getTransactionExecutor().execute(() -> {
             FullRecipeTuple frt = null;
             try {
                 frt = rbr.getFullRecipeData(recipeId);
@@ -276,7 +272,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
 
     private void deleteRecipe(){
         setContentView(R.layout.activity_is_loading);
-        rbdb.getQueryExecutor().execute(() -> {
+        rbdb.getTransactionExecutor().execute(() -> {
             rbr.deleteRecipe(rm);
             setResult(GeneralHelper.ACTIVITY_RESULT_DELETE_RECIPE);
             this.finish();

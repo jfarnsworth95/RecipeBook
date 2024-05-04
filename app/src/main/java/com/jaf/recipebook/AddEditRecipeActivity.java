@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
@@ -32,7 +31,7 @@ import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.db.tags.TagsModel;
 import com.jaf.recipebook.events.RecipeSavedEvent;
 import com.jaf.recipebook.helpers.GeneralHelper;
-import com.jaf.recipebook.tagAdapters.TagViewAdapter;
+import com.jaf.recipebook.adapters.TagViewAdapter;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -207,7 +206,7 @@ public class AddEditRecipeActivity extends AppCompatActivity {
     }
 
     private void setupCategoryAutoComplete(){
-        rbdb.getQueryExecutor().execute(() -> {
+        rbdb.getTransactionExecutor().execute(() -> {
             ArrayList<String> categories = new ArrayList<>(rbdb.recipeDao().getDistinctCategories());
             categories.removeAll(Collections.singleton(null));
             ArrayAdapter<String> adapter = new ArrayAdapter<>(

@@ -30,7 +30,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
-import com.google.gson.Gson;
 import com.jaf.recipebook.db.RecipeBookDatabase;
 import com.jaf.recipebook.db.RecipeBookRepo;
 import com.jaf.recipebook.db.directions.DirectionsModel;
@@ -329,7 +328,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         for (File importableFile : imports){
-            View importFileRow = inflater.inflate(R.layout.import_file_row, null);
+            View importFileRow = inflater.inflate(R.layout.fragment_import_file_row, null);
             Button tooltipBtn = importFileRow.findViewById(R.id.import_error_tooltip_btn);
 
             if (invalidImports.containsKey(importableFile)){

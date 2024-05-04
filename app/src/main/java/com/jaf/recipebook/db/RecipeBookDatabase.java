@@ -24,7 +24,7 @@ import com.jaf.recipebook.db.tags.TagsModel;
                 TagsModel.class,
                 DirectionsModel.class,
                 IngredientsModel.class
-            }, version=5)
+            }, version=6)
 public abstract class RecipeBookDatabase extends RoomDatabase {
 
     private static RecipeBookDatabase instance;

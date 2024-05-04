@@ -1,6 +1,5 @@
-package com.jaf.recipebook.tagAdapters;
+package com.jaf.recipebook.adapters;
 
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 

@@ -78,7 +78,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textInput_RecipeTags"
                 tools:itemCount="10"
-                tools:listitem="@layout/edit_chip"
+                tools:listitem="@layout/chip_edit"
                 tools:orientation="horizontal" />
 
             <com.google.android.material.textfield.TextInputLayout

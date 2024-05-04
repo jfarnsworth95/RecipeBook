@@ -1,6 +1,5 @@
-package com.jaf.recipebook.tagAdapters;
+package com.jaf.recipebook.adapters;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,9 +30,9 @@ public class TagViewHolder extends RecyclerView.ViewHolder {
     static TagViewHolder create(ViewGroup parent, boolean isViewOnly) {
         int layoutInt;
         if (isViewOnly){
-            layoutInt = R.layout.view_chip;
+            layoutInt = R.layout.chip_view;
         } else {
-            layoutInt = R.layout.edit_chip;
+            layoutInt = R.layout.chip_edit;
         }
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(layoutInt, parent, false);

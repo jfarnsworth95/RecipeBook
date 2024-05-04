@@ -1,0 +1,177 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 6,
+    "identityHash": "595fb0149817416d7e25fc3c6362e7ff",
+    "entities": [
+      {
+        "tableName": "recipes",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT, `category` TEXT, `servings` REAL, `source_url` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "servings",
+            "columnName": "servings",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "source_url",
+            "columnName": "source_url",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "tags",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recipe_id` INTEGER NOT NULL, `tag` TEXT NOT NULL, PRIMARY KEY(`recipe_id`, `tag`))",
+        "fields": [
+          {
+            "fieldPath": "recipe_id",
+            "columnName": "recipe_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tag",
+            "columnName": "tag",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "recipe_id",
+            "tag"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_tags_recipe_id_tag",
+            "unique": true,
+            "columnNames": [
+              "recipe_id",
+              "tag"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_tags_recipe_id_tag` ON `${TABLE_NAME}` (`recipe_id`, `tag`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "directions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recipe_id` INTEGER NOT NULL, `text` TEXT NOT NULL, PRIMARY KEY(`recipe_id`, `text`))",
+        "fields": [
+          {
+            "fieldPath": "recipe_id",
+            "columnName": "recipe_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "recipe_id",
+            "text"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_directions_recipe_id",
+            "unique": true,
+            "columnNames": [
+              "recipe_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_directions_recipe_id` ON `${TABLE_NAME}` (`recipe_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "ingredients",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recipe_id` INTEGER NOT NULL, `order_id` INTEGER NOT NULL, `text` TEXT NOT NULL, PRIMARY KEY(`recipe_id`, `order_id`))",
+        "fields": [
+          {
+            "fieldPath": "recipe_id",
+            "columnName": "recipe_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "order_id",
+            "columnName": "order_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "recipe_id",
+            "order_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_ingredients_recipe_id_order_id",
+            "unique": true,
+            "columnNames": [
+              "recipe_id",
+              "order_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_ingredients_recipe_id_order_id` ON `${TABLE_NAME}` (`recipe_id`, `order_id`)"
+          }
+        ],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '595fb0149817416d7e25fc3c6362e7ff')"
+    ]
+  }
+}
