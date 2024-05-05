@@ -27,6 +27,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,7 +45,6 @@ import com.jaf.recipebook.helpers.GeneralHelper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -80,9 +81,13 @@ public class MainActivity extends AppCompatActivity {
     Fragment listRecipesFrag;
     Fragment noSavedRecipesFrag;
     Fragment searchReturnsEmptyFrag;
+    ImageButton expandSearchOptionsBtn;
     RecyclerView mainRecyclerView;
+    TableLayout searchBarOptionsContainer;
 
     private ArrayList<Integer> searchOptions;
+
+    // TODO Why is the checkbox acting weird? Layout inspector says its still material checkbox
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,8 +138,12 @@ public class MainActivity extends AppCompatActivity {
         listRecipesFrag = new ListRecipes();
         noSavedRecipesFrag = new NoSavedRecipes();
         searchReturnsEmptyFrag = new SearchReturnsEmpty();
+
         searchBar = findViewById(R.id.main_search_bar);
         searchBarEditText = findViewById(R.id.searchbar_edit_text);
+        searchBarOptionsContainer = findViewById(R.id.searchbar_options_container);
+        expandSearchOptionsBtn = findViewById(R.id.toggle_search_options_btn);
+        expandSearchOptionsBtn.setOnClickListener(v -> toggleSearchOptionsVisible());
     }
 
     private void setupOnSearchBarEditTextChange(){
@@ -382,6 +391,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void toggleSearchBarVisible(){
         searchBar.setVisibility(searchBar.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+    }
+
+    private void toggleSearchOptionsVisible(){
+        boolean isOptionsVisible = searchBarOptionsContainer.getVisibility() == View.VISIBLE;
+        searchBarOptionsContainer.setVisibility(isOptionsVisible ? View.GONE : View.VISIBLE);
+        expandSearchOptionsBtn.setImageDrawable(isOptionsVisible ?
+                getDrawable(R.drawable.baseline_expand_more_32) :
+                getDrawable(R.drawable.baseline_expand_less_32));
     }
 
 }

@@ -28,4 +28,11 @@
         <item name="android:windowSplashScreenIconBackgroundColor">@color/secondary</item>
     </style>
 
+    <style name="checkBoxStyle" parent="Base.Theme.AppCompat">
+        <item name="colorAccent">#FFFF</item>
+        <item name="android:textColorSecondary">#FF598392</item>
+        <item name="android:textColor">#FFFF</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
 </resources>

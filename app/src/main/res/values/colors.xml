@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#01161E</color>
-    <color name="secondary">#124559</color>
-    <color name="tertiary">#598392</color>
-    <color name="highlight">#AEC3B0</color>
-    <color name="background">#EFF6E0</color>
-    <color name="black">#000</color>
-    <color name="white">#fff</color>
-    <color name="danger">#880808</color>
-    <color name="inactive">#D3D3D3</color>
+    <color name="primary">#FF01161E</color>
+    <color name="secondary">#FF124559</color>
+    <color name="tertiary">#FF598392</color>
+    <color name="highlight">#FFAEC3B0</color>
+    <color name="background">#FFEFF6E0</color>
+    <color name="black">#F000</color>
+    <color name="white">#FFFF</color>
+    <color name="danger">#FF880808</color>
+    <color name="inactive">#FFD3D3D3</color>
     <color name="transparent">#00000000</color>
 </resources>

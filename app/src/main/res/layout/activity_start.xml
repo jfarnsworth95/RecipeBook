@@ -18,34 +18,104 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageView
-            android:id="@+id/search_icon_searchbar"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:foregroundGravity="center"
-            android:layout_margin="4dp"
-            android:src="@drawable/baseline_search_32"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/searchbar_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <EditText
-            android:id="@+id/searchbar_edit_text"
-            android:layout_height="match_parent"
-            android:layout_width="0dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:textColor="@color/white"
-            android:singleLine="true"
-            android:background="@drawable/rounded_edit_text"
-            android:layout_marginTop="6dp"
-            android:paddingTop="2dp"
-            android:paddingBottom="2dp"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"
+            <ImageView
+                android:id="@+id/search_icon_searchbar"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:foregroundGravity="center"
+                android:layout_margin="4dp"
+                android:src="@drawable/baseline_search_32"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <EditText
+                android:id="@+id/searchbar_edit_text"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="4dp"
+                android:textColor="@color/white"
+                android:singleLine="true"
+                android:background="@drawable/rounded_edit_text"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                app:layout_constraintEnd_toStartOf="@+id/toggle_search_options_btn"
+                app:layout_constraintStart_toEndOf="@+id/search_icon_searchbar"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <ImageButton
+                android:id="@+id/toggle_search_options_btn"
+                android:src="@drawable/baseline_expand_more_32"
+                android:background="@color/secondary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="0dp"
+                android:layout_marginEnd="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TableLayout
+            android:visibility="gone"
+            android:id="@+id/searchbar_options_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/searchbar_container"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/search_icon_searchbar"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:stretchColumns="*">
+
+            <TableRow
+                android:layout_margin="4dp" >
+                <CheckBox
+                    android:theme="@style/checkBoxStyle"
+                    android:id="@+id/search_title_checkbox"
+                    android:text="@string/search_title" />
+                <CheckBox
+                    android:theme="@style/checkBoxStyle"
+                    android:id="@+id/search_tags_checkbox"
+                    android:text="@string/search_tags" />
+            </TableRow>
+
+            <TableRow
+                android:layout_margin="4dp" >
+<CheckBox
+    android:theme="@style/checkBoxStyle"
+    android:id="@+id/search_ingredients_checkbox"
+    android:text="@string/search_ingredients" />
+<CheckBox
+    android:theme="@style/checkBoxStyle"
+    android:id="@+id/search_directions_checkbox"
+    android:text="@string/search_directions" />
+            </TableRow>
+
+            <TableRow
+                android:layout_margin="4dp" >
+                <CheckBox
+                    android:theme="@style/checkBoxStyle"
+                    android:id="@+id/search_categories_checkbox"
+                    android:text="@string/search_category" />
+                <CheckBox
+                    android:theme="@style/checkBoxStyle"
+                    android:id="@+id/search_source_checkbox"
+                    android:text="@string/search_source_url" />
+            </TableRow>
+
+        </TableLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
