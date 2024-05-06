@@ -26,6 +26,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TableLayout;
@@ -50,12 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
     FileHelper fileHelper;
     public final String TAG = "JAF-MAIN";
-    private final int SEARCH_TITLE = 0;
-    private final int SEARCH_TAGS = 1;
-    private final int SEARCH_CATEGORIES = 2;
-    private final int SEARCH_INGREDIENTS = 3;
-    private final int SEARCH_DIRECTIONS = 4;
-    private final int SEARCH_SOURCE = 5;
 
     private final int FRAGMENT_LOADING = 11;
     private final int FRAGMENT_LIST = 12;
@@ -74,6 +69,12 @@ public class MainActivity extends AppCompatActivity {
     ActivityResultLauncher<Intent> viewActivityResultLauncher;
 
     Button addFirstRecipeBtn;
+    CheckBox titleCB;
+    CheckBox tagsCB;
+    CheckBox ingredientCB;
+    CheckBox directionsCB;
+    CheckBox categoryCB;
+    CheckBox sourceCB;
     ConstraintLayout searchBar;
     EditText searchBarEditText;
     FloatingActionButton addRecipeFab;
@@ -85,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView mainRecyclerView;
     TableLayout searchBarOptionsContainer;
 
-    private ArrayList<Integer> searchOptions;
 
     // TODO Why is the checkbox acting weird? Layout inspector says its still material checkbox
 
@@ -95,75 +95,11 @@ public class MainActivity extends AppCompatActivity {
 
         SplashScreen.installSplashScreen(this);
         setContentView(R.layout.activity_start);
+        setupComponentHandlers();
         setClassVars();
-        setupOnSearchBarEditTextChange();
+        setupListeners();
 
         swapFragments(FRAGMENT_LOADING);
-    }
-
-    private void setClassVars(){
-        mainHandler = new Handler(getMainLooper());
-        fileHelper = new FileHelper(this);
-
-        // TODO eventually this will be replaced with just checking the rendered checkbox bool
-        // TODO add checkbox for case insensitive query
-        searchOptions = new ArrayList<>();
-        searchOptions.add(SEARCH_TITLE);
-        searchOptions.add(SEARCH_TAGS);
-
-        addEditActivityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(), o -> {
-                if (o.getResultCode() == Activity.RESULT_OK){
-                    Toast.makeText(this, getString(R.string.recipe_saved), Toast.LENGTH_SHORT).show();
-                } else if (o.getResultCode() == GeneralHelper.ACTIVITY_RESULT_DB_ERROR) {
-                    Toast.makeText(this, getString(R.string.failed_to_open_recipe), Toast.LENGTH_LONG).show();
-                }
-            }
-        );
-
-        settingsActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {});
-
-        viewActivityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(), o -> {
-                if (o.getResultCode() == GeneralHelper.ACTIVITY_RESULT_DB_ERROR) {
-                    Toast.makeText(this, getString(R.string.failed_to_open_recipe), Toast.LENGTH_LONG).show();
-                }
-            }
-        );
-
-        recipesToRender = new MutableLiveData<>(new ArrayList<>());
-        rbd = RecipeBookDatabase.getInstance(this);
-
-        isLoadingFrag = new IsLoading();
-        listRecipesFrag = new ListRecipes();
-        noSavedRecipesFrag = new NoSavedRecipes();
-        searchReturnsEmptyFrag = new SearchReturnsEmpty();
-
-        searchBar = findViewById(R.id.main_search_bar);
-        searchBarEditText = findViewById(R.id.searchbar_edit_text);
-        searchBarOptionsContainer = findViewById(R.id.searchbar_options_container);
-        expandSearchOptionsBtn = findViewById(R.id.toggle_search_options_btn);
-        expandSearchOptionsBtn.setOnClickListener(v -> toggleSearchOptionsVisible());
-    }
-
-    private void setupOnSearchBarEditTextChange(){
-        searchBarEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (workRunnableSearch != null) {
-                    mainHandler.removeCallbacks(workRunnableSearch);
-                }
-                workRunnableSearch = () -> {
-                    queryForRecipes(s.toString());
-                };
-                mainHandler.postDelayed(workRunnableSearch, 1000);
-            }
-        });
     }
 
     @Override
@@ -177,35 +113,9 @@ public class MainActivity extends AppCompatActivity {
         // Check if user wants to connect to their Google Drive to backup the Recipe Files
         // TODO: Add method for adding Google Drive connection
 
-        // TODO replace empty string with Search Bar text
-        queryForRecipes(searchBarEditText.getText().toString());
-    }
-
-    public void validateExternalPermission(){
-        if (fileHelper.getPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true)
-                && !Environment.isExternalStorageManager()) {
-            // Permission missing, but the user has indicated that they want external storage
-            //      Could also be their first time starting up the app.
-            new AlertDialog.Builder(this)
-                    .setTitle("Requesting Access to Files")
-                    .setMessage("Optionally, this app can put it's files where you can view/edit " +
-                            "them in the explorer. Primarily, this is intended so you can back " +
-                            "them up yourself, or import new recipes by dropping a file there.")
-                    .setPositiveButton(this.getString(R.string.dialog_allow), (dialogInterface, i) -> {
-                        Uri uri = Uri.fromParts("package", getPackageName(), null);
-                        startActivity(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                                .addCategory("android.intent.category.DEFAULT")
-                                .setData(uri)
-                        );
-                        fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true);
-                        dialogInterface.dismiss();
-                    })
-                    .setNegativeButton(this.getString(R.string.dialog_deny), (dialogInterface, i) -> {
-                                fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true);
-                    })
-                    .show();
-        } else if (Environment.isExternalStorageManager() && !fileHelper.getPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, false)){
-            fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true);
+        queryForRecipes();
+        if (!searchBarEditText.getText().toString().isEmpty()) {
+            searchBar.setVisibility(View.VISIBLE);
         }
     }
 
@@ -239,7 +149,112 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void queryForRecipes(String searchQuery){
+    private void setClassVars(){
+        mainHandler = new Handler(getMainLooper());
+        fileHelper = new FileHelper(this);
+
+        addEditActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), o -> {
+                if (o.getResultCode() == Activity.RESULT_OK){
+                    Toast.makeText(this, getString(R.string.recipe_saved), Toast.LENGTH_SHORT).show();
+                } else if (o.getResultCode() == GeneralHelper.ACTIVITY_RESULT_DB_ERROR) {
+                    Toast.makeText(this, getString(R.string.failed_to_open_recipe), Toast.LENGTH_LONG).show();
+                }
+            }
+        );
+
+        settingsActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {});
+
+        viewActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), o -> {
+                if (o.getResultCode() == GeneralHelper.ACTIVITY_RESULT_DB_ERROR) {
+                    Toast.makeText(this, getString(R.string.failed_to_open_recipe), Toast.LENGTH_LONG).show();
+                }
+            }
+        );
+
+        recipesToRender = new MutableLiveData<>(new ArrayList<>());
+        rbd = RecipeBookDatabase.getInstance(this);
+
+        isLoadingFrag = new IsLoading();
+        listRecipesFrag = new ListRecipes();
+        noSavedRecipesFrag = new NoSavedRecipes();
+        searchReturnsEmptyFrag = new SearchReturnsEmpty();
+    }
+
+    private void setupComponentHandlers(){
+        searchBar = findViewById(R.id.main_search_bar);
+        searchBarEditText = findViewById(R.id.searchbar_edit_text);
+        searchBarOptionsContainer = findViewById(R.id.searchbar_options_container);
+        expandSearchOptionsBtn = findViewById(R.id.toggle_search_options_btn);
+
+        titleCB = findViewById(R.id.search_title_checkbox);
+        tagsCB = findViewById(R.id.search_tags_checkbox);
+        ingredientCB = findViewById(R.id.search_ingredients_checkbox);
+        directionsCB = findViewById(R.id.search_directions_checkbox);
+        categoryCB = findViewById(R.id.search_categories_checkbox);
+        sourceCB = findViewById(R.id.search_source_checkbox);
+    }
+
+    private void setupListeners(){
+        expandSearchOptionsBtn.setOnClickListener(v -> toggleSearchOptionsVisible());
+
+        titleCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
+        tagsCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
+        ingredientCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
+        directionsCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
+        categoryCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
+        sourceCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
+
+        searchBarEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (workRunnableSearch != null) {
+                    mainHandler.removeCallbacks(workRunnableSearch);
+                }
+                workRunnableSearch = () -> {
+                    queryForRecipes();
+                };
+                mainHandler.postDelayed(workRunnableSearch, 1000);
+            }
+        });
+    }
+
+    public void validateExternalPermission(){
+        if (fileHelper.getPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true)
+                && !Environment.isExternalStorageManager()) {
+            // Permission missing, but the user has indicated that they want external storage
+            //      Could also be their first time starting up the app.
+            new AlertDialog.Builder(this)
+                    .setTitle("Requesting Access to Files")
+                    .setMessage("Optionally, this app can put it's files where you can view/edit " +
+                            "them in the explorer. Primarily, this is intended so you can back " +
+                            "them up yourself, or import new recipes by dropping a file there.")
+                    .setPositiveButton(this.getString(R.string.dialog_allow), (dialogInterface, i) -> {
+                        Uri uri = Uri.fromParts("package", getPackageName(), null);
+                        startActivity(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                                .addCategory("android.intent.category.DEFAULT")
+                                .setData(uri)
+                        );
+                        fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true);
+                        dialogInterface.dismiss();
+                    })
+                    .setNegativeButton(this.getString(R.string.dialog_deny), (dialogInterface, i) -> {
+                                fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true);
+                    })
+                    .show();
+        } else if (Environment.isExternalStorageManager() && !fileHelper.getPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, false)){
+            fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true);
+        }
+    }
+
+    public void queryForRecipes(){
+        String searchQuery = searchBarEditText.getText().toString();
         rbd.getQueryExecutor().execute(() -> {
             ArrayList<RecipeBookDao.BasicRecipeTuple> recipes;
             if (searchQuery.isEmpty()) {
@@ -247,12 +262,12 @@ public class MainActivity extends AppCompatActivity {
                 recipesToRender.postValue(recipes);
             } else {
                 recipes = new ArrayList<>(rbd.recipeBookDao().searchAllForParameter(
-                        (searchOptions.contains(SEARCH_TITLE) ? searchQuery : null),
-                        (searchOptions.contains(SEARCH_CATEGORIES) ? searchQuery : null),
-                        (searchOptions.contains(SEARCH_SOURCE) ? searchQuery : null),
-                        (searchOptions.contains(SEARCH_INGREDIENTS) ? searchQuery : null),
-                        (searchOptions.contains(SEARCH_DIRECTIONS) ? searchQuery : null),
-                        (searchOptions.contains(SEARCH_TAGS) ? searchQuery : null)
+                        (titleCB.isChecked() ? searchQuery : null),
+                        (categoryCB.isChecked() ? searchQuery : null),
+                        (sourceCB.isChecked() ? searchQuery : null),
+                        (ingredientCB.isChecked() ? searchQuery : null),
+                        (directionsCB.isChecked() ? searchQuery : null),
+                        (tagsCB.isChecked() ? searchQuery : null)
                 ));
                 recipesToRender.postValue(recipes);
             }
@@ -265,6 +280,17 @@ public class MainActivity extends AppCompatActivity {
                 swapFragments(FRAGMENT_LIST);
             }
         });
+    }
+
+    private void searchCheckboxListener(CheckBox checkBoxClicked){
+        if (!titleCB.isChecked() && !tagsCB.isChecked() &&
+                !ingredientCB.isChecked() && !directionsCB.isChecked() &&
+                !categoryCB.isChecked() && !sourceCB.isChecked()){
+            checkBoxClicked.setChecked(true);
+            Toast.makeText(this, "We can't search nothing...", Toast.LENGTH_SHORT).show();
+        } else {
+            queryForRecipes();
+        }
     }
 
     private void setupNoSavedRecipesListeners(){
@@ -332,6 +358,7 @@ public class MainActivity extends AppCompatActivity {
                             .beginTransaction()
                             .setReorderingAllowed(true)
                             .attach(listRecipesFrag)
+                            .runOnCommit(this::setupListRecipesListeners)
                             .commit();
                 } else {
                     return;
@@ -352,6 +379,7 @@ public class MainActivity extends AppCompatActivity {
                             .beginTransaction()
                             .setReorderingAllowed(true)
                             .attach(noSavedRecipesFrag)
+                            .runOnCommit(this::setupNoSavedRecipesListeners)
                             .commit();
                 } else {
                     return;
@@ -397,8 +425,8 @@ public class MainActivity extends AppCompatActivity {
         boolean isOptionsVisible = searchBarOptionsContainer.getVisibility() == View.VISIBLE;
         searchBarOptionsContainer.setVisibility(isOptionsVisible ? View.GONE : View.VISIBLE);
         expandSearchOptionsBtn.setImageDrawable(isOptionsVisible ?
-                getDrawable(R.drawable.baseline_expand_more_32) :
-                getDrawable(R.drawable.baseline_expand_less_32));
+            getDrawable(R.drawable.baseline_expand_more_32) :
+            getDrawable(R.drawable.baseline_expand_less_32));
     }
 
 }

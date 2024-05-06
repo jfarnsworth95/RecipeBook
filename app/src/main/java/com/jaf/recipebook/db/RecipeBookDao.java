@@ -50,7 +50,7 @@ public interface RecipeBookDao {
                 "(:category IS NOT NULL AND recipes.category LIKE '%' || :category || '%') OR " +
                 "(:source_url IS NOT NULL AND recipes.source_url LIKE '%' || :source_url || '%') OR " +
                 "(:ingredients IS NOT NULL AND ingredients.text LIKE '%' || :ingredients || '%') OR " +
-                "(:directions IS NOT NULL AND ingredients.text LIKE '%' || :directions || '%') OR " +
+                "(:directions IS NOT NULL AND directions.text LIKE '%' || :directions || '%') OR " +
                 "(:tag IS NOT NULL AND tags.tag LIKE '%' || :tag || '%') " +
             "ORDER BY recipes.name")
     List<BasicRecipeTuple> searchAllForParameter(
