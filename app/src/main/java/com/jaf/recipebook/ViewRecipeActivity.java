@@ -82,7 +82,6 @@ public class ViewRecipeActivity extends AppCompatActivity {
 
         fh = new FileHelper(this);
         Objects.requireNonNull(this.getSupportActionBar()).setTitle(recipeName);
-        getSupportActionBar().getCustomView();
 
         deleteConfirmationDialog = setupDeleteRecipeConfirmationDialog();
 

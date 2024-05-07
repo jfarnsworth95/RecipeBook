@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
     // TODO Bulk delete from main view?
     // TODO Don't reload when returning to main view if no edits/additions happened
     // TODO Marquee for View menu header
+    // TODO Add UUID to Recipe Model, base import conflicts on that
 
     // TODO Try increasing row height and text size, it's a tad small atm
 
