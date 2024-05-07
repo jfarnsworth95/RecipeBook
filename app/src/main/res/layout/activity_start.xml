@@ -39,7 +39,9 @@
 
             <EditText
                 android:id="@+id/searchbar_edit_text"
+                android:textCursorDrawable="@drawable/baseline_search_cursor"
                 android:layout_height="match_parent"
+                android:textColorHighlight="@color/primary"
                 android:layout_width="0dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="4dp"

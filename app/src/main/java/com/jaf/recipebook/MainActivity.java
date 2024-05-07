@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
     // TODO Don't reload when returning to main view if no edits/additions happened
     // TODO Marquee for View menu header
 
-    // TODO Add all recipes from downloads button & all recipes without same name
     // TODO Try increasing row height and text size, it's a tad small atm
 
     @Override
