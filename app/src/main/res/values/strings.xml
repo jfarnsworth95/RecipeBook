@@ -73,13 +73,10 @@
     <string name="recipe_view_tags"><b><i>Tags</i></b></string>
     <string name="recipe_view_source_url"><b><i>Source</i></b></string>
     <string name="recipe_view_category"><b><i>Category</i></b></string>
+    <string name="recipe_view_save_to_downloads">Save to Downloads</string>
+    <string name="recipe_view_copy_to_clipboard">Copy to Clipboard</string>
+    <string name="recipe_view_delete_recipe">Delete Recipe</string>
 
-    <!-- String Arrays for Spinner -->
-    <string-array name="view_recipe_more_options_array">
-        <item>Save to Downloads</item>
-        <item>Copy to Clipboard</item>
-        <item>Delete Recipe</item>
-    </string-array>
 
     <!-- Other -->
     <string name="database_name">recipeBookDatabase</string>

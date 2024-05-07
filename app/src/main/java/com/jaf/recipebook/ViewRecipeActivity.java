@@ -66,7 +66,6 @@ public class ViewRecipeActivity extends AppCompatActivity {
     LinearLayout categoryLl;
     MaterialTextView tagsHeaderTv;
 
-    AlertDialog moreOptionsDialog;
     AlertDialog deleteConfirmationDialog;
 
     private ActivityResultLauncher<Intent> addEditActivityResultLauncher;
@@ -83,8 +82,8 @@ public class ViewRecipeActivity extends AppCompatActivity {
 
         fh = new FileHelper(this);
         Objects.requireNonNull(this.getSupportActionBar()).setTitle(recipeName);
+        getSupportActionBar().getCustomView();
 
-        moreOptionsDialog = setupMoreOptionsDialog();
         deleteConfirmationDialog = setupDeleteRecipeConfirmationDialog();
 
         prepareRegisterForEditActivity();
@@ -114,7 +113,19 @@ public class ViewRecipeActivity extends AppCompatActivity {
                 return true;
 
             case R.id.view_recipe_more_options:
-                moreOptionsDialog.show();
+//                moreOptionsDialog.show();
+                return true;
+
+            case R.id.view_recipe_copy_to_clipboard:
+                copyToClipboard();
+                return true;
+
+            case R.id.view_recipe_save_to_downloads:
+                fh.saveRecipeToDownloads(rm, ims, dm, tms);
+                return true;
+
+            case R.id.view_recipe_delete_recipe:
+                deleteConfirmationDialog.show();
                 return true;
 
             default:
@@ -166,29 +177,6 @@ public class ViewRecipeActivity extends AppCompatActivity {
                     deleteRecipe();
                 })
                 .setNegativeButton(R.string.negative_text, (dialog, which) -> {
-                });
-        return builder.create();
-    }
-
-    private AlertDialog setupMoreOptionsDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.more_options_action)
-                .setItems(R.array.view_recipe_more_options_array, (dialog, which) -> {
-                    switch(which){
-                        case 0: // Save to Downloads
-                            fh.saveRecipeToDownloads(rm, ims, dm, tms);
-                            break;
-
-
-                        case 1: // Copy to Clipboard
-                            copyToClipboard();
-                            break;
-
-                        case 2: // Delete Recipe
-                            deleteConfirmationDialog.show();
-                            break;
-
-                    }
                 });
         return builder.create();
     }

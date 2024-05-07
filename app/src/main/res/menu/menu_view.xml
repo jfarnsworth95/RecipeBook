@@ -16,6 +16,21 @@
         android:icon="@drawable/baseline_more_vert_24dp"
         android:orderInCategory="11"
         android:title="@string/more_options_action"
-        app:showAsAction="withText|ifRoom" />
+        app:showAsAction="withText|ifRoom" >
+
+        <menu>
+
+            <item
+                android:id="@+id/view_recipe_copy_to_clipboard"
+                android:title="@string/recipe_view_copy_to_clipboard" />
+            <item
+                android:id="@+id/view_recipe_save_to_downloads"
+                android:title="@string/recipe_view_save_to_downloads" />
+            <item
+                android:id="@+id/view_recipe_delete_recipe"
+                android:title="@string/recipe_view_delete_recipe" />
+
+        </menu>
+    </item>
 
 </menu>
