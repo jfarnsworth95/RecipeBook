@@ -88,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
     TableLayout searchBarOptionsContainer;
 
 
-    // TODO Directions not saving properly on Mobile Test
     // TODO Scroll on recycler view lets user keep going
     // TODO Dark mode is fucked on Mobile test
     // TODO Why is the checkbox acting weird? Layout inspector says its still material checkbox

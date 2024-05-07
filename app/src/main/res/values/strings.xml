@@ -37,7 +37,8 @@
     <string name="option_toggle_external_text">Change Storage Method</string>
     <string name="option_import_downloaded_text">Import Downloaded Recipes</string>
     <string name="options_go_to_drive_settings">Go to Drive Settings</string>
-    <string name="confirm_imports_btn_text">Confirm Imports</string>
+    <string name="confirm_imports_btn_text">Confirm\nImports</string>
+    <string name="import_all_btn_text">Import\nAll</string>
     <string name="google_sign_in_button">SIGN IN WITH GOOGLE</string>
     <string name="google_sign_out_button">SIGN OUT OF GOOGLE</string>
     <string name="google_sign_in_descriptor">You are signed in as</string>

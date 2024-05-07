@@ -48,8 +48,11 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -363,35 +366,57 @@ public class SettingsActivity extends AppCompatActivity {
         popupView.findViewById(R.id.import_popup_scrollview).setVisibility(View.VISIBLE);
 
         // Add onclick listener for the confirm imports button
-        popupView.findViewById(R.id.confirm_imports_btn).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    if (filesToImport.size() == 0){
-                        Toast.makeText(
-                                view.getContext(),
-                                "No files selected to import...",
-                                Toast.LENGTH_LONG
-                        ).show();
-                        return;
-                    }
-                    importLocalFiles();
+        popupView.findViewById(R.id.confirm_imports_btn).setOnClickListener(v -> {
+            ((Button) v).setEnabled(false);
+            popupView.findViewById(R.id.import_all_btn).setEnabled(false);
+            try {
+                if (filesToImport.size() == 0){
                     Toast.makeText(
-                            view.getContext(),
-                            "Selected file(s) imported successfully!",
+                            v.getContext(),
+                            "No files selected to import...",
                             Toast.LENGTH_LONG
                     ).show();
+                    return;
                 }
-                catch (IOException ex){
-                    Toast.makeText(
-                        view.getContext(),
-                        "Failed to import due to " + ex.getMessage(),
+                importLocalFiles();
+                Toast.makeText(
+                        v.getContext(),
+                        "Selected file(s) imported successfully!",
                         Toast.LENGTH_LONG
-                    ).show();
-                    Log.e(TAG, ex.getMessage(), ex);
-                } finally {
-                    popupWindow.dismiss();
+                ).show();
+            }
+            catch (IOException ex){
+                Toast.makeText(
+                        v.getContext(),
+                    "Failed to import due to " + ex.getMessage(),
+                    Toast.LENGTH_LONG
+                ).show();
+                Log.e(TAG, ex.getMessage(), ex);
+            } finally {
+                popupWindow.dismiss();
+            }
+        });
+
+        popupView.findViewById(R.id.import_all_btn).setOnClickListener(v -> {
+            ((Button) v).setEnabled(false);
+            popupView.findViewById(R.id.confirm_imports_btn).setEnabled(false);
+            try {
+                HashSet<File> importFiles = new HashSet<>(imports);
+                importFiles.removeAll(invalidImports.keySet());
+                filesToImport = new ArrayList<>();
+                for (File importFile : importFiles) {
+                    filesToImport.add(importFile.getName());
                 }
+                importLocalFiles();
+                Toast.makeText(
+                        v.getContext(),
+                        "Imported all files successfully!",
+                        Toast.LENGTH_LONG
+                ).show();
+            } catch (IOException ex){
+                Log.e(TAG, "Failed to import all files", ex);
+            } finally {
+                popupWindow.dismiss();
             }
         });
     }
