@@ -100,10 +100,10 @@ public class RecipeBookRepo {
 
     // Update Recipe
     public void updateRecipe(@NonNull RecipesModel rm, @NonNull List<IngredientsModel> ims,
-                             @NonNull List<TagsModel> tms, @NonNull DirectionsModel dm){
-        try {
-            executor.execute(() -> {
-                rbdb.runInTransaction(() -> {
+                             @NonNull List<TagsModel> tms, @NonNull DirectionsModel dm) {
+        executor.execute(() -> {
+            rbdb.runInTransaction(() -> {
+                try {
                     recipeDao.updateRecipe(rm);
                     directionsDao.updateDirections(dm);
 
@@ -118,14 +118,15 @@ public class RecipeBookRepo {
                     }
 
                     EventBus.getDefault().post(new RecipeSavedEvent(true));
-                });
+
+                } catch (Exception ex) {
+                    Log.e(TAG, "Failed to save recipe data while running UPDATE: ", ex);
+                    EventBus.getDefault().post(new RecipeSavedEvent(false));
+                } finally {
+                    Log.d(TAG, "UPDATE Transaction END");
+                }
             });
-        } catch (Exception ex){
-            Log.e(TAG, "Failed to save recipe data while running UPDATE: ", ex);
-            EventBus.getDefault().post(new RecipeSavedEvent(false));
-        } finally {
-            Log.d(TAG, "UPDATE Transaction END");
-        }
+        });
     }
 
     public FullRecipeTuple getFullRecipeData(@NonNull long recipeId){

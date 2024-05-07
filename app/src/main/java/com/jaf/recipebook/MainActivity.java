@@ -4,6 +4,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.fragment.app.Fragment;
@@ -87,10 +88,21 @@ public class MainActivity extends AppCompatActivity {
     TableLayout searchBarOptionsContainer;
 
 
+    // TODO Directions not saving properly on Mobile Test
+    // TODO Scroll on recycler view lets user keep going
+    // TODO Dark mode is fucked on Mobile test
     // TODO Why is the checkbox acting weird? Layout inspector says its still material checkbox
+    // TODO Bulk delete from main view?
+    // TODO Don't reload when returning to main view if no edits/additions happened
+    // TODO Marquee for View menu header
+
+    // TODO Add all recipes from downloads button & all recipes without same name
+    // TODO Try increasing row height and text size, it's a tad small atm
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // TODO Temp fix while testing locally
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState);
 
         SplashScreen.installSplashScreen(this);

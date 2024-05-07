@@ -5,7 +5,7 @@ import androidx.room.Entity;
 import androidx.room.Index;
 
 @Entity(tableName = "directions",
-        primaryKeys = {"recipe_id", "text"},
+        primaryKeys = {"recipe_id"},
         indices = {@Index(value = {"recipe_id"}, unique = true)})
 public class DirectionsModel {
 
