@@ -104,6 +104,9 @@ public class RecipeBookRepo {
         executor.execute(() -> {
             rbdb.runInTransaction(() -> {
                 try {
+                    if (rm.getId() < 1 && rm.getUuid() != null){
+                        rm.setId(recipeDao.getRecipeByUuid(rm.getUuid()).blockingGet().getId());
+                    }
                     recipeDao.updateRecipe(rm);
                     directionsDao.updateDirections(dm);
 

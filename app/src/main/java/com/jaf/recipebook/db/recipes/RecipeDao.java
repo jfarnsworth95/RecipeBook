@@ -8,6 +8,7 @@ import androidx.room.Relation;
 import androidx.room.Update;
 
 import java.util.List;
+import java.util.UUID;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
@@ -24,6 +25,9 @@ public interface RecipeDao {
 
     @Query("SELECT * FROM recipes WHERE id = :id")
     Single<RecipesModel> getRecipe(long id);
+
+    @Query("SELECT * FROM recipes WHERE uuid = :uuid")
+    Single<RecipesModel> getRecipeByUuid(UUID uuid);
 
     @Query("SELECT * FROM recipes ORDER BY name ASC")
     List<RecipesModel> getAllRecipes();

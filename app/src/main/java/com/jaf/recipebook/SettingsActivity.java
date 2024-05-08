@@ -69,7 +69,7 @@ public class SettingsActivity extends AppCompatActivity {
     private RecipeBookRepo rbr;
 
     private CircleImageView googlePhotoImg;
-    private HashSet<String> filesToImport;
+    private HashSet<File> filesToImport;
     private HashSet<File> duplicateImports;
     private HashMap<File, String> invalidImports;
     private HashSet<File> validImports;
@@ -201,8 +201,7 @@ public class SettingsActivity extends AppCompatActivity {
      * that to the database.
      */
     private void importLocalFiles(boolean shouldOverwriteDuplicates) throws IOException{
-        for (String filePath : filesToImport){
-            File recipeFile = new File(fileHelper.getDownloadsDir().getPath() + "/" + filePath);
+        for (File recipeFile : filesToImport){
             HashMap<String, Object> jsonData = fileHelper.returnGsonFromFile(recipeFile);
 
             // Create Recipe Model
@@ -245,14 +244,7 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             }
 
-            boolean isDup = false;
-            for (File dupFile : duplicateImports) {
-                if (dupFile.getName().equals(filePath)){
-                    isDup = true;
-                    break;
-                }
-            }
-            if (isDup){
+            if (duplicateImports.contains(recipeFile)){
                 if (shouldOverwriteDuplicates){ // Either we overwrite, or ignore entirely
                     rbr.updateRecipe(rm, ingredients, tags, dm);
                 }
@@ -361,9 +353,9 @@ public class SettingsActivity extends AppCompatActivity {
                         String filename = ((TextView)((TableRow)compoundButton.getParent())
                                 .findViewById(R.id.importFilenameText)).getText().toString();
                         if(b){
-                            filesToImport.add(filename);
+                            filesToImport.add(importableFile);
                         } else {
-                            filesToImport.remove(filename);
+                            filesToImport.remove(importableFile);
                         }
                     });
             }
@@ -381,7 +373,7 @@ public class SettingsActivity extends AppCompatActivity {
             popupView.findViewById(R.id.import_all_btn).setEnabled(false);
 
             if (Collections.disjoint(filesToImport, duplicateImports)){ // if true, no common elements
-                importCheckedFiles(v, popupWindow);
+                importCheckedFiles(false, v, popupWindow);
             } else {
                 askUserHowToHandleDuplicates(IMPORT_SELECTED, v, popupWindow);
             }
@@ -400,7 +392,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    private void importCheckedFiles(View v, PopupWindow popupWindow){
+    private void importCheckedFiles(boolean shouldOverwrite, View v, PopupWindow popupWindow){
         try {
             if (filesToImport.isEmpty()){
                 Toast.makeText(
@@ -410,7 +402,7 @@ public class SettingsActivity extends AppCompatActivity {
                 ).show();
                 return;
             }
-            importLocalFiles(false);
+            importLocalFiles(shouldOverwrite);
             Toast.makeText(
                     v.getContext(),
                     "Selected file(s) imported successfully!",
@@ -429,21 +421,21 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    private void importAllFiles(boolean shouldOverwriteExisting, View v, PopupWindow popupWindow) {
+    private void importAllFiles(boolean shouldOverwrite, View v, PopupWindow popupWindow) {
 
         try {
             filesToImport = new HashSet<>();
             for (File importFile : validImports) {
-                filesToImport.add(importFile.getName());
+                filesToImport.add(importFile);
             }
 
-            if (validImports.equals(duplicateImports) && !shouldOverwriteExisting){
+            if (validImports.equals(duplicateImports) && !shouldOverwrite){
                 Toast.makeText(v.getContext(), "Only duplicates to import. Skipping...", Toast.LENGTH_LONG)
                         .show();
                 return;
             }
 
-            importLocalFiles(shouldOverwriteExisting);
+            importLocalFiles(shouldOverwrite);
             Toast.makeText(v.getContext(), "All files imported successfully!", Toast.LENGTH_LONG)
                     .show();
         } catch (IOException ex) {
@@ -466,14 +458,14 @@ public class SettingsActivity extends AppCompatActivity {
                     if (importOption == IMPORT_ALL) {
                         importAllFiles(true, v, popupWindow);
                     } else {
-                        importCheckedFiles(v, popupWindow);
+                        importCheckedFiles(true, v, popupWindow);
                     }
                 })
                 .setNegativeButton(R.string.ignore_duplicates, (dialog, which) -> {
                     if (importOption == IMPORT_ALL) {
                         importAllFiles(false, v, popupWindow);
                     } else {
-                        importCheckedFiles(v, popupWindow);
+                        importCheckedFiles(false, v, popupWindow);
                     }
                 });
         builder.create().show();
