@@ -87,14 +87,11 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView mainRecyclerView;
     TableLayout searchBarOptionsContainer;
 
-
-    // TODO Scroll on recycler view lets user keep going
     // TODO Dark mode is fucked on Mobile test
     // TODO Why is the checkbox acting weird? Layout inspector says its still material checkbox
     // TODO Bulk delete from main view?
     // TODO Don't reload when returning to main view if no edits/additions happened
     // TODO Marquee for View menu header
-    // TODO Add UUID to Recipe Model, base import conflicts on that
 
     // TODO Try increasing row height and text size, it's a tad small atm
 
