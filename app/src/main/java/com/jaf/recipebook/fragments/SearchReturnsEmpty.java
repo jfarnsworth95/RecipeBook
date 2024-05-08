@@ -27,7 +27,6 @@ public class SearchReturnsEmpty extends Fragment {
      *
      * @return A new instance of fragment SearchReturnsEmpty.
      */
-    // TODO: Rename and change types and number of parameters
     public static SearchReturnsEmpty newInstance() {
         SearchReturnsEmpty fragment = new SearchReturnsEmpty();
         return fragment;

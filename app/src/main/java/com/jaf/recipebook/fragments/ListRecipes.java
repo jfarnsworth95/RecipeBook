@@ -27,7 +27,6 @@ public class ListRecipes extends Fragment {
      *
      * @return A new instance of fragment ListRecipes.
      */
-    // TODO: Rename and change types and number of parameters
     public static ListRecipes newInstance() {
         return new ListRecipes();
     }

@@ -27,7 +27,6 @@ public class IsLoading extends Fragment {
      *
      * @return A new instance of fragment IsLoading.
      */
-    // TODO: Rename and change types and number of parameters
     public static IsLoading newInstance() {
         IsLoading fragment = new IsLoading();
         Bundle args = new Bundle();

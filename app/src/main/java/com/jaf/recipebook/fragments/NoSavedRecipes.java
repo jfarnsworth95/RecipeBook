@@ -26,7 +26,6 @@ public class NoSavedRecipes extends Fragment {
      * this fragment using the provided parameters.
      * @return A new instance of fragment NoSavedRecipes.
      */
-    // TODO: Rename and change types and number of parameters
     public static NoSavedRecipes newInstance() {
         NoSavedRecipes fragment = new NoSavedRecipes();
         Bundle args = new Bundle();
