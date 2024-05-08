@@ -317,7 +317,6 @@ public class SettingsActivity extends AppCompatActivity {
         LayoutInflater inflater = (LayoutInflater)
                 getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.popup_import_files, null);
-        popupView.setBackground(this.getDrawable(android.R.drawable.picture_frame));
 
         // create the popup window
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;

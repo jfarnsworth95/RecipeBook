@@ -88,10 +88,10 @@ public class MainActivity extends AppCompatActivity {
     TableLayout searchBarOptionsContainer;
 
     // TODO Dark mode is fucked on Mobile test
-    // TODO Why is the checkbox acting weird? Layout inspector says its still material checkbox
     // TODO Bulk delete from main view?
     // TODO Don't reload when returning to main view if no edits/additions happened
     // TODO Marquee for View menu header
+    // TODO Why is the checkbox acting weird? Layout inspector says its still material checkbox
 
     // TODO Try increasing row height and text size, it's a tad small atm
 
