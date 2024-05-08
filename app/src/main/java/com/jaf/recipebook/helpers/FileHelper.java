@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public class FileHelper {
 
@@ -42,6 +43,7 @@ public class FileHelper {
     public final String JSON_NAME = "NAME";
     public final String JSON_INGREDIENTS = "INGREDIENTS";
     public final String JSON_DIRECTIONS = "DIRECTIONS";
+    public final String JSON_UUID = "UUID";
     public final String JSON_SERVINGS = "SERVINGS";
     public final String JSON_SOURCE_URL = "SOURCE_URL";
     public final String JSON_TAGS = "TAGS";
@@ -131,6 +133,11 @@ public class FileHelper {
         return getDownloadsDir().listFiles();
     }
 
+    public UUID getImportFileUuid(File importFile){
+        HashMap<String, Object> fileGson = returnGsonFromFile(importFile);
+        return UUID.fromString((String) fileGson.get("UUID"));
+    }
+
     public HashMap<String, Object> returnGsonFromFile(File rpFile) {
         try {
             return new Gson().fromJson(this.readFile(rpFile), HashMap.class);
@@ -157,6 +164,7 @@ public class FileHelper {
         //	    	...
         //	    ],
         //      "DIRECTIONS": "PLAIN TEXT DIRECTIONS",
+        //      "UUID": JAVA.UUID,
         //      "SERVINGS": DOUBLE, *OPTIONAL*
         //      "SOURCE_URL": STRING URL, *OPTIONAL*
         //      "TAGS": ["TAG 1", "TAG 2", ... "TAG N"], *OPTIONAL*
@@ -173,9 +181,9 @@ public class FileHelper {
             return false;
         }
 
-        // Confirm Headers exist (NAME, INGREDIENTS, DIRECTIONS, SERVINGS)
+        // Confirm Headers exist (NAME, INGREDIENTS, DIRECTIONS, SERVINGS, UUID)
         try {
-            String[] requiredHeaders = new String[]{"NAME", "INGREDIENTS", "DIRECTIONS"};
+            String[] requiredHeaders = new String[]{JSON_NAME, JSON_INGREDIENTS, JSON_DIRECTIONS, JSON_UUID};
             for (String header : requiredHeaders) {
                 if (jsonData.get(header) == null) {
                     failures.add("Unable to confirm existence of required JSON headers.");
@@ -188,82 +196,94 @@ public class FileHelper {
 
         // Confirm "NAME" is a String
         try {
-            if (!(jsonData.get("NAME") instanceof String)){
-                failures.add("NAME is not a string.");
+            if (!(jsonData.get(JSON_NAME) instanceof String)){
+                failures.add(JSON_NAME + " is not a string.");
             }
         } catch (Exception ex){
-            failures.add("Unable to confirm NAME Json content ("+ ex.getMessage() +")");
+            failures.add("Unable to confirm "+ JSON_NAME +" Json content ("+ ex.getMessage() +")");
         }
 
         // Confirm "Ingredients" is a list of Strings
         try {
-            for (Object ingredientEntry : ((ArrayList<String>) jsonData.get("INGREDIENTS"))) {
+            for (Object ingredientEntry : ((ArrayList<String>) jsonData.get(JSON_INGREDIENTS))) {
                 if (!(ingredientEntry instanceof String)){
-                    failures.add("Ingredient is not a string.");
+                    failures.add(JSON_INGREDIENTS + " is not a string.");
                     break;
                 }
             }
         } catch (Exception ex){
-            failures.add("Unable to confirm Ingredient Json content ("+ ex.getMessage() +")");
+            failures.add("Unable to confirm "+ JSON_INGREDIENTS +" Json content ("+ ex.getMessage() +")");
         }
 
         // Confirm "Directions" is a String
         try {
-            if (!(jsonData.get("DIRECTIONS") instanceof String)){
-                failures.add("Directions are not a string.");
+            if (!(jsonData.get(JSON_DIRECTIONS) instanceof String)){
+                failures.add(JSON_DIRECTIONS + " are not a string.");
             }
         } catch (Exception ex){
-            failures.add("Unable to confirm Directions Json content ("+ ex.getMessage() +")");
+            failures.add("Unable to confirm "+ JSON_DIRECTIONS +" Json content ("+ ex.getMessage() +")");
+        }
+
+        // Confirm "UUID" is a UUID
+        try {
+            if (!(jsonData.get(JSON_UUID) instanceof String )){
+                failures.add(JSON_UUID + " is not a UUID.");
+            }
+            UUID uuid = UUID.fromString(((String) jsonData.get(JSON_UUID)));
+        } catch (IllegalArgumentException exception){
+            failures.add(JSON_UUID +" is not a valid UUID");
+        } catch (Exception ex){
+            failures.add("Unable to confirm "+ JSON_UUID +" Json content ("+ ex.getMessage() +")");
         }
 
         // Confirm "Servings" is a Float
         try {
-            if (jsonData.get("SERVINGS") != null && !(jsonData.get("SERVINGS") instanceof Double)){
-                failures.add("Servings is not a double.");
+            if (jsonData.get(JSON_SERVINGS) != null && !(jsonData.get(JSON_SERVINGS) instanceof Double)){
+                failures.add(JSON_SERVINGS + " is not a double.");
             }
         } catch (Exception ex){
-            failures.add("Unable to confirm Servings Json content ("+ ex.getMessage() +")");
+            failures.add("Unable to confirm "+ JSON_SERVINGS +" Json content ("+ ex.getMessage() +")");
         }
 
         // Confirm "Tags", if they exist, is a list of Strings
         try {
-            if (jsonData.get("TAGS") != null) {
-                if (!(jsonData.get("TAGS") instanceof ArrayList)) {
-                    failures.add("Tags is not a List");
+            if (jsonData.get(JSON_TAGS) != null) {
+                if (!(jsonData.get(JSON_TAGS) instanceof ArrayList)) {
+                    failures.add(JSON_TAGS + " is not a List");
                 } else {
-                    ArrayList list = (ArrayList) jsonData.get("TAGS");
+                    ArrayList list = (ArrayList) jsonData.get(JSON_TAGS);
                     for (int i = 0; i < list.size(); i++){
                         if (!(list.get(i) instanceof String)){
-                            failures.add("Not all Tags are strings.");
+                            failures.add("Not all " + JSON_TAGS + "s are strings.");
                             break;
                         }
                     }
                 }
             }
         } catch (Exception ex){
-            failures.add("Unable to confirm Tags Json content ("+ ex.getMessage() +")");
+            failures.add("Unable to confirm "+ JSON_TAGS +" Json content ("+ ex.getMessage() +")");
         }
 
         // Confirm "Category", if it exists, is a String
         try {
-            if (jsonData.get("CATEGORY") != null && !(jsonData.get("CATEGORY") instanceof String)){
-                failures.add("Category is not a string.");
+            if (jsonData.get(JSON_CATEGORY) != null && !(jsonData.get(JSON_CATEGORY) instanceof String)){
+                failures.add(JSON_CATEGORY + " is not a string.");
             }
         } catch (Exception ex){
-            failures.add("Unable to confirm CATEGORY Json content ("+ ex.getMessage() +")");
+            failures.add("Unable to confirm "+ JSON_CATEGORY +" Json content ("+ ex.getMessage() +")");
         }
 
         // Confirm "SOURCE_URL", if it exists, is a String
         try {
-            if (jsonData.get("SOURCE_URL") != null && !(jsonData.get("SOURCE_URL") instanceof String)){
-                failures.add("SOURCE_URL is not a string.");
+            if (jsonData.get(JSON_SOURCE_URL) != null && !(jsonData.get(JSON_SOURCE_URL) instanceof String)){
+                failures.add(JSON_SOURCE_URL + " is not a string.");
             }
         } catch (Exception ex){
-            failures.add("Unable to confirm SOURCE_URL Json content ("+ ex.getMessage() +")");
+            failures.add("Unable to confirm "+ JSON_SOURCE_URL +" Json content ("+ ex.getMessage() +")");
         }
 
         // Record all the failures and log it for future reference, if needed.
-        if (failures.size() > 0){
+        if (!failures.isEmpty()){
             Log.e(TAG, "validateRecipeFileFormat: Invalid file found. Reasons follow...\n" + failures);
             return false;
         }
@@ -282,7 +302,8 @@ public class FileHelper {
         //	    	"MEASUREMENT & INGREDIENT NAME",
         //	    	...
         //	    ],
-        //      "DIRECTIONS": "PLAIN TEXT DIRECTIONS",
+        //      "DIRECTIONS": "PLAIN TEXT DIRECTIONS",,
+        //      "UUID": JAVA.UUID,
         //      "SERVINGS": DOUBLE, *OPTIONAL*
         //      "SOURCE_URL": STRING URL, *OPTIONAL*
         //      "TAGS": ["TAG 1", "TAG 2", ... "TAG N"], *OPTIONAL*
@@ -304,6 +325,7 @@ public class FileHelper {
         json.addProperty(JSON_NAME, rm.getName());
         json.add(JSON_INGREDIENTS, ingredientJsonList);
         json.addProperty(JSON_DIRECTIONS, dm.getText());
+        json.addProperty(JSON_UUID, rm.getUuid().toString());
 
         if (rm.getServings() != null){
             json.addProperty(JSON_SERVINGS, rm.getServings());
@@ -311,7 +333,7 @@ public class FileHelper {
         if (rm.getSource_url() != null){
             json.addProperty(JSON_SOURCE_URL, rm.getSource_url());
         }
-        if (tms != null && !tms.isEmpty()){
+        if (!tms.isEmpty()){
             json.add(JSON_TAGS, tagsJsonList);
         }
         if (rm.getCategory() != null){

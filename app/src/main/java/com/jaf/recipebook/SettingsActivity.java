@@ -1,6 +1,7 @@
 package com.jaf.recipebook;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -12,11 +13,9 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TableRow;
@@ -48,12 +47,11 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -62,6 +60,8 @@ public class SettingsActivity extends AppCompatActivity {
     FileHelper fileHelper;
     public final String TAG = "JAF-SETTINGS";
     public final int signInCode = 101;
+    public final int IMPORT_ALL = 1000;
+    public final int IMPORT_SELECTED = 1001;
     GoogleSignInClient gsc;
     GoogleSignInOptions gso;
     GoogleSignInAccount gsa;
@@ -69,8 +69,11 @@ public class SettingsActivity extends AppCompatActivity {
     private RecipeBookRepo rbr;
 
     private CircleImageView googlePhotoImg;
-    private ArrayList<String> filesToImport;
-    private ArrayList<String> currentRecipes;
+    private HashSet<String> filesToImport;
+    private HashSet<File> duplicateImports;
+    private HashMap<File, String> invalidImports;
+    private HashSet<File> validImports;
+    private HashSet<UUID> currentRecipeUuids;
 
 
     @Override
@@ -109,14 +112,11 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void refreshRecipeNameList() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                List<RecipesModel> recipesModels = rbdb.recipeDao().getAllRecipes();
-                currentRecipes = new ArrayList<>();
-                for (RecipesModel m : recipesModels) {
-                    currentRecipes.add(m.getName());
-                }
+        new Thread(() -> {
+            List<RecipesModel> recipesModels = rbdb.recipeDao().getAllRecipes();
+            currentRecipeUuids = new HashSet<>();
+            for (RecipesModel m : recipesModels) {
+                currentRecipeUuids.add(m.getUuid());
             }
         }).start();
     }
@@ -200,7 +200,7 @@ public class SettingsActivity extends AppCompatActivity {
      * Interprets files from the Downloads folder of the user's device to JSON data, then saves
      * that to the database.
      */
-    private void importLocalFiles() throws IOException{
+    private void importLocalFiles(boolean shouldOverwriteDuplicates) throws IOException{
         for (String filePath : filesToImport){
             File recipeFile = new File(fileHelper.getDownloadsDir().getPath() + "/" + filePath);
             HashMap<String, Object> jsonData = fileHelper.returnGsonFromFile(recipeFile);
@@ -222,7 +222,8 @@ public class SettingsActivity extends AppCompatActivity {
                     (String) jsonData.get("NAME"),
                     category,
                     servings,
-                    sourceUrl
+                    sourceUrl,
+                    UUID.fromString((String) jsonData.get("UUID"))
             );
 
             // Create Ingredient Model
@@ -239,13 +240,25 @@ public class SettingsActivity extends AppCompatActivity {
             // Optionally create Tag Models (if present)
             ArrayList<TagsModel> tags = new ArrayList<>();
             if (jsonData.containsKey("TAGS")){
-                i = 0;
                 for (String tag : (ArrayList<String>) jsonData.get("TAGS")){
                     tags.add(new TagsModel(rm.getId(), tag.toLowerCase()));
                 }
             }
 
-            rbr.insertRecipe(rm, ingredients, tags, dm);
+            boolean isDup = false;
+            for (File dupFile : duplicateImports) {
+                if (dupFile.getName().equals(filePath)){
+                    isDup = true;
+                    break;
+                }
+            }
+            if (isDup){
+                if (shouldOverwriteDuplicates){ // Either we overwrite, or ignore entirely
+                    rbr.updateRecipe(rm, ingredients, tags, dm);
+                }
+            } else {
+                rbr.insertRecipe(rm, ingredients, tags, dm);
+            }
         }
     }
 
@@ -268,17 +281,20 @@ public class SettingsActivity extends AppCompatActivity {
 
     /**
      * Returns the list of Recipe Book files that cannot be imported, and the reason why.
-     * @return HashMap with the filename as key, and reason as the value.
      */
-    private HashMap<File, String> returnInvalidImports(ArrayList<File> availableImports){
-        HashMap<File, String> invalidImports = new HashMap<>();
+    private void validateImportFiles(ArrayList<File> availableImports){
+        invalidImports = new HashMap<>();
+        duplicateImports = new HashSet<>();
         for (File potentialImport : availableImports){
             if (!fileHelper.validateRecipeFileFormat(potentialImport)){
                 invalidImports.put(potentialImport, "The file structure is corrupted, and can't be imported.");
+            } else if (currentRecipeUuids.contains(fileHelper.getImportFileUuid(potentialImport))){
+                duplicateImports.add(potentialImport);
             }
         }
 
-        return invalidImports;
+        validImports = new HashSet<>(availableImports);
+        validImports.removeAll(invalidImports.keySet());
     }
 
     /**
@@ -288,15 +304,15 @@ public class SettingsActivity extends AppCompatActivity {
      */
     private void onImportFilesButtonClicked(View view){
         // Create empty list of file strings to be used when importing
-        filesToImport = new ArrayList<>();
+        filesToImport = new HashSet<>();
 
         // Populate the popup with the importable files
         ArrayList<File> imports = returnAvailableImports();
-        HashMap<File, String> invalidImports = returnInvalidImports(imports);
+        validateImportFiles(imports);
         Collections.sort(imports); // Sort for display purposes
 
         // Stop if there are no possible files to import
-        if (imports.size() == 0){
+        if (imports.isEmpty()){
             Toast.makeText(
                     view.getContext(),
                     "No recipe files (.rp) found to import...",
@@ -322,12 +338,9 @@ public class SettingsActivity extends AppCompatActivity {
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
 
         // dismiss the popup window when touched
-        popupView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                popupWindow.dismiss();
-                return true;
-            }
+        popupView.setOnTouchListener((v, event) -> {
+            popupWindow.dismiss();
+            return true;
         });
 
         for (File importableFile : imports){
@@ -344,9 +357,7 @@ public class SettingsActivity extends AppCompatActivity {
                 // If valid, remove the button that would show the error tooltip, add checkbox listener
                 tooltipBtn.setVisibility(View.INVISIBLE);
                 ((CheckBox)importFileRow.findViewById(R.id.shouldImportCheckbox))
-                        .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    .setOnCheckedChangeListener((compoundButton, b) -> {
                         String filename = ((TextView)((TableRow)compoundButton.getParent())
                                 .findViewById(R.id.importFilenameText)).getText().toString();
                         if(b){
@@ -354,8 +365,7 @@ public class SettingsActivity extends AppCompatActivity {
                         } else {
                             filesToImport.remove(filename);
                         }
-                    }
-                });
+                    });
             }
             // Add the filename, then add this inflated view to the popup scroll view
             ((TextView)importFileRow.findViewById(R.id.importFilenameText)).setText(importableFile.getName());
@@ -367,62 +377,106 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Add onclick listener for the confirm imports button
         popupView.findViewById(R.id.confirm_imports_btn).setOnClickListener(v -> {
-            ((Button) v).setEnabled(false);
+            v.setEnabled(false);
             popupView.findViewById(R.id.import_all_btn).setEnabled(false);
-            try {
-                if (filesToImport.size() == 0){
-                    Toast.makeText(
-                            v.getContext(),
-                            "No files selected to import...",
-                            Toast.LENGTH_LONG
-                    ).show();
-                    return;
-                }
-                importLocalFiles();
-                Toast.makeText(
-                        v.getContext(),
-                        "Selected file(s) imported successfully!",
-                        Toast.LENGTH_LONG
-                ).show();
+
+            if (Collections.disjoint(filesToImport, duplicateImports)){ // if true, no common elements
+                importCheckedFiles(v, popupWindow);
+            } else {
+                askUserHowToHandleDuplicates(IMPORT_SELECTED, v, popupWindow);
             }
-            catch (IOException ex){
-                Toast.makeText(
-                        v.getContext(),
-                    "Failed to import due to " + ex.getMessage(),
-                    Toast.LENGTH_LONG
-                ).show();
-                Log.e(TAG, ex.getMessage(), ex);
-            } finally {
-                popupWindow.dismiss();
-            }
+
         });
 
         popupView.findViewById(R.id.import_all_btn).setOnClickListener(v -> {
-            ((Button) v).setEnabled(false);
+            v.setEnabled(false);
             popupView.findViewById(R.id.confirm_imports_btn).setEnabled(false);
-            try {
-                HashSet<File> importFiles = new HashSet<>(imports);
-                importFiles.removeAll(invalidImports.keySet());
-                filesToImport = new ArrayList<>();
-                for (File importFile : importFiles) {
-                    filesToImport.add(importFile.getName());
-                }
-                importLocalFiles();
-                Toast.makeText(
-                        v.getContext(),
-                        "Imported all files successfully!",
-                        Toast.LENGTH_LONG
-                ).show();
-            } catch (IOException ex){
-                Log.e(TAG, "Failed to import all files", ex);
-            } finally {
-                popupWindow.dismiss();
+
+            if (Collections.disjoint(validImports, duplicateImports)){
+                importAllFiles(false, v, popupWindow);
+            } else {
+                askUserHowToHandleDuplicates(IMPORT_ALL, v, popupWindow);
             }
         });
     }
 
+    private void importCheckedFiles(View v, PopupWindow popupWindow){
+        try {
+            if (filesToImport.isEmpty()){
+                Toast.makeText(
+                        v.getContext(),
+                        "No files selected to import...",
+                        Toast.LENGTH_LONG
+                ).show();
+                return;
+            }
+            importLocalFiles(false);
+            Toast.makeText(
+                    v.getContext(),
+                    "Selected file(s) imported successfully!",
+                    Toast.LENGTH_LONG
+            ).show();
+        }
+        catch (IOException ex){
+            Toast.makeText(
+                    v.getContext(),
+                    "Failed to import due to " + ex.getMessage(),
+                    Toast.LENGTH_LONG
+            ).show();
+            Log.e(TAG, ex.getMessage(), ex);
+        } finally {
+            popupWindow.dismiss();
+        }
+    }
+
+    private void importAllFiles(boolean shouldOverwriteExisting, View v, PopupWindow popupWindow) {
+
+        try {
+            filesToImport = new HashSet<>();
+            for (File importFile : validImports) {
+                filesToImport.add(importFile.getName());
+            }
+
+            if (validImports.equals(duplicateImports) && !shouldOverwriteExisting){
+                Toast.makeText(v.getContext(), "Only duplicates to import. Skipping...", Toast.LENGTH_LONG)
+                        .show();
+                return;
+            }
+
+            importLocalFiles(shouldOverwriteExisting);
+            Toast.makeText(v.getContext(), "All files imported successfully!", Toast.LENGTH_LONG)
+                    .show();
+        } catch (IOException ex) {
+            Toast.makeText(v.getContext(), "Failed to import due to " + ex.getMessage(), Toast.LENGTH_LONG)
+                    .show();
+            Log.e(TAG, ex.getMessage(), ex);
+        } finally {
+            popupWindow.dismiss();
+        }
+    }
+
     private void onGoToDriveSettingsButtonClicked(View view){
         startActivity(new Intent(this, DriveSettingsActivity.class));
+    }
+
+    private void askUserHowToHandleDuplicates(int importOption, View v, PopupWindow popupWindow){
+        AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
+        builder.setMessage(R.string.duplicate_warning_message)
+                .setPositiveButton(R.string.confirm_overwrite, (dialog, which) -> {
+                    if (importOption == IMPORT_ALL) {
+                        importAllFiles(true, v, popupWindow);
+                    } else {
+                        importCheckedFiles(v, popupWindow);
+                    }
+                })
+                .setNegativeButton(R.string.ignore_duplicates, (dialog, which) -> {
+                    if (importOption == IMPORT_ALL) {
+                        importAllFiles(false, v, popupWindow);
+                    } else {
+                        importCheckedFiles(v, popupWindow);
+                    }
+                });
+        builder.create().show();
     }
 
     @Subscribe

@@ -39,6 +39,9 @@
     <string name="options_go_to_drive_settings">Go to Drive Settings</string>
     <string name="confirm_imports_btn_text">Confirm\nImports</string>
     <string name="import_all_btn_text">Import\nAll</string>
+    <string name="duplicate_warning_message">Some of the recipes you want to import are duplicates of your existing recipes. Do you want to overwrite them, or ignore them?</string>
+    <string name="confirm_overwrite">Overwrite</string>
+    <string name="ignore_duplicates">Ignore</string>
     <string name="google_sign_in_button">SIGN IN WITH GOOGLE</string>
     <string name="google_sign_out_button">SIGN OUT OF GOOGLE</string>
     <string name="google_sign_in_descriptor">You are signed in as</string>
@@ -89,7 +92,5 @@
     <string name="dialog_recipe_view_delete_confirmation">Are you sure you want to delete this recipe?</string>
     <string name="affirmative_text">Yes</string>
     <string name="negative_text">Cancel</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

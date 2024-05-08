@@ -444,7 +444,7 @@ public class AddEditRecipeActivity extends AppCompatActivity {
 
         RecipesModel rm;
         if (this.rm == null) {
-            rm = new RecipesModel(titleSave, categorySave, servingsSave, sourceUrlSave);
+            rm = new RecipesModel(titleSave, categorySave, servingsSave, sourceUrlSave, null);
         } else {
             rm = this.rm;
             rm.setName(titleSave);
