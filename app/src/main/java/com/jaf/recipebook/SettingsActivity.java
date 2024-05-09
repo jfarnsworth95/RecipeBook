@@ -403,6 +403,13 @@ public class SettingsActivity extends AppCompatActivity {
                 ).show();
                 return;
             }
+
+            if (duplicateImports.containsAll(filesToImport) && !shouldOverwrite){
+                Toast.makeText(v.getContext(), "Only duplicates to import. Skipping...", Toast.LENGTH_LONG)
+                        .show();
+                return;
+            }
+
             importLocalFiles(shouldOverwrite);
             Toast.makeText(
                     v.getContext(),
