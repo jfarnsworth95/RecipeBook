@@ -1,5 +1,6 @@
 package com.jaf.recipebook;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -95,10 +97,6 @@ public class MainActivity extends AppCompatActivity {
 
     // TODO Dark mode is fucked on Mobile test
     // TODO Marquee for View menu header
-    // TODO Why is the checkbox acting weird? Layout inspector says its still material checkbox
-
-    // TODO On back arrow while bulk select is occurring, clear it
-    // TODO On back arrow for main activity, ask if user wants to leave the app
 
     // TODO Add Category menu-ing on main activity
 
@@ -252,6 +250,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupListeners(){
+        Context context = this;
+        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (bulkActionList.isEmpty()){
+                    new AlertDialog.Builder(context)
+                        .setTitle("Are you sure you want to exit?")
+                        .setPositiveButton(context.getString(R.string.affirmative_text),
+                                (dialogInterface, i) -> {
+                                    finish();
+                                })
+                        .setNegativeButton(context.getString(R.string.negative_text),
+                                (dialogInterface, i) -> {})
+                        .show();
+                } else {
+                    clearBulkActionList();
+                }
+            }
+        });
+
         expandSearchOptionsBtn.setOnClickListener(v -> toggleSearchOptionsVisible());
 
         titleCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
