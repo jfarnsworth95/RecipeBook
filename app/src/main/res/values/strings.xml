@@ -30,6 +30,8 @@
     <string name="search_tags">Tags</string>
     <string name="search_source_url">Source</string>
     <string name="search_category">Category</string>
+    <string name="bulk_delete_confirm">Delete Recipes</string>
+    <string name="bulk_delete_cancel">Cancel</string>
 
     <!-- Settings Page Strings -->
     <string name="google_sign_in_header">Connect to Google Drive</string>

@@ -277,12 +277,14 @@ public class SettingsActivity extends AppCompatActivity {
     private void validateImportFiles(ArrayList<File> availableImports){
         invalidImports = new HashMap<>();
         duplicateImports = new HashSet<>();
+        HashSet<UUID> scannedUuids = new HashSet<>();
         for (File potentialImport : availableImports){
-            if (!fileHelper.validateRecipeFileFormat(potentialImport)){
-                invalidImports.put(potentialImport, "The file structure is corrupted, and can't be imported.");
+            if (!fileHelper.validateRecipeFileFormat(potentialImport, scannedUuids)){
+                invalidImports.put(potentialImport, "The file structure is corrupted, or this unique id was found in another file.");
             } else if (currentRecipeUuids.contains(fileHelper.getImportFileUuid(potentialImport))){
                 duplicateImports.add(potentialImport);
             }
+            scannedUuids.add(fileHelper.getImportFileUuid(potentialImport));
         }
 
         validImports = new HashSet<>(availableImports);

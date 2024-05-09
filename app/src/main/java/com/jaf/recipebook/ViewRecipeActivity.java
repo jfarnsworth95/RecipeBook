@@ -120,7 +120,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
                 return true;
 
             case R.id.view_recipe_save_to_downloads:
-                fh.saveRecipeToDownloads(rm, ims, dm, tms);
+                fh.saveRecipeToDownloads(rm, ims, dm, tms, false);
                 return true;
 
             case R.id.view_recipe_delete_recipe:

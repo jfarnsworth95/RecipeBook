@@ -12,10 +12,15 @@ import com.jaf.recipebook.db.RecipeBookDao.BasicRecipeTuple;
 public class RecipeViewAdapter extends ListAdapter<BasicRecipeTuple, RecipeViewHolder> {
     private static final String TAG = "JAF-RecipeViewAdapter";
     View.OnClickListener recipeClickListener;
+    View.OnLongClickListener recipeLongClickListener;
 
-    public RecipeViewAdapter(@NonNull DiffUtil.ItemCallback<BasicRecipeTuple> diffCallback, View.OnClickListener recipeClickListener) {
+    public RecipeViewAdapter(
+            @NonNull DiffUtil.ItemCallback<BasicRecipeTuple> diffCallback,
+            View.OnClickListener recipeClickListener,
+            View.OnLongClickListener recipeLongClickListener) {
         super(diffCallback);
         this.recipeClickListener = recipeClickListener;
+        this.recipeLongClickListener = recipeLongClickListener;
     }
 
     @Override
@@ -28,6 +33,7 @@ public class RecipeViewAdapter extends ListAdapter<BasicRecipeTuple, RecipeViewH
         BasicRecipeTuple current = getItem(position);
         holder.bind(current.getName(), current.getId());
         holder.itemView.setOnClickListener(recipeClickListener);
+        holder.itemView.setOnLongClickListener(recipeLongClickListener);
     }
 
     public static class RecipeDiff extends DiffUtil.ItemCallback<BasicRecipeTuple> {

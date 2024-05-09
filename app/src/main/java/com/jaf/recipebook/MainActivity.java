@@ -36,8 +36,11 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jaf.recipebook.adapters.RecipeViewAdapter;
+import com.jaf.recipebook.db.FullRecipeTuple;
 import com.jaf.recipebook.db.RecipeBookDao;
 import com.jaf.recipebook.db.RecipeBookDatabase;
+import com.jaf.recipebook.db.RecipeBookRepo;
+import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.fragments.IsLoading;
 import com.jaf.recipebook.fragments.ListRecipes;
 import com.jaf.recipebook.fragments.NoSavedRecipes;
@@ -46,6 +49,7 @@ import com.jaf.recipebook.helpers.FileHelper;
 import com.jaf.recipebook.helpers.GeneralHelper;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -59,11 +63,13 @@ public class MainActivity extends AppCompatActivity {
     private final int FRAGMENT_SEARCH_RETURNED_EMPTY = 14;
 
     private RecipeBookDatabase rbd;
+    private RecipeBookRepo rbr;
 
     private Fragment currentFrag = null;
     private Handler mainHandler;
     private MutableLiveData<List<RecipeBookDao.BasicRecipeTuple>> recipesToRender;
     private Runnable workRunnableSearch = null;
+    private HashSet<ConstraintLayout> bulkActionList;
 
     ActivityResultLauncher<Intent> addEditActivityResultLauncher;
     ActivityResultLauncher<Intent> settingsActivityResultLauncher;
@@ -113,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume(){
         super.onResume();
+        clearBulkActionList();
 
         // If MANAGE_EXTERNAL_STORAGE permission not granted and the Shared Preference for using
         // external storage is true (or doesn't exist yet), open dialog requesting the permission
@@ -135,6 +142,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu (Menu menu){
+        menu.clear();
+        if (bulkActionList.isEmpty()) {
+            getMenuInflater().inflate(R.menu.menu_main, menu);
+        } else {
+            getMenuInflater().inflate(R.menu.main_menu_bulk_action, menu);
+        }
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         switch(item.getItemId()){
@@ -150,6 +168,21 @@ public class MainActivity extends AppCompatActivity {
                 toggleSearchBarVisible();
                 return true;
 
+            case R.id.bulk_delete_btn:
+                new AlertDialog.Builder(this)
+                        .setTitle("Delete Selected Recipes")
+                        .setMessage("Are you sure? If you haven't backed up your recipes, there's no getting them back.")
+                        .setPositiveButton(this.getString(R.string.bulk_delete_confirm), (dialogInterface, i) -> {
+                            bulkDelete();
+                        })
+                        .setNegativeButton(this.getString(R.string.bulk_delete_cancel), (dialogInterface, i) -> {})
+                        .show();
+                return true;
+
+            case R.id.bulk_download_btn:
+                bulkDownload();
+                return true;
+
             default:
                 Log.w(TAG, "onOptionsItemSelected: Unknown Item ID for selected item: "
                         + item.toString());
@@ -157,9 +190,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void clearBulkActionList(){
+        for (ConstraintLayout rowItem : bulkActionList){
+            rowItem.findViewById(R.id.frag_recipe_list_row_selected).setVisibility(View.GONE);
+        }
+        bulkActionList = new HashSet<>();
+        invalidateOptionsMenu();
+    }
+
     private void setClassVars(){
         mainHandler = new Handler(getMainLooper());
         fileHelper = new FileHelper(this);
+        bulkActionList = new HashSet<>();
 
         addEditActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), o -> {
@@ -183,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
 
         recipesToRender = new MutableLiveData<>(new ArrayList<>());
         rbd = RecipeBookDatabase.getInstance(this);
+        rbr = new RecipeBookRepo(rbd);
 
         isLoadingFrag = new IsLoading();
         listRecipesFrag = new ListRecipes();
@@ -262,6 +305,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void queryForRecipes(){
+        clearBulkActionList();
         String searchQuery = searchBarEditText.getText().toString();
         rbd.getQueryExecutor().execute(() -> {
             ArrayList<RecipeBookDao.BasicRecipeTuple> recipes;
@@ -270,12 +314,12 @@ public class MainActivity extends AppCompatActivity {
                 recipesToRender.postValue(recipes);
             } else {
                 recipes = new ArrayList<>(rbd.recipeBookDao().searchAllForParameter(
-                        (titleCB.isChecked() ? searchQuery : null),
-                        (categoryCB.isChecked() ? searchQuery : null),
-                        (sourceCB.isChecked() ? searchQuery : null),
-                        (ingredientCB.isChecked() ? searchQuery : null),
-                        (directionsCB.isChecked() ? searchQuery : null),
-                        (tagsCB.isChecked() ? searchQuery : null)
+                    (titleCB.isChecked() ? searchQuery : null),
+                    (categoryCB.isChecked() ? searchQuery : null),
+                    (sourceCB.isChecked() ? searchQuery : null),
+                    (ingredientCB.isChecked() ? searchQuery : null),
+                    (directionsCB.isChecked() ? searchQuery : null),
+                    (tagsCB.isChecked() ? searchQuery : null)
                 ));
                 recipesToRender.postValue(recipes);
             }
@@ -315,20 +359,43 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mainRecyclerView = listRecipesFragView.findViewById(R.id.main_recipes_recycler);
-        final RecipeViewAdapter rva = new RecipeViewAdapter(new RecipeViewAdapter.RecipeDiff(), v -> {
-            String id = ((TextView) v.findViewById(R.id.frag_recipe_list_row_recipe_id)).getText().toString();
-            String name = ((TextView) v.findViewById(R.id.frag_recipe_list_row_text_view)).getText().toString();
+        final RecipeViewAdapter rva = new RecipeViewAdapter(
+                new RecipeViewAdapter.RecipeDiff(),
+                v -> {
+                    if (bulkActionList.isEmpty()) {
+                        String id = ((TextView) v.findViewById(R.id.frag_recipe_list_row_recipe_id)).getText().toString();
+                        String name = ((TextView) v.findViewById(R.id.frag_recipe_list_row_text_view)).getText().toString();
 
-            Intent intent = new Intent(MainActivity.this, ViewRecipeActivity.class);
-            intent.putExtra("recipe_id", Long.valueOf(id));
-            intent.putExtra("recipe_name", name);
-            viewActivityResultLauncher.launch(intent);
-        });
+                        Intent intent = new Intent(MainActivity.this, ViewRecipeActivity.class);
+                        intent.putExtra("recipe_id", Long.valueOf(id));
+                        intent.putExtra("recipe_name", name);
+                        viewActivityResultLauncher.launch(intent);
+                    } else {
+                        selectRowItemEffect((ConstraintLayout) v);
+                    }
+                },
+                v -> {
+                    selectRowItemEffect((ConstraintLayout) v);
+                    return true;
+                });
         mainRecyclerView.setAdapter(rva);
         mainRecyclerView.setClickable(true);
         recipesToRender.observe(this, rva::submitList);
 
         mainRecyclerView.addItemDecoration(new DividerItemDecoration(getApplicationContext(), DividerItemDecoration.VERTICAL));
+    }
+
+    private void selectRowItemEffect(ConstraintLayout v){
+        if (bulkActionList.contains(v)){
+            v.findViewById(R.id.frag_recipe_list_row_selected).setVisibility(View.GONE);
+            bulkActionList.remove(v);
+        } else {
+            v.findViewById(R.id.frag_recipe_list_row_selected).setVisibility(View.VISIBLE);
+            bulkActionList.add(v);
+        }
+        if (bulkActionList.isEmpty() || bulkActionList.size() == 1){
+            invalidateOptionsMenu();
+        }
     }
 
     private void swapFragments(int fragmentAttach){
@@ -435,6 +502,41 @@ public class MainActivity extends AppCompatActivity {
         expandSearchOptionsBtn.setImageDrawable(isOptionsVisible ?
             getDrawable(R.drawable.baseline_expand_more_32) :
             getDrawable(R.drawable.baseline_expand_less_32));
+    }
+
+    private void bulkDownload(){
+        rbd.getQueryExecutor().execute(() -> {
+            for (ConstraintLayout recipeRow : bulkActionList){
+                long recipeId = Long.valueOf(
+                    ((TextView) recipeRow.findViewById(R.id.frag_recipe_list_row_recipe_id))
+                    .getText().toString());
+                FullRecipeTuple frt = rbr.getFullRecipeData(recipeId);
+                fileHelper.saveRecipeToDownloads(
+                        frt.recipesModel,
+                        frt.ingredientsModel,
+                        frt.directionsModel,
+                        frt.tagsModel,
+                        true
+                );
+            }
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Selected Recipes saved to Downloads!", Toast.LENGTH_SHORT).show();
+            });
+        });
+    }
+
+    private void bulkDelete(){
+        swapFragments(FRAGMENT_LOADING);
+        rbd.getQueryExecutor().execute(() -> {
+            for (ConstraintLayout recipeRow : bulkActionList) {
+                long recipeId = Long.valueOf(
+                    ((TextView) recipeRow.findViewById(R.id.frag_recipe_list_row_recipe_id))
+                    .getText().toString());
+                RecipesModel rm = rbd.recipeDao().getRecipe(recipeId).blockingGet();
+                rbr.deleteRecipe(rm);
+            }
+            mainHandler.postDelayed(this::queryForRecipes, 2000);
+        });
     }
 
 }

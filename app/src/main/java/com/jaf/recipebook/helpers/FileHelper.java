@@ -27,6 +27,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -152,7 +153,7 @@ public class FileHelper {
      * @param recipeFile Recipe file to read, should have the ".rp" extension.
      * @return True if the structure is valid.
      */
-    public boolean validateRecipeFileFormat(File recipeFile){
+    public boolean validateRecipeFileFormat(File recipeFile, HashSet<UUID> scannedUuids){
         // Expected File Structure:
         //  {
         //      "NAME": STRING,
@@ -230,6 +231,9 @@ public class FileHelper {
                 failures.add(JSON_UUID + " is not a UUID.");
             }
             UUID uuid = UUID.fromString(((String) jsonData.get(JSON_UUID)));
+            if (scannedUuids.contains(uuid)){
+                failures.add(JSON_UUID + " has already been found in Downloads");
+            }
         } catch (IllegalArgumentException exception){
             failures.add(JSON_UUID +" is not a valid UUID");
         } catch (Exception ex){
@@ -291,7 +295,7 @@ public class FileHelper {
         return true;
     }
 
-    public boolean saveRecipeToDownloads(RecipesModel rm, List<IngredientsModel> ims, DirectionsModel dm, List<TagsModel> tms){
+    public boolean saveRecipeToDownloads(RecipesModel rm, List<IngredientsModel> ims, DirectionsModel dm, List<TagsModel> tms, boolean isBulk){
         // Expected File Structure:
         //  {
         //      "NAME": STRING,
@@ -347,7 +351,9 @@ public class FileHelper {
                 fw.write(json.toString());
                 fw.close();
 
-                Toast.makeText(context, context.getString(R.string.saved_recipe_in_downloads), Toast.LENGTH_LONG).show();
+                if (!isBulk){
+                    Toast.makeText(context, context.getString(R.string.saved_recipe_in_downloads), Toast.LENGTH_LONG).show();
+                }
             }
         } catch (IOException e) {
             Toast.makeText(context, context.getString(R.string.failed_to_open_recipe), Toast.LENGTH_LONG).show();
