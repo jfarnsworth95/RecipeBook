@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private Handler mainHandler;
     private MutableLiveData<List<RecipeBookDao.BasicRecipeTuple>> recipesToRender;
     private Runnable workRunnableSearch = null;
+    private HashSet<String> categories;
     private HashSet<ConstraintLayout> bulkActionList;
 
     ActivityResultLauncher<Intent> addEditActivityResultLauncher;
@@ -126,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
         // Check if user wants to connect to their Google Drive to backup the Recipe Files
         // TODO: Add method for adding Google Drive connection
 
+        queryForCategories();
         queryForRecipes();
         if (!searchBarEditText.getText().toString().isEmpty()) {
             searchBar.setVisibility(View.VISIBLE);
@@ -147,6 +149,10 @@ public class MainActivity extends AppCompatActivity {
         } else {
             getMenuInflater().inflate(R.menu.main_menu_bulk_action, menu);
         }
+
+        if (!categories.isEmpty() && bulkActionList.isEmpty()){
+            getMenuInflater().inflate(R.menu.menu_categories_available, menu);
+        }
         return true;
     }
 
@@ -164,6 +170,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.search_btn:
                 // Open Search Bar
                 toggleSearchBarVisible();
+                return true;
+
+            case R.id.action_category_toggle:
+                // Toggle Category tabs show/hide
+                Toast.makeText(this, "SHOW/HIDE CATEGORIES", Toast.LENGTH_SHORT).show();
                 return true;
 
             case R.id.bulk_delete_btn:
@@ -320,6 +331,14 @@ public class MainActivity extends AppCompatActivity {
         } else if (Environment.isExternalStorageManager() && !fileHelper.getPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, false)){
             fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true);
         }
+    }
+
+    private void queryForCategories(){
+        rbd.getQueryExecutor().execute(() -> {
+            categories = new HashSet<>(rbd.recipeDao().getDistinctCategories());
+            categories.remove(null);
+            clearBulkActionList();
+        });
     }
 
     public void queryForRecipes(){
