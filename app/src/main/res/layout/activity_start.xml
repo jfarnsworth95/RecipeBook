@@ -81,40 +81,31 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:stretchColumns="*">
 
-            <TableRow
-                android:layout_margin="4dp" >
+            <TableRow>
                 <CheckBox
                     android:checked="true"
-                    android:theme="@style/checkBoxStyle"
                     android:id="@+id/search_title_checkbox"
                     android:text="@string/search_title" />
                 <CheckBox
                     android:checked="true"
-                    android:theme="@style/checkBoxStyle"
                     android:id="@+id/search_tags_checkbox"
                     android:text="@string/search_tags" />
             </TableRow>
 
-            <TableRow
-                android:layout_margin="4dp" >
+            <TableRow>
                 <CheckBox
-                    android:theme="@style/checkBoxStyle"
                     android:id="@+id/search_ingredients_checkbox"
                     android:text="@string/search_ingredients" />
                 <CheckBox
-                    android:theme="@style/checkBoxStyle"
                     android:id="@+id/search_directions_checkbox"
                     android:text="@string/search_directions" />
             </TableRow>
 
-            <TableRow
-                android:layout_margin="4dp" >
+            <TableRow>
                 <CheckBox
-                    android:theme="@style/checkBoxStyle"
                     android:id="@+id/search_categories_checkbox"
                     android:text="@string/search_category" />
                 <CheckBox
-                    android:theme="@style/checkBoxStyle"
                     android:id="@+id/search_source_checkbox"
                     android:text="@string/search_source_url" />
             </TableRow>

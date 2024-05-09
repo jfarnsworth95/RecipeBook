@@ -14,6 +14,7 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
         <item name="android:actionMenuTextColor">@color/white</item>
+        <item name="checkboxStyle">@style/Widget.App.CheckBox</item>
     </style>
 
     <style name="Theme.RecipeBook.NoActionBar">
@@ -28,10 +29,15 @@
         <item name="android:windowSplashScreenIconBackgroundColor">@color/secondary</item>
     </style>
 
-    <style name="checkBoxStyle" parent="Base.Theme.AppCompat">
-        <item name="colorAccent">#FFFF</item>
-        <item name="android:textColorSecondary">#FF598392</item>
-        <item name="android:textColor">#FFFF</item>
+    <style name="Widget.App.CheckBox" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
+        <item name="buttonTint">@color/button_tint_search_bar</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="Widget.App.CheckBox.Imports" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
+        <item name="buttonTint">@color/button_tint_import_files</item>
+        <item name="android:textColor">@color/white</item>
         <item name="android:layout_height">wrap_content</item>
     </style>
 
