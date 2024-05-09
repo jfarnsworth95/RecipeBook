@@ -94,12 +94,16 @@ public class MainActivity extends AppCompatActivity {
     TableLayout searchBarOptionsContainer;
 
     // TODO Dark mode is fucked on Mobile test
-    // TODO Bulk delete from main view?
-    // TODO Don't reload when returning to main view if no edits/additions happened
     // TODO Marquee for View menu header
     // TODO Why is the checkbox acting weird? Layout inspector says its still material checkbox
 
-    // TODO Try increasing row height and text size, it's a tad small atm
+    // TODO On back arrow while bulk select is occurring, clear it
+    // TODO On back arrow for main activity, ask if user wants to leave the app
+
+    // TODO Add Category menu-ing on main activity
+
+    // TODO Tablet View Compatibility
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
