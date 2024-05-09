@@ -1,9 +1,16 @@
 <resources>
-    <string name="app_name">RecipeBook</string>
-    <string name="recipe_file_extension">rp</string>
-    <string name="preference_file_key">com.recipebook.user_preferences</string>
-    <string name="preference_local_storage_key">is_external_manager</string>
-    <string name="preference_cloud_storage_active_key">is_connected_to_cloud</string>
+    <string name="app_name" translatable="false">RecipeBook</string>
+    <string name="recipe_file_extension" translatable="false">rp</string>
+    <string name="preference_file_key" translatable="false">com.recipebook.user_preferences</string>
+    <string name="preference_local_storage_key" translatable="false">is_external_manager</string>
+    <string name="preference_cloud_storage_active_key" translatable="false">is_connected_to_cloud</string>
+    <string name="title">Title</string>
+    <string name="servings">Servings</string>
+    <string name="ingredients">Ingredients</string>
+    <string name="directions">Directions</string>
+    <string name="tags">Tags</string>
+    <string name="source">Source</string>
+    <string name="category">Category</string>
 
     <!-- Permission Button Options -->
     <string name='dialog_allow'>Allow</string>
@@ -23,13 +30,6 @@
     <string name="add_recipe">Add Recipe</string>
     <string name="search_returned_empty">Looks like that search didn\'t return anything.\nTry a different word/phrase or expand where we\'re looking.</string>
     <string name="search_for">Search for…</string>
-    <string name="search_title">Title</string>
-    <string name="search_servings">Servings</string>
-    <string name="search_ingredients">Ingredients</string>
-    <string name="search_directions">Directions</string>
-    <string name="search_tags">Tags</string>
-    <string name="search_source_url">Source</string>
-    <string name="search_category">Category</string>
     <string name="bulk_delete_confirm">Delete Recipes</string>
     <string name="bulk_delete_cancel">Cancel</string>
 

@@ -85,29 +85,29 @@
                 <CheckBox
                     android:checked="true"
                     android:id="@+id/search_title_checkbox"
-                    android:text="@string/search_title" />
+                    android:text="@string/title" />
                 <CheckBox
                     android:checked="true"
                     android:id="@+id/search_tags_checkbox"
-                    android:text="@string/search_tags" />
+                    android:text="@string/tags" />
             </TableRow>
 
             <TableRow>
                 <CheckBox
                     android:id="@+id/search_ingredients_checkbox"
-                    android:text="@string/search_ingredients" />
+                    android:text="@string/ingredients" />
                 <CheckBox
                     android:id="@+id/search_directions_checkbox"
-                    android:text="@string/search_directions" />
+                    android:text="@string/directions" />
             </TableRow>
 
             <TableRow>
                 <CheckBox
                     android:id="@+id/search_categories_checkbox"
-                    android:text="@string/search_category" />
+                    android:text="@string/category" />
                 <CheckBox
                     android:id="@+id/search_source_checkbox"
-                    android:text="@string/search_source_url" />
+                    android:text="@string/source" />
             </TableRow>
 
         </TableLayout>

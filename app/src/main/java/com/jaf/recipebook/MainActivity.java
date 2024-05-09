@@ -96,12 +96,8 @@ public class MainActivity extends AppCompatActivity {
     TableLayout searchBarOptionsContainer;
 
     // TODO Dark mode is fucked on Mobile test
-    // TODO Marquee for View menu header
-
     // TODO Add Category menu-ing on main activity
-
     // TODO Tablet View Compatibility
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

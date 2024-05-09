@@ -5,8 +5,11 @@ import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -52,6 +55,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
     private DirectionsModel dm;
     private List<TagsModel> tms;
 
+    MaterialTextView titleTv;
     MaterialTextView ingredientsTv;
     MaterialTextView directionsTv;
     MaterialTextView servingsTv;
@@ -147,6 +151,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
     }
 
     private void fetchViewHandles(){
+        titleTv = findViewById(R.id.view_recipe_title_text);
         ingredientsTv = findViewById(R.id.view_ingredients_body);
         directionsTv = findViewById(R.id.view_directions_body);
         servingsTv = findViewById(R.id.view_servings_body);
@@ -214,6 +219,11 @@ public class ViewRecipeActivity extends AppCompatActivity {
         setupChipRecycler();
 
         Objects.requireNonNull(this.getSupportActionBar()).setTitle(rm.getName());
+
+        // Set Title
+        SpannableString spanString = new SpannableString(rm.getName());
+        spanString.setSpan(new StyleSpan(Typeface.BOLD_ITALIC), 0, spanString.length(), 0);
+        titleTv.setText(spanString);
 
         // Set Ingredients
         StringBuilder ingredientSb = GeneralHelper.convertIngredientModelArrayToString(ims);
