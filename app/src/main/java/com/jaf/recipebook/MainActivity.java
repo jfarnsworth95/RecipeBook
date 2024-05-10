@@ -138,6 +138,8 @@ public class MainActivity extends AppCompatActivity {
         queryForRecipes();
         if (!searchBarEditText.getText().toString().isEmpty()) {
             searchBar.setVisibility(View.VISIBLE);
+        } else if (categoryTabLayout.getTabCount() > 0 && categoryTabLayout.getSelectedTabPosition() > 0){
+            setCategoriesTabsVisible();
         }
     }
 
