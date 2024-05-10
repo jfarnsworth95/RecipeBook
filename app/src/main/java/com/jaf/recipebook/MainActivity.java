@@ -105,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
     TableLayout searchBarOptionsContainer;
 
     // TODO Dark mode is fucked on Mobile test
-    // TODO Auto focus search bar when dropdown
     // TODO Tablet View Compatibility
 
     @Override
@@ -447,11 +446,10 @@ public class MainActivity extends AppCompatActivity {
                 ));
             }
             recipesToRender.postValue(recipes);
-
-            if (recipes.isEmpty() && searchQuery.isEmpty() && currentTabIndex >= 1){
-                swapFragments(FRAGMENT_NO_SAVED_RECIPES);
-            } else if (recipes.isEmpty()){
+            if (recipes.isEmpty() && (!searchQuery.isEmpty() || currentTabIndex >= 1)) {
                 swapFragments(FRAGMENT_SEARCH_RETURNED_EMPTY);
+            } else if (recipes.isEmpty()){
+                swapFragments(FRAGMENT_NO_SAVED_RECIPES);
             } else {
                 swapFragments(FRAGMENT_LIST);
             }
