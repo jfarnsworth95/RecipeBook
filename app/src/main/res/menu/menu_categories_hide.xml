@@ -3,9 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.jaf.recipebook.MainActivity">
     <item
-        android:id="@+id/action_category_toggle"
+        android:id="@+id/action_category_hide"
         android:orderInCategory="5"
         android:icon="@drawable/baseline_folder_download_24"
-        android:title="@string/toggle_categories"
+        android:title="@string/hide_categories"
         app:showAsAction="always" />
 </menu>

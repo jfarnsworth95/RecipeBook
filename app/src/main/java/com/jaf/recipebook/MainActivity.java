@@ -37,6 +37,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.textview.MaterialTextView;
 import com.jaf.recipebook.adapters.RecipeViewAdapter;
 import com.jaf.recipebook.db.FullRecipeTuple;
 import com.jaf.recipebook.db.RecipeBookDao;
@@ -73,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
     private Runnable workRunnableSearch = null;
     private HashSet<String> categories;
     private HashSet<ConstraintLayout> bulkActionList;
+    private boolean ignore = true;
 
     ActivityResultLauncher<Intent> addEditActivityResultLauncher;
     ActivityResultLauncher<Intent> settingsActivityResultLauncher;
@@ -83,9 +86,9 @@ public class MainActivity extends AppCompatActivity {
     CheckBox tagsCB;
     CheckBox ingredientCB;
     CheckBox directionsCB;
-    CheckBox categoryCB;
     CheckBox sourceCB;
     ConstraintLayout searchBar;
+    ConstraintLayout categoryTabContainer;
     EditText searchBarEditText;
     FloatingActionButton addRecipeFab;
     Fragment isLoadingFrag;
@@ -93,10 +96,13 @@ public class MainActivity extends AppCompatActivity {
     Fragment noSavedRecipesFrag;
     Fragment searchReturnsEmptyFrag;
     ImageButton expandSearchOptionsBtn;
+    MaterialTextView categoryTv;
     RecyclerView mainRecyclerView;
+    TabLayout categoryTabLayout;
     TableLayout searchBarOptionsContainer;
 
     // TODO Dark mode is fucked on Mobile test
+    // TODO Auto focus search bar when dropdown
     // TODO Add Category menu-ing on main activity
     // TODO Tablet View Compatibility
 
@@ -151,7 +157,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (!categories.isEmpty() && bulkActionList.isEmpty()){
-            getMenuInflater().inflate(R.menu.menu_categories_available, menu);
+            if (categoryTabContainer.getVisibility() == View.VISIBLE){
+                getMenuInflater().inflate(R.menu.menu_categories_hide, menu);
+            } else {
+                getMenuInflater().inflate(R.menu.menu_categories_show, menu);
+            }
         }
         return true;
     }
@@ -172,9 +182,10 @@ public class MainActivity extends AppCompatActivity {
                 toggleSearchBarVisible();
                 return true;
 
-            case R.id.action_category_toggle:
+            case R.id.action_category_show:
+            case R.id.action_category_hide:
                 // Toggle Category tabs show/hide
-                Toast.makeText(this, "SHOW/HIDE CATEGORIES", Toast.LENGTH_SHORT).show();
+                toggleCategoryTabVisibility();
                 return true;
 
             case R.id.bulk_delete_btn:
@@ -247,13 +258,15 @@ public class MainActivity extends AppCompatActivity {
         searchBarEditText = findViewById(R.id.searchbar_edit_text);
         searchBarOptionsContainer = findViewById(R.id.searchbar_options_container);
         expandSearchOptionsBtn = findViewById(R.id.toggle_search_options_btn);
+        categoryTabContainer = findViewById(R.id.category_tab_container);
+        categoryTabLayout = findViewById(R.id.category_tab_layout);
 
         titleCB = findViewById(R.id.search_title_checkbox);
         tagsCB = findViewById(R.id.search_tags_checkbox);
         ingredientCB = findViewById(R.id.search_ingredients_checkbox);
         directionsCB = findViewById(R.id.search_directions_checkbox);
-        categoryCB = findViewById(R.id.search_categories_checkbox);
         sourceCB = findViewById(R.id.search_source_checkbox);
+        categoryTv = findViewById(R.id.search_categories_text);
     }
 
     private void setupListeners(){
@@ -277,14 +290,34 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        categoryTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                categoryTv.setText(tab.getText().toString());
+                if (ignore){
+                    ignore = false;
+                } else {
+                    queryForRecipes();
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) { }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) { }
+        });
+
         expandSearchOptionsBtn.setOnClickListener(v -> toggleSearchOptionsVisible());
 
         titleCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
         tagsCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
         ingredientCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
         directionsCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
-        categoryCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
         sourceCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
+        categoryTv.setOnClickListener(v -> {
+            if (!categories.isEmpty()) toggleCategoryTabVisibility();
+        });
 
         searchBarEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -300,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
                 workRunnableSearch = () -> {
                     queryForRecipes();
                 };
-                mainHandler.postDelayed(workRunnableSearch, 1000);
+                mainHandler.postDelayed(workRunnableSearch, 500);
             }
         });
     }
@@ -337,31 +370,63 @@ public class MainActivity extends AppCompatActivity {
         rbd.getQueryExecutor().execute(() -> {
             categories = new HashSet<>(rbd.recipeDao().getDistinctCategories());
             categories.remove(null);
-            clearBulkActionList();
+
+            runOnUiThread(() -> {
+                if (!categories.isEmpty()){
+                    HashSet<String> activeTabLabels = new HashSet<>();
+                    for (int i = 1; i < categoryTabLayout.getTabCount(); i ++) {
+                        activeTabLabels.add(categoryTabLayout.getTabAt(i).getText().toString());
+                    }
+
+                    if (!categories.equals(activeTabLabels)){
+                        categoryTabLayout.removeAllTabs();
+                        categoryTabLayout.addTab(categoryTabLayout.newTab().setText(getString(R.string.all_recipes)));
+                        for (String category : categories){
+                            TabLayout.Tab newTab = categoryTabLayout.newTab().setText(category);
+                            categoryTabLayout.addTab(newTab);
+                        }
+                    }
+                }
+                clearBulkActionList();
+            });
         });
     }
 
     public void queryForRecipes(){
-        clearBulkActionList();
+
+        int currentTabIndex = categoryTabLayout.getSelectedTabPosition();
         String searchQuery = searchBarEditText.getText().toString();
+        clearBulkActionList();
+
         rbd.getQueryExecutor().execute(() -> {
             ArrayList<RecipeBookDao.BasicRecipeTuple> recipes;
-            if (searchQuery.isEmpty()) {
+            if (searchQuery.isEmpty() && currentTabIndex < 1) {
                 recipes = new ArrayList<>(rbd.recipeBookDao().getAllRecipes());
-                recipesToRender.postValue(recipes);
+            } else if (currentTabIndex >= 1 && !searchQuery.isEmpty()) {
+                String categoryText = categoryTabLayout.getTabAt(currentTabIndex).getText().toString();
+                recipes = new ArrayList<>(rbd.recipeBookDao().searchAllForParameter(
+                        (titleCB.isChecked() ? searchQuery : null),
+                        categoryText,
+                        (sourceCB.isChecked() ? searchQuery : null),
+                        (ingredientCB.isChecked() ? searchQuery : null),
+                        (directionsCB.isChecked() ? searchQuery : null),
+                        (tagsCB.isChecked() ? searchQuery : null)
+                ));
+            } else if (currentTabIndex >= 1) {
+                String categoryText = categoryTabLayout.getTabAt(currentTabIndex).getText().toString();
+                recipes = new ArrayList<>(rbd.recipeBookDao().getRecipesForCategory(categoryText));
             } else {
                 recipes = new ArrayList<>(rbd.recipeBookDao().searchAllForParameter(
                     (titleCB.isChecked() ? searchQuery : null),
-                    (categoryCB.isChecked() ? searchQuery : null),
                     (sourceCB.isChecked() ? searchQuery : null),
                     (ingredientCB.isChecked() ? searchQuery : null),
                     (directionsCB.isChecked() ? searchQuery : null),
                     (tagsCB.isChecked() ? searchQuery : null)
                 ));
-                recipesToRender.postValue(recipes);
             }
+            recipesToRender.postValue(recipes);
 
-            if (recipes.isEmpty() && searchQuery.isEmpty()){
+            if (recipes.isEmpty() && searchQuery.isEmpty() && currentTabIndex >= 1){
                 swapFragments(FRAGMENT_NO_SAVED_RECIPES);
             } else if (recipes.isEmpty()){
                 swapFragments(FRAGMENT_SEARCH_RETURNED_EMPTY);
@@ -372,9 +437,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void searchCheckboxListener(CheckBox checkBoxClicked){
-        if (!titleCB.isChecked() && !tagsCB.isChecked() &&
-                !ingredientCB.isChecked() && !directionsCB.isChecked() &&
-                !categoryCB.isChecked() && !sourceCB.isChecked()){
+        if (!titleCB.isChecked() && !tagsCB.isChecked() && !ingredientCB.isChecked() &&
+                !directionsCB.isChecked() && !sourceCB.isChecked()){
             checkBoxClicked.setChecked(true);
             Toast.makeText(this, "We can't search nothing...", Toast.LENGTH_SHORT).show();
         } else {
@@ -530,15 +594,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void toggleSearchBarVisible(){
+        categoryTabContainer.setVisibility(View.GONE);
         searchBar.setVisibility(searchBar.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+        invalidateOptionsMenu();
     }
 
     private void toggleSearchOptionsVisible(){
         boolean isOptionsVisible = searchBarOptionsContainer.getVisibility() == View.VISIBLE;
         searchBarOptionsContainer.setVisibility(isOptionsVisible ? View.GONE : View.VISIBLE);
         expandSearchOptionsBtn.setImageDrawable(isOptionsVisible ?
-            getDrawable(R.drawable.baseline_expand_more_32) :
-            getDrawable(R.drawable.baseline_expand_less_32));
+            getDrawable(R.drawable.baseline_expand_less_32) :
+            getDrawable(R.drawable.baseline_expand_more_32));
+    }
+
+    private void toggleCategoryTabVisibility(){
+        searchBar.setVisibility(View.GONE);
+        categoryTabContainer.setVisibility(categoryTabContainer.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+        invalidateOptionsMenu();
     }
 
     private void bulkDownload(){

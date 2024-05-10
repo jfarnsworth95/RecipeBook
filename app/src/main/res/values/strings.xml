@@ -22,7 +22,8 @@
     <string name="recipe_save_action">Save</string>
     <string name="recipe_edit_action">Edit Recipe</string>
     <string name="more_options_action">More Options</string>
-    <string name="toggle_categories">Toggle Show/Hide Categories</string>
+    <string name="show_categories">Toggle Show Categories</string>
+    <string name="hide_categories">Toggle Hide Categories</string>
 
     <!-- Main Activity Strings -->
     <string name="recipe_saved">Recipe Saved</string>
@@ -33,6 +34,10 @@
     <string name="search_for">Search for…</string>
     <string name="bulk_delete_confirm">Delete Recipes</string>
     <string name="bulk_delete_cancel">Cancel</string>
+    <string name="context_search_icon">Search Icon</string>
+    <string name="context_search_dropdown">Show more search options</string>
+    <string name="search_bar_hint">What are you looking for?</string>
+    <string name="all_recipes">All Recipes</string>
 
     <!-- Settings Page Strings -->
     <string name="google_sign_in_header">Connect to Google Drive</string>
