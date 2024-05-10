@@ -25,9 +25,11 @@ import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -97,13 +99,13 @@ public class MainActivity extends AppCompatActivity {
     Fragment searchReturnsEmptyFrag;
     ImageButton expandSearchOptionsBtn;
     MaterialTextView categoryTv;
+    MaterialTextView searchingForReminderTv;
     RecyclerView mainRecyclerView;
     TabLayout categoryTabLayout;
     TableLayout searchBarOptionsContainer;
 
     // TODO Dark mode is fucked on Mobile test
     // TODO Auto focus search bar when dropdown
-    // TODO Add Category menu-ing on main activity
     // TODO Tablet View Compatibility
 
     @Override
@@ -267,6 +269,7 @@ public class MainActivity extends AppCompatActivity {
         directionsCB = findViewById(R.id.search_directions_checkbox);
         sourceCB = findViewById(R.id.search_source_checkbox);
         categoryTv = findViewById(R.id.search_categories_text);
+        searchingForReminderTv = findViewById(R.id.searching_for_reminder);
     }
 
     private void setupListeners(){
@@ -316,14 +319,21 @@ public class MainActivity extends AppCompatActivity {
         directionsCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
         sourceCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
         categoryTv.setOnClickListener(v -> {
-            if (!categories.isEmpty()) toggleCategoryTabVisibility();
+            if (!categories.isEmpty()) setCategoriesTabsVisible();
         });
 
         searchBarEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0){
+                    searchingForReminderTv.setVisibility(View.VISIBLE);
+                    searchingForReminderTv.setText(s.toString());
+                } else {
+                    searchingForReminderTv.setVisibility(View.GONE);
+                }
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -334,6 +344,18 @@ public class MainActivity extends AppCompatActivity {
                     queryForRecipes();
                 };
                 mainHandler.postDelayed(workRunnableSearch, 500);
+            }
+        });
+        searchBarEditText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+                    if (workRunnableSearch != null) {
+                        mainHandler.removeCallbacks(workRunnableSearch);
+                    }
+                    queryForRecipes();
+                }
+                return false;
             }
         });
     }
@@ -594,22 +616,51 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void toggleSearchBarVisible(){
-        categoryTabContainer.setVisibility(View.GONE);
-        searchBar.setVisibility(searchBar.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
-        invalidateOptionsMenu();
+        if (searchBar.getVisibility() == View.GONE){
+            setSearchBarVisible();
+        } else {
+            setSearchBarGone();
+        }
     }
 
     private void toggleSearchOptionsVisible(){
         boolean isOptionsVisible = searchBarOptionsContainer.getVisibility() == View.VISIBLE;
         searchBarOptionsContainer.setVisibility(isOptionsVisible ? View.GONE : View.VISIBLE);
         expandSearchOptionsBtn.setImageDrawable(isOptionsVisible ?
-            getDrawable(R.drawable.baseline_expand_less_32) :
-            getDrawable(R.drawable.baseline_expand_more_32));
+                getDrawable(R.drawable.baseline_expand_less_32) :
+                getDrawable(R.drawable.baseline_expand_more_32));
     }
 
     private void toggleCategoryTabVisibility(){
+        if (categoryTabContainer.getVisibility() == View.GONE){
+            setCategoriesTabsVisible();
+        } else {
+            setCategoriesTabsGone();
+        }
+    }
+
+    private void setSearchBarVisible(){
+        setCategoriesTabsGone();
+        searchBar.setVisibility(View.VISIBLE);
+        searchBarEditText.requestFocus();
+        ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
+                .showSoftInput(searchBarEditText, InputMethodManager.SHOW_IMPLICIT);
+    }
+
+    private void setSearchBarGone(){
         searchBar.setVisibility(View.GONE);
-        categoryTabContainer.setVisibility(categoryTabContainer.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+        ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
+                .hideSoftInputFromWindow(searchBarEditText.getWindowToken(), 0);
+    }
+
+    private void setCategoriesTabsVisible(){
+        setSearchBarGone();
+        categoryTabContainer.setVisibility(View.VISIBLE);
+        invalidateOptionsMenu();
+    }
+
+    private void setCategoriesTabsGone(){
+        categoryTabContainer.setVisibility(View.GONE);
         invalidateOptionsMenu();
     }
 
