@@ -107,6 +107,8 @@ public class MainActivity extends AppCompatActivity {
 
     // TODO Dark mode is fucked on Mobile test
     // TODO Tablet View Compatibility
+    // TODO Category resets on nav back to Main Activity
+    // TODO Category field in add/edit not auto-filling
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
