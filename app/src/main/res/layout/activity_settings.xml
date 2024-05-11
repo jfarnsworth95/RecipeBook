@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingBottom="48dp"
     tools:context=".SettingsActivity">
 
     <TextView
@@ -33,11 +34,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:backgroundTint="@color/secondary"
+        android:enabled="false"
         android:text="@string/option_import_downloaded_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toggle_external_storage_btn" />
+
+    <Button
+        android:id="@+id/change_category_order_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:enabled="false"
+        android:text="@string/change_category_order_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/import_downloaded_files_btn" />
 
     <Button
         android:id="@+id/go_to_drive_settings_btn"
@@ -48,7 +60,7 @@
         android:text="@string/options_go_to_drive_settings"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/import_downloaded_files_btn" />
+        app:layout_constraintTop_toBottomOf="@+id/change_category_order_btn" />
 
     <TextView
         android:id="@+id/settings_header_signin"

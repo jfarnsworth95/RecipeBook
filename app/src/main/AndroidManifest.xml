@@ -12,6 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RecipeBook">
         <activity
+            android:name=".ReorderCategoryActivity"
+            android:exported="false"
+            android:parentActivityName=".SettingsActivity" />
+        <activity
             android:name=".ViewRecipeActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />

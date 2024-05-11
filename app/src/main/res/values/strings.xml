@@ -4,6 +4,7 @@
     <string name="preference_file_key" translatable="false">com.recipebook.user_preferences</string>
     <string name="preference_local_storage_key" translatable="false">is_external_manager</string>
     <string name="preference_cloud_storage_active_key" translatable="false">is_connected_to_cloud</string>
+    <string name="preference_category_ordering" translatable="false">category_ordering</string>
     <string name="title">Title</string>
     <string name="servings">Servings</string>
     <string name="ingredients">Ingredients</string>
@@ -42,8 +43,9 @@
     <!-- Settings Page Strings -->
     <string name="google_sign_in_header">Connect to Google Drive</string>
     <string name="toggle_preferences_header">Options &amp; Preferences</string>
-    <string name="option_toggle_external_text">Change Storage Method</string>
+    <string name="option_toggle_external_text">Allow Access to Downloads</string>
     <string name="option_import_downloaded_text">Import Downloaded Recipes</string>
+    <string name="change_category_order_text">Change Category Order</string>
     <string name="options_go_to_drive_settings">Go to Drive Settings</string>
     <string name="confirm_imports_btn_text">Confirm\nImports</string>
     <string name="import_all_btn_text">Import\nAll</string>
@@ -53,6 +55,10 @@
     <string name="google_sign_in_button">SIGN IN WITH GOOGLE</string>
     <string name="google_sign_out_button">SIGN OUT OF GOOGLE</string>
     <string name="google_sign_in_descriptor">You are signed in as</string>
+
+    <!-- Reorder Categories Page Strings -->
+    <string name="confirm_new_order">Confirm Reordering</string>
+    <string name="cancel_reorder">Cancel</string>
 
     <!-- Drive Settings Page Strings -->
     <string name="last_synced_text">Checking the last time you saved to your Drive…</string>

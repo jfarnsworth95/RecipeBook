@@ -41,6 +41,7 @@ public class FileHelper {
     public final String TAG = "JAF-FileHelper";
 
     public final int EXTERNAL_STORAGE_PREFERENCE = 0;
+    public final int CATEGORY_ORDER_PREFERENCE = 1;
     public final String JSON_NAME = "NAME";
     public final String JSON_INGREDIENTS = "INGREDIENTS";
     public final String JSON_DIRECTIONS = "DIRECTIONS";
@@ -61,6 +62,31 @@ public class FileHelper {
             Log.e(TAG, "Unable to create MD5 checksum digester", ex);
             this.md = null;
         }
+    }
+
+    public void setPreference(int preference, String s){
+        switch(preference){
+            case CATEGORY_ORDER_PREFERENCE:
+                appPreferences.edit()
+                        .putString(context.getString(R.string.preference_category_ordering), s)
+                        .apply();
+            default:
+                Log.w(TAG, "setPreference: Unknown Preference Int Provided: "
+                        + Integer.toString(preference));
+        }
+    }
+
+    public String getPreference(int preference, String defaultRtn){
+        switch(preference){
+            case CATEGORY_ORDER_PREFERENCE:
+                return appPreferences.getString(context.getString(R.string.preference_category_ordering), defaultRtn);
+
+            default:
+                Log.w(TAG, "getPreference: Unknown Preference Int Provided: "
+                        + Integer.toString(preference));
+                return defaultRtn;
+        }
+
     }
 
     public void setPreference(int preference, boolean b){

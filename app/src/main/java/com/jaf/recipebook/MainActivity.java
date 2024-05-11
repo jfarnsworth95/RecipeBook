@@ -55,6 +55,7 @@ import com.jaf.recipebook.helpers.FileHelper;
 import com.jaf.recipebook.helpers.GeneralHelper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -395,16 +396,19 @@ public class MainActivity extends AppCompatActivity {
             categories.remove(null);
 
             runOnUiThread(() -> {
-                if (!categories.isEmpty()){
+                GeneralHelper.ensureCategoryPrefUpdated(categories, fileHelper);
+                ArrayList<String> orderedCategories = GeneralHelper.getCategoryOrderPreference(fileHelper);
+                if (!orderedCategories.isEmpty()){
                     HashSet<String> activeTabLabels = new HashSet<>();
                     for (int i = 1; i < categoryTabLayout.getTabCount(); i ++) {
                         activeTabLabels.add(categoryTabLayout.getTabAt(i).getText().toString());
                     }
 
-                    if (!categories.equals(activeTabLabels)){
+                    ArrayList<String> currentUiCategories = new ArrayList<String>(categories);
+                    if (!categories.equals(activeTabLabels) || !currentUiCategories.equals(orderedCategories)){
                         categoryTabLayout.removeAllTabs();
                         categoryTabLayout.addTab(categoryTabLayout.newTab().setText(getString(R.string.all_recipes)));
-                        for (String category : categories){
+                        for (String category : orderedCategories){
                             TabLayout.Tab newTab = categoryTabLayout.newTab().setText(category);
                             categoryTabLayout.addTab(newTab);
                         }

@@ -5,12 +5,15 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +50,7 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,10 +67,10 @@ public class SettingsActivity extends AppCompatActivity {
     public final int IMPORT_ALL = 1000;
     public final int IMPORT_SELECTED = 1001;
     GoogleSignInClient gsc;
-    GoogleSignInOptions gso;
     GoogleSignInAccount gsa;
     private RecipeBookDatabase rbdb;
     private RecipeBookRepo rbr;
+    private Handler mainHandler;
 
     private CircleImageView googlePhotoImg;
     private HashSet<File> filesToImport;
@@ -74,13 +78,24 @@ public class SettingsActivity extends AppCompatActivity {
     private HashMap<File, String> invalidImports;
     private HashSet<File> validImports;
     private HashSet<UUID> currentRecipeUuids;
+    private HashSet<String> categories;
 
+    private Button changeStoragePermissionBtn;
+    private Button importDownloadsBtn;
+    private Button changeCategoryOrderBtn;
+    private Button goToDriveSettingsBtn;
+    private Button googleSignInBtn;
+
+    // TODO Loading screen in popup
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         fileHelper = new FileHelper(this);
         setContentView(R.layout.activity_settings);
+        mainHandler = new Handler(getMainLooper());
+
+        getClassVars();
 
         //Initialize CircleImageView
         googlePhotoImg = findViewById(R.id.google_account_image);
@@ -89,36 +104,23 @@ public class SettingsActivity extends AppCompatActivity {
         gsc = GoogleSignInHelper.getGoogleSignInClient(this);
 
         // Add button listener for Changing External Storage
-        findViewById(R.id.toggle_external_storage_btn).setOnClickListener(view ->
+        changeStoragePermissionBtn.setOnClickListener(view ->
             startActivity(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
                 .addCategory("android.intent.category.DEFAULT")
                 .setData(Uri.fromParts("package", getPackageName(), null))
         ));
 
-        // Add button listener for Importing Downloaded recipes
-        findViewById(R.id.import_downloaded_files_btn).setOnClickListener(this::onImportFilesButtonClicked);
-
         // Add button listener for moving to the Drive Settings Activity, and hide it if user isn't signed in
-        findViewById(R.id.go_to_drive_settings_btn).setOnClickListener(this::onGoToDriveSettingsButtonClicked);
+        goToDriveSettingsBtn.setOnClickListener(this::onGoToDriveSettingsButtonClicked);
 
         // Add button listener for Google Sign In
-        findViewById(R.id.google_sign_in_button).setOnClickListener(view -> {
+        googleSignInBtn.setOnClickListener(view -> {
             if (gsa == null) {
                 startActivityForResult(gsc.getSignInIntent(), signInCode);
             } else {
                 gsc.signOut().addOnCompleteListener(this, task -> onStart());
             }
         });
-    }
-
-    private void refreshRecipeNameList() {
-        new Thread(() -> {
-            List<RecipesModel> recipesModels = rbdb.recipeDao().getAllRecipes();
-            currentRecipeUuids = new HashSet<>();
-            for (RecipesModel m : recipesModels) {
-                currentRecipeUuids.add(m.getUuid());
-            }
-        }).start();
     }
 
     @Override
@@ -128,7 +130,20 @@ public class SettingsActivity extends AppCompatActivity {
         // based on if the permission was granted or not
         fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE,
                                 Environment.isExternalStorageManager());
+
+        // Add button listener for Importing Downloaded recipes
+        if (Environment.isExternalStorageManager()){
+            importDownloadsBtn.setOnClickListener(this::onImportFilesButtonClicked);
+            importDownloadsBtn.setEnabled(true);
+            importDownloadsBtn.setBackgroundColor(getColor(R.color.secondary));
+        } else {
+            importDownloadsBtn.setOnClickListener(null);
+            importDownloadsBtn.setEnabled(false);
+            importDownloadsBtn.setBackgroundColor(getColor(R.color.inactive));
+        }
+
         refreshRecipeNameList();
+        getCategories();
     }
 
     @Override
@@ -153,6 +168,42 @@ public class SettingsActivity extends AppCompatActivity {
         EventBus.getDefault().unregister(this);
     }
 
+    private void getClassVars() {
+        changeStoragePermissionBtn = findViewById(R.id.toggle_external_storage_btn);
+        importDownloadsBtn = findViewById(R.id.import_downloaded_files_btn);
+        changeCategoryOrderBtn = findViewById(R.id.change_category_order_btn);
+        goToDriveSettingsBtn = findViewById(R.id.go_to_drive_settings_btn);
+        googleSignInBtn = findViewById(R.id.google_sign_in_button);
+    }
+
+    private void refreshRecipeNameList() {
+        new Thread(() -> {
+            List<RecipesModel> recipesModels = rbdb.recipeDao().getAllRecipes();
+            currentRecipeUuids = new HashSet<>();
+            for (RecipesModel m : recipesModels) {
+                currentRecipeUuids.add(m.getUuid());
+            }
+        }).start();
+    }
+
+    private void getCategories() {
+        rbdb.getQueryExecutor().execute(() -> {
+            categories = new HashSet<>(rbdb.recipeDao().getDistinctCategories());
+            mainHandler.post(this::adjustCategoryBtn);
+        });
+    }
+
+    private void adjustCategoryBtn() {
+        if (categories.size() > 1) {
+            changeCategoryOrderBtn.setTooltipText("");
+            changeCategoryOrderBtn.setOnClickListener(v -> {
+                startActivity(new Intent(this, ReorderCategoryActivity.class));
+            });
+            changeCategoryOrderBtn.setEnabled(true);
+            changeCategoryOrderBtn.setBackgroundColor(getColor(R.color.secondary));
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -174,13 +225,13 @@ public class SettingsActivity extends AppCompatActivity {
      */
     private void updateUi() {
         if (gsa == null){
-            ((Button) findViewById(R.id.google_sign_in_button)).setText(R.string.google_sign_in_button);
+            googleSignInBtn.setText(R.string.google_sign_in_button);
             findViewById(R.id.google_user_name).setVisibility(View.GONE);
             findViewById(R.id.sign_in_descriptor).setVisibility(View.GONE);
             findViewById(R.id.go_to_drive_settings_btn).setVisibility(View.GONE);
             googlePhotoImg.setVisibility(View.GONE);
         }else{
-            ((Button) findViewById(R.id.google_sign_in_button)).setText(R.string.google_sign_out_button);
+            googleSignInBtn.setText(R.string.google_sign_out_button);
             if (gsa.getPhotoUrl() != null) {
                 Log.i(TAG, "updateUi: User profile found, assigning to Image View.");
                 Glide.with(SettingsActivity.this).load(gsa.getPhotoUrl()).into(googlePhotoImg);

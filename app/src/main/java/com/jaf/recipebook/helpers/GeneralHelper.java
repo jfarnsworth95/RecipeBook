@@ -3,11 +3,8 @@ package com.jaf.recipebook.helpers;
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
@@ -15,9 +12,12 @@ import android.widget.PopupWindow;
 
 import androidx.appcompat.content.res.AppCompatResources;
 
-import com.jaf.recipebook.R;
+import com.jaf.recipebook.db.RecipeBookDatabase;
 import com.jaf.recipebook.db.ingredients.IngredientsModel;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 public class GeneralHelper {
@@ -64,5 +64,32 @@ public class GeneralHelper {
         wm.updateViewLayout(parentView, p);
 
         return popupWindow;
+    }
+
+    public static ArrayList<String> getCategoryOrderPreference(FileHelper fh){
+        String stringyCategoryOrder = fh.getPreference(fh.CATEGORY_ORDER_PREFERENCE, "");
+        return new ArrayList<>(Arrays.asList(stringyCategoryOrder.split(",")));
+    }
+
+    public static void ensureCategoryPrefUpdated(HashSet<String> recipeCategories, FileHelper fh){
+        ArrayList<String> currentList = getCategoryOrderPreference(fh);
+        HashSet<String> currentPreferenceSet = new HashSet<>(currentList);
+
+        if (!currentPreferenceSet.equals(recipeCategories)) {
+            StringBuilder rebuildList = new StringBuilder();
+            for (String category : currentList) {
+                if (recipeCategories.contains(category)) {
+                    rebuildList.append(category).append(",");
+                }
+            }
+            recipeCategories.removeAll(currentPreferenceSet);
+            for (String category : recipeCategories) {
+                rebuildList.append(category).append(",");
+            }
+            if (rebuildList.length() > 0 && rebuildList.length() > 0) {
+                rebuildList.setLength(rebuildList.length() - 1);
+            }
+            fh.setPreference(fh.CATEGORY_ORDER_PREFERENCE, rebuildList.toString());
+        }
     }
 }
