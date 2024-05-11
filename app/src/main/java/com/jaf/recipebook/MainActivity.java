@@ -107,7 +107,6 @@ public class MainActivity extends AppCompatActivity {
 
     // TODO Dark mode is fucked on Mobile test
     // TODO Tablet View Compatibility
-    // TODO Category resets on nav back to Main Activity
     // TODO Category field in add/edit not auto-filling
 
     @Override
@@ -406,7 +405,10 @@ public class MainActivity extends AppCompatActivity {
                         activeTabLabels.add(categoryTabLayout.getTabAt(i).getText().toString());
                     }
 
-                    ArrayList<String> currentUiCategories = new ArrayList<String>(categories);
+                    ArrayList<String> currentUiCategories = new ArrayList<>();
+                    for (int i = 1; i < categoryTabLayout.getTabCount(); i ++){
+                        currentUiCategories.add(categoryTabLayout.getTabAt(i).getText().toString());
+                    }
                     if (!categories.equals(activeTabLabels) || !currentUiCategories.equals(orderedCategories)){
                         categoryTabLayout.removeAllTabs();
                         categoryTabLayout.addTab(categoryTabLayout.newTab().setText(getString(R.string.all_recipes)));
