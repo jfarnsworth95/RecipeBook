@@ -120,12 +120,12 @@ public class MainActivity extends AppCompatActivity {
         setClassVars();
         setupListeners();
 
-        swapFragments(FRAGMENT_LOADING);
     }
 
     @Override
     protected void onResume(){
         super.onResume();
+        swapFragments(FRAGMENT_LOADING);
         clearBulkActionList();
 
         // If MANAGE_EXTERNAL_STORAGE permission not granted and the Shared Preference for using
