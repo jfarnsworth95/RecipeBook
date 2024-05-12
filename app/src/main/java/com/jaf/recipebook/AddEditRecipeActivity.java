@@ -3,25 +3,35 @@ package com.jaf.recipebook;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatAutoCompleteTextView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
+import android.content.Context;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.jaf.recipebook.db.FullRecipeTuple;
 import com.jaf.recipebook.db.RecipeBookDatabase;
 import com.jaf.recipebook.db.RecipeBookRepo;
@@ -58,14 +68,16 @@ public class AddEditRecipeActivity extends AppCompatActivity {
 
     private MutableLiveData<List<TagsModel>> mutable_tms = new MutableLiveData<>(new ArrayList<>());
 
+    private AutoCompleteTextView categoryInput;
+    private ConstraintLayout rootConstraint;
     private TextInputEditText titleInput;
     private TextInputEditText ingredientInput;
     private TextInputEditText directionInput;
     private TextInputEditText servingsInput;
     private TextInputEditText sourceUrlInput;
-    private AppCompatAutoCompleteTextView categoryInput;
     private TextInputEditText tagsInput;
     private RecyclerView chipGroup;
+    private ScrollView scrollView;
 
     private Animation flashField;
 
@@ -108,6 +120,23 @@ public class AddEditRecipeActivity extends AppCompatActivity {
         EventBus.getDefault().unregister(this);
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if ( v instanceof AutoCompleteTextView) {
+                Rect outRect = new Rect();
+                v.getGlobalVisibleRect(outRect);
+                if (!outRect.contains((int)event.getRawX(), (int)event.getRawY())) {
+                    v.clearFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+            }
+        }
+        return super.dispatchTouchEvent( event );
+    }
+
     /**
      * Some setup can only be done once we're using the Add/Edit layout
      */
@@ -133,6 +162,9 @@ public class AddEditRecipeActivity extends AppCompatActivity {
         categoryInput = findViewById(R.id.textInput_RecipeCategoryInput);
         chipGroup = findViewById(R.id.chipLayout_recipeTags);
         tagsInput = findViewById(R.id.textInput_RecipeTagsInput);
+
+        scrollView = findViewById(R.id.add_edit_scroll_view);
+        rootConstraint = findViewById(R.id.add_edit_root_constraint);
     }
 
     /**
@@ -206,6 +238,33 @@ public class AddEditRecipeActivity extends AppCompatActivity {
     }
 
     private void setupCategoryAutoComplete(){
+        rootConstraint.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            if(categoryInput.hasFocus()){
+                int fullBottom = bottom + v.getPaddingBottom();
+                int sy = scrollView.getScrollY();
+                int sh = scrollView.getHeight();
+                int delta = fullBottom - (sy + sh);
+
+                scrollView.smoothScrollBy(0, delta);
+            }
+        });
+        categoryInput.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus){
+                rootConstraint.setPadding(
+                        0,
+                        0,
+                        0,
+                        getResources().getDimensionPixelSize(R.dimen.category_padding_bottom_lg)
+                );
+            } else {
+                rootConstraint.setPadding(
+                        0,
+                        0,
+                        0,
+                        getResources().getDimensionPixelSize(R.dimen.category_padding_bottom_sm)
+                );
+            }
+        });
         rbdb.getTransactionExecutor().execute(() -> {
             ArrayList<String> categories = new ArrayList<>(rbdb.recipeDao().getDistinctCategories());
             categories.removeAll(Collections.singleton(null));

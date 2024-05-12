@@ -17,6 +17,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/add_edit_root_constraint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
 
@@ -37,7 +38,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/recipe_title_hint"
                     android:inputType="text|textCapSentences"
-                    android:singleLine="true"
+                    android:maxLines="1"
                     tools:text="My Title"/>
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -57,7 +58,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/recipe_add_tags_hint"
-                    android:singleLine="true"
+                    android:maxLines="1"
                     android:imeOptions="actionDone"
                     android:inputType="text|textCapSentences|textCapWords" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -135,7 +136,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/recipe_servings_hint"
                     android:inputType="numberDecimal"
-                    android:singleLine="true" />
+                    android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -155,7 +156,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/recipe_source_url_hint"
                     android:inputType="textUri"
-                    android:singleLine="true" />
+                    android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -170,12 +171,13 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textInput_RecipeSourceUrl">
 
-                <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+                <AutoCompleteTextView
                     style="@style/Widget.MaterialComponents.AutoCompleteTextView.FilledBox"
                     android:hint="@string/recipe_category_hint"
                     android:id="@+id/textInput_RecipeCategoryInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLines="1"
                     android:inputType="text|textAutoCorrect|textCapSentences|textCapWords"/>
             </com.google.android.material.textfield.TextInputLayout>
 
