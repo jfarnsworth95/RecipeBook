@@ -106,6 +106,9 @@ public class RecipeBookRepo {
                 try {
                     if (rm.getId() < 1 && rm.getUuid() != null){
                         rm.setId(recipeDao.getRecipeByUuid(rm.getUuid()).blockingGet().getId());
+                        for (IngredientsModel im : ims){
+                            im.setRecipe_id(rm.getId());
+                        }
                     }
                     recipeDao.updateRecipe(rm);
                     directionsDao.updateDirections(dm);
