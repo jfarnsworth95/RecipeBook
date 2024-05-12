@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
     private Runnable workRunnableSearch = null;
     private HashSet<String> categories;
     private HashSet<ConstraintLayout> bulkActionList;
-    private boolean ignore = true;
 
     ActivityResultLauncher<Intent> addEditActivityResultLauncher;
     ActivityResultLauncher<Intent> settingsActivityResultLauncher;
@@ -106,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
     TableLayout searchBarOptionsContainer;
 
     // TODO Dark mode is fucked on Mobile test
-    // TODO Tablet View Compatibility
+    // TODO Tablet View Compatibility - Ingredients & Directions Side by side
     // TODO Category field in add/edit not auto-filling
 
     @Override
@@ -300,11 +299,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 categoryTv.setText(tab.getText().toString());
-                if (ignore){
-                    ignore = false;
-                } else {
-                    queryForRecipes();
-                }
+                queryForRecipes();
             }
 
             @Override
@@ -533,7 +528,7 @@ public class MainActivity extends AppCompatActivity {
         Fragment swappedTo = null;
         switch (fragmentAttach){
             case FRAGMENT_LOADING:
-                if (getSupportFragmentManager().findFragmentByTag(IsLoading.class.getSimpleName()) == null){
+                if (getSupportFragmentManager().findFragmentById(isLoadingFrag.getId()) == null){
                     getSupportFragmentManager()
                             .beginTransaction()
                             .setReorderingAllowed(true)
@@ -552,7 +547,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case FRAGMENT_LIST:
-                if (getSupportFragmentManager().findFragmentByTag(ListRecipes.class.getSimpleName()) == null){
+                if (getSupportFragmentManager().findFragmentById(listRecipesFrag.getId()) == null){
                     getSupportFragmentManager()
                             .beginTransaction()
                             .setReorderingAllowed(true)
@@ -573,7 +568,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case FRAGMENT_NO_SAVED_RECIPES:
-                if (getSupportFragmentManager().findFragmentByTag(NoSavedRecipes.class.getSimpleName()) == null){
+                if (getSupportFragmentManager().findFragmentById(noSavedRecipesFrag.getId()) == null){
                     getSupportFragmentManager()
                             .beginTransaction()
                             .setReorderingAllowed(true)
@@ -594,7 +589,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case FRAGMENT_SEARCH_RETURNED_EMPTY:
-                if (getSupportFragmentManager().findFragmentByTag(SearchReturnsEmpty.class.getSimpleName()) == null){
+                if (getSupportFragmentManager().findFragmentById(searchReturnsEmptyFrag.getId()) == null){
                     getSupportFragmentManager()
                             .beginTransaction()
                             .setReorderingAllowed(true)

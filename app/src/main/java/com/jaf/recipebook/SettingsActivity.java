@@ -476,6 +476,7 @@ public class SettingsActivity extends AppCompatActivity {
             ).show();
             Log.e(TAG, ex.getMessage(), ex);
         } finally {
+            getCategories();
             popupWindow.dismiss();
         }
     }
@@ -502,6 +503,7 @@ public class SettingsActivity extends AppCompatActivity {
                     .show();
             Log.e(TAG, ex.getMessage(), ex);
         } finally {
+            getCategories();
             popupWindow.dismiss();
         }
     }
