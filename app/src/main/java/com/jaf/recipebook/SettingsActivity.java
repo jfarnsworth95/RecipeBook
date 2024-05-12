@@ -80,13 +80,12 @@ public class SettingsActivity extends AppCompatActivity {
     private HashSet<UUID> currentRecipeUuids;
     private HashSet<String> categories;
 
+    private AlertDialog loadingIndicator;
     private Button changeStoragePermissionBtn;
     private Button importDownloadsBtn;
     private Button changeCategoryOrderBtn;
     private Button goToDriveSettingsBtn;
     private Button googleSignInBtn;
-
-    // TODO Loading screen in popup
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,8 +96,9 @@ public class SettingsActivity extends AppCompatActivity {
 
         getClassVars();
 
-        //Initialize CircleImageView
-        googlePhotoImg = findViewById(R.id.google_account_image);
+        loadingIndicator = new AlertDialog.Builder(this)
+                .setView(getLayoutInflater().inflate(R.layout.popup_is_loading, null))
+                .create();
 
         // Google Sign-in vars
         gsc = GoogleSignInHelper.getGoogleSignInClient(this);
@@ -133,7 +133,10 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Add button listener for Importing Downloaded recipes
         if (Environment.isExternalStorageManager()){
-            importDownloadsBtn.setOnClickListener(this::onImportFilesButtonClicked);
+            importDownloadsBtn.setOnClickListener(v -> {
+                loadingIndicator.show();
+                onImportFilesButtonClicked(v);
+            });
             importDownloadsBtn.setEnabled(true);
             importDownloadsBtn.setBackgroundColor(getColor(R.color.secondary));
         } else {
@@ -169,6 +172,10 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void getClassVars() {
+
+        //Initialize CircleImageView
+        googlePhotoImg = findViewById(R.id.google_account_image);
+
         changeStoragePermissionBtn = findViewById(R.id.toggle_external_storage_btn);
         importDownloadsBtn = findViewById(R.id.import_downloaded_files_btn);
         changeCategoryOrderBtn = findViewById(R.id.change_category_order_btn);
@@ -348,24 +355,30 @@ public class SettingsActivity extends AppCompatActivity {
      * @param view Button trigger view
      */
     private void onImportFilesButtonClicked(View view){
-        // Create empty list of file strings to be used when importing
-        filesToImport = new HashSet<>();
+        loadingIndicator.show();
+        new Thread(() -> {
+            // Create empty list of file strings to be used when importing
+            filesToImport = new HashSet<>();
 
-        // Populate the popup with the importable files
-        ArrayList<File> imports = returnAvailableImports();
-        validateImportFiles(imports);
-        Collections.sort(imports); // Sort for display purposes
+            // Populate the popup with the importable files
+            ArrayList<File> imports = returnAvailableImports();
+            validateImportFiles(imports);
+            Collections.sort(imports); // Sort for display purposes
 
-        // Stop if there are no possible files to import
-        if (imports.isEmpty()){
-            Toast.makeText(
-                    view.getContext(),
-                    "No recipe files (.rp) found to import...",
-                    Toast.LENGTH_LONG
-            ).show();
-            return;
-        }
+            // Stop if there are no possible files to import
+            if (imports.isEmpty()){
+                Toast.makeText(
+                        view.getContext(),
+                        "No recipe files (.rp) found to import...",
+                        Toast.LENGTH_LONG
+                ).show();
+            } else {
+                createPopupWindow(view, imports);
+            }
+        }).start();
+    }
 
+    private void createPopupWindow(View v, ArrayList<File> imports){
         // inflate the layout of the popup window
         LayoutInflater inflater = (LayoutInflater)
                 getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -377,71 +390,75 @@ public class SettingsActivity extends AppCompatActivity {
         final PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
         popupWindow.setElevation(10); // Adds shadow to popup
 
-        // show the popup window
-        // which view you pass in doesn't matter, it is only used for the window tolken
-        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+        runOnUiThread(() -> {
+            // show the popup window
+            // which view you pass in doesn't matter, it is only used for the window token
+            popupWindow.showAtLocation(v, Gravity.CENTER, 0, 0);
 
-        // dismiss the popup window when touched
-        popupView.setOnTouchListener((v, event) -> {
-            popupWindow.dismiss();
-            return true;
-        });
+            // dismiss the popup window when touched
+            popupView.setOnTouchListener((popupV, event) -> {
+                popupWindow.dismiss();
+                return true;
+            });
 
-        for (File importableFile : imports){
-            View importFileRow = inflater.inflate(R.layout.fragment_import_file_row, null);
-            Button tooltipBtn = importFileRow.findViewById(R.id.import_error_tooltip_btn);
+            for (File importableFile : imports){
+                View importFileRow = inflater.inflate(R.layout.fragment_import_file_row, null);
+                Button tooltipBtn = importFileRow.findViewById(R.id.import_error_tooltip_btn);
 
-            if (invalidImports.containsKey(importableFile)){
-                // If invalid, show button that spawns tooltip with explanation as to why,
-                // disable the checkbox, and strikeout it's text
-                tooltipBtn.setTooltipText(invalidImports.get(importableFile));
-                importFileRow.findViewById(R.id.shouldImportCheckbox).setEnabled(false);
-                ((TextView)importFileRow.findViewById(R.id.importFilenameText)).setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
-            } else {
-                // If valid, remove the button that would show the error tooltip, add checkbox listener
-                tooltipBtn.setVisibility(View.INVISIBLE);
-                ((CheckBox)importFileRow.findViewById(R.id.shouldImportCheckbox))
-                    .setOnCheckedChangeListener((compoundButton, b) -> {
-                        String filename = ((TextView)((TableRow)compoundButton.getParent())
-                                .findViewById(R.id.importFilenameText)).getText().toString();
-                        if(b){
-                            filesToImport.add(importableFile);
-                        } else {
-                            filesToImport.remove(importableFile);
-                        }
-                    });
-            }
-            // Add the filename, then add this inflated view to the popup scroll view
-            ((TextView)importFileRow.findViewById(R.id.importFilenameText)).setText(importableFile.getName());
-            ((LinearLayout)popupView.findViewById(R.id.import_popup_table_view)).addView(importFileRow);
-        }
-
-        // Make the progress spinner disappear, and set the scroll view & confirm button to visible
-        popupView.findViewById(R.id.import_popup_scrollview).setVisibility(View.VISIBLE);
-
-        // Add onclick listener for the confirm imports button
-        popupView.findViewById(R.id.confirm_imports_btn).setOnClickListener(v -> {
-            v.setEnabled(false);
-            popupView.findViewById(R.id.import_all_btn).setEnabled(false);
-
-            if (Collections.disjoint(filesToImport, duplicateImports)){ // if true, no common elements
-                importCheckedFiles(false, v, popupWindow);
-            } else {
-                askUserHowToHandleDuplicates(IMPORT_SELECTED, v, popupWindow);
+                if (invalidImports.containsKey(importableFile)){
+                    // If invalid, show button that spawns tooltip with explanation as to why,
+                    // disable the checkbox, and strikeout it's text
+                    tooltipBtn.setTooltipText(invalidImports.get(importableFile));
+                    importFileRow.findViewById(R.id.shouldImportCheckbox).setEnabled(false);
+                    ((TextView)importFileRow.findViewById(R.id.importFilenameText)).setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+                } else {
+                    // If valid, remove the button that would show the error tooltip, add checkbox listener
+                    tooltipBtn.setVisibility(View.INVISIBLE);
+                    ((CheckBox)importFileRow.findViewById(R.id.shouldImportCheckbox))
+                            .setOnCheckedChangeListener((compoundButton, b) -> {
+                                String filename = ((TextView)((TableRow)compoundButton.getParent())
+                                        .findViewById(R.id.importFilenameText)).getText().toString();
+                                if(b){
+                                    filesToImport.add(importableFile);
+                                } else {
+                                    filesToImport.remove(importableFile);
+                                }
+                            });
+                }
+                // Add the filename, then add this inflated view to the popup scroll view
+                ((TextView)importFileRow.findViewById(R.id.importFilenameText)).setText(importableFile.getName());
+                ((LinearLayout)popupView.findViewById(R.id.import_popup_table_view)).addView(importFileRow);
             }
 
+            // Make the progress spinner disappear, and set the scroll view & confirm button to visible
+            popupView.findViewById(R.id.import_popup_scrollview).setVisibility(View.VISIBLE);
+
+            // Add onclick listener for the confirm imports button
+            popupView.findViewById(R.id.confirm_imports_btn).setOnClickListener(pv -> {
+                pv.setEnabled(false);
+                popupView.findViewById(R.id.import_all_btn).setEnabled(false);
+
+                if (Collections.disjoint(filesToImport, duplicateImports)){ // if true, no common elements
+                    importCheckedFiles(false, pv, popupWindow);
+                } else {
+                    askUserHowToHandleDuplicates(IMPORT_SELECTED, pv, popupWindow);
+                }
+
+            });
+
+            popupView.findViewById(R.id.import_all_btn).setOnClickListener(pv -> {
+                pv.setEnabled(false);
+                popupView.findViewById(R.id.confirm_imports_btn).setEnabled(false);
+
+                if (Collections.disjoint(validImports, duplicateImports)){
+                    importAllFiles(false, pv, popupWindow);
+                } else {
+                    askUserHowToHandleDuplicates(IMPORT_ALL, pv, popupWindow);
+                }
+            });
+            loadingIndicator.hide();
         });
 
-        popupView.findViewById(R.id.import_all_btn).setOnClickListener(v -> {
-            v.setEnabled(false);
-            popupView.findViewById(R.id.confirm_imports_btn).setEnabled(false);
-
-            if (Collections.disjoint(validImports, duplicateImports)){
-                importAllFiles(false, v, popupWindow);
-            } else {
-                askUserHowToHandleDuplicates(IMPORT_ALL, v, popupWindow);
-            }
-        });
     }
 
     private void importCheckedFiles(boolean shouldOverwrite, View v, PopupWindow popupWindow){
