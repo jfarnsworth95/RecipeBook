@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
     // TODO Dark mode is fucked on Mobile test
     // TODO Tablet View Compatibility - Ingredients & Directions Side by side
-    // TODO Category field in add/edit not auto-filling
+    // TODO Tap Tag in View to nav back to Main with a search for that tag
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

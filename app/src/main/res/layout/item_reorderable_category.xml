@@ -29,7 +29,7 @@
         android:drawableLeft="@drawable/baseline_drag_indicator_32"
         android:drawablePadding="6dp"
         android:ellipsize="end"
-        android:singleLine="true"
+        android:maxLines="1"
         android:textColor="@color/white"
         tools:text="@tools:sample/cities"/>
 

@@ -97,8 +97,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/recipe_ingredients_hint"
-                    android:inputType="text|textCapSentences|textMultiLine"
-                    android:singleLine="false" />
+                    android:inputType="text|textCapSentences|textMultiLine" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -117,8 +116,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/recipe_directions_hint"
-                    android:inputType="text|textCapSentences|textMultiLine"
-                    android:singleLine="false" />
+                    android:inputType="text|textCapSentences|textMultiLine" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
