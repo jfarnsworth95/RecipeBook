@@ -223,7 +223,7 @@ public class AddEditRecipeActivity extends AppCompatActivity {
                 }
                 newArray.remove(tagToRemove);
                 mutable_tms.setValue(newArray);
-            });
+            }, true);
         chipGroup.setAdapter(tla);
         chipGroup.setClickable(true);
         mutable_tms.observe(this, tla::submitList);

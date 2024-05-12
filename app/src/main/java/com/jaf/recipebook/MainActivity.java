@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
     // TODO Dark mode is fucked on Mobile test
     // TODO Tablet View Compatibility - Ingredients & Directions Side by side
-    // TODO Tap Tag in View to nav back to Main with a search for that tag
+    // TODO Add Clear Search Bar Button
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -243,6 +243,12 @@ public class MainActivity extends AppCompatActivity {
             new ActivityResultContracts.StartActivityForResult(), o -> {
                 if (o.getResultCode() == GeneralHelper.ACTIVITY_RESULT_DB_ERROR) {
                     Toast.makeText(this, getString(R.string.failed_to_open_recipe), Toast.LENGTH_LONG).show();
+                } else if (o.getResultCode() == GeneralHelper.ACTIVITY_RESULT_UPDATE_SEARCH){
+                    if (categoryTabLayout.getTabCount() > 0) categoryTabLayout.selectTab(categoryTabLayout.getTabAt(0));
+                    setSearchBarVisible(false);
+                    toggleSearchOptionsVisible();
+                    tagsCB.setChecked(true);
+                    searchBarEditText.setText(o.getData().getStringExtra("search_input"));
                 }
             }
         );
@@ -620,7 +626,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void toggleSearchBarVisible(){
         if (searchBar.getVisibility() == View.GONE){
-            setSearchBarVisible();
+            setSearchBarVisible(true);
         } else {
             setSearchBarGone();
         }
@@ -642,12 +648,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setSearchBarVisible(){
+    private void setSearchBarVisible(boolean showKeyboard){
         setCategoriesTabsGone();
         searchBar.setVisibility(View.VISIBLE);
-        searchBarEditText.requestFocus();
-        ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
-                .showSoftInput(searchBarEditText, InputMethodManager.SHOW_IMPLICIT);
+
+        if (showKeyboard){
+            searchBarEditText.requestFocus();
+            ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
+                    .showSoftInput(searchBarEditText, InputMethodManager.SHOW_IMPLICIT);
+        }
     }
 
     private void setSearchBarGone(){

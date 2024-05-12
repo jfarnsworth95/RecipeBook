@@ -11,16 +11,18 @@ import com.jaf.recipebook.db.tags.TagsModel;
 
 public class TagViewAdapter extends ListAdapter<TagsModel, TagViewHolder> {
     View.OnClickListener tagClickListener;
+    boolean isEdit;
     private static final String TAG = "JAF-TagViewAdapter";
 
-    public TagViewAdapter(@NonNull DiffUtil.ItemCallback<TagsModel> diffCallback, View.OnClickListener tagClickListener) {
+    public TagViewAdapter(@NonNull DiffUtil.ItemCallback<TagsModel> diffCallback, View.OnClickListener tagClickListener, boolean isEdit) {
         super(diffCallback);
         this.tagClickListener = tagClickListener;
+        this.isEdit = isEdit;
     }
 
     @Override
     public TagViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return TagViewHolder.create(parent, (tagClickListener == null));
+        return TagViewHolder.create(parent, isEdit);
     }
 
     @Override

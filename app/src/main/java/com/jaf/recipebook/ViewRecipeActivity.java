@@ -24,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.chip.Chip;
 import com.google.android.material.textview.MaterialTextView;
 import com.jaf.recipebook.db.FullRecipeTuple;
 import com.jaf.recipebook.db.RecipeBookDatabase;
@@ -168,7 +169,13 @@ public class ViewRecipeActivity extends AppCompatActivity {
     }
 
     private void setupChipRecycler(){
-        final TagViewAdapter tla = new TagViewAdapter(new TagViewAdapter.TagDiff(), null);
+        final TagViewAdapter tla = new TagViewAdapter(new TagViewAdapter.TagDiff(),
+            v -> {
+                Intent intent = new Intent();
+                intent.putExtra("search_input", ((Chip) v).getText().toString());
+                setResult(GeneralHelper.ACTIVITY_RESULT_UPDATE_SEARCH, intent);
+                finish();
+            }, false);
         tagRecyclerView.setAdapter(tla);
         tagRecyclerView.setClickable(false);
         mutable_tms.observe(this, tla::submitList);

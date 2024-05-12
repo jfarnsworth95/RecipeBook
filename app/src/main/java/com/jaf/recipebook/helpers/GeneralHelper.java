@@ -23,6 +23,7 @@ import java.util.List;
 public class GeneralHelper {
     public static final int ACTIVITY_RESULT_DB_ERROR = 10001;
     public static final int ACTIVITY_RESULT_DELETE_RECIPE = 10002;
+    public static final int ACTIVITY_RESULT_UPDATE_SEARCH = 10003;
 
     public static StringBuilder convertIngredientModelArrayToString(List<IngredientsModel> ims){
         StringBuilder ingredientSb = new StringBuilder();
