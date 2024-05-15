@@ -2,12 +2,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.jaf.recipebook.MainActivity">
-    <item
-        android:id="@+id/search_btn"
-        android:icon="@drawable/ic_baseline_search_24"
-        android:orderInCategory="10"
-        android:title="@string/search_btn_title"
-        app:showAsAction="always" />
 
     <item
         android:id="@+id/action_settings"

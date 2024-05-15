@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     private RecipeBookDatabase rbd;
     private RecipeBookRepo rbr;
 
+    boolean leaveMenuEmpty = false;
     private Fragment currentFrag = null;
     private Handler mainHandler;
     private MutableLiveData<List<RecipeBookDao.BasicRecipeTuple>> recipesToRender;
@@ -141,8 +142,7 @@ public class MainActivity extends AppCompatActivity {
         // Check if user wants to connect to their Google Drive to backup the Recipe Files
         // TODO: Add method for adding Google Drive connection
 
-        queryForCategories();
-        queryForRecipes();
+        dataRefresh();
         if (!searchBarEditText.getText().toString().isEmpty()) {
             setSearchBarVisible(false);
         } else if (categoryTabLayout.getTabCount() > 0 && categoryTabLayout.getSelectedTabPosition() > 0){
@@ -160,18 +160,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onPrepareOptionsMenu (Menu menu){
         menu.clear();
-        if (bulkActionList.isEmpty()) {
-            getMenuInflater().inflate(R.menu.menu_main, menu);
-        } else {
-            getMenuInflater().inflate(R.menu.main_menu_bulk_action, menu);
+        if (leaveMenuEmpty) {
+            return true;
         }
 
-        if (!categories.isEmpty() && bulkActionList.isEmpty()){
-            if (categoryTabContainer.getVisibility() == View.VISIBLE){
-                getMenuInflater().inflate(R.menu.menu_categories_hide, menu);
-            } else {
-                getMenuInflater().inflate(R.menu.menu_categories_show, menu);
+        if (bulkActionList.isEmpty()) {
+            getMenuInflater().inflate(R.menu.menu_main, menu);
+            if (recipesToRender.getValue() != null && !recipesToRender.getValue().isEmpty()){
+                getMenuInflater().inflate(R.menu.menu_search, menu);
             }
+            if (!categories.isEmpty()){
+                if (categoryTabContainer.getVisibility() == View.VISIBLE){
+                    getMenuInflater().inflate(R.menu.menu_categories_hide, menu);
+                } else {
+                    getMenuInflater().inflate(R.menu.menu_categories_show, menu);
+                }
+            }
+        } else {
+            getMenuInflater().inflate(R.menu.main_menu_bulk_action, menu);
         }
         return true;
     }
@@ -203,6 +209,8 @@ public class MainActivity extends AppCompatActivity {
                         .setTitle("Delete Selected Recipes")
                         .setMessage("Are you sure? If you haven't backed up your recipes, there's no getting them back.")
                         .setPositiveButton(this.getString(R.string.bulk_delete_confirm), (dialogInterface, i) -> {
+                            leaveMenuEmpty = true;
+                            invalidateMenu();
                             bulkDelete();
                         })
                         .setNegativeButton(this.getString(R.string.bulk_delete_cancel), (dialogInterface, i) -> {})
@@ -481,6 +489,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void dataRefresh(){
+        leaveMenuEmpty = false;
+        queryForCategories();
+        queryForRecipes();
+    }
+
     private void searchCheckboxListener(CheckBox checkBoxClicked){
         if (!titleCB.isChecked() && !tagsCB.isChecked() && !ingredientCB.isChecked() &&
                 !directionsCB.isChecked() && !sourceCB.isChecked()){
@@ -746,6 +760,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void bulkDelete(){
         swapFragments(FRAGMENT_LOADING);
+        setCategoriesTabsGone();
+        setSearchBarGone();
+
         rbd.getQueryExecutor().execute(() -> {
             for (ConstraintLayout recipeRow : bulkActionList) {
                 long recipeId = Long.valueOf(
@@ -754,7 +771,7 @@ public class MainActivity extends AppCompatActivity {
                 RecipesModel rm = rbd.recipeDao().getRecipe(recipeId).blockingGet();
                 rbr.deleteRecipe(rm);
             }
-            mainHandler.postDelayed(this::queryForRecipes, 2000);
+            mainHandler.postDelayed(this::dataRefresh, 2000);
         });
     }
 
