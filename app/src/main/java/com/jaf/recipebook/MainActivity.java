@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
     //      Logo White Stroke for main landing page
     //      EditText highlight when selected
     //      Settings page buttons
+    //      Loading Animated Spinner
     // TODO Tablet View Compatibility - Ingredients & Directions Side by side
 
     @Override
@@ -492,7 +493,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupNoSavedRecipesListeners(){
         addFirstRecipeBtn = noSavedRecipesFrag.getView().findViewById(R.id.add_first_recipe_btn);
-        // TODO ... maybe actually allow the user to add a recipe here.
+        addFirstRecipeBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, AddEditRecipeActivity.class);
+            addEditActivityResultLauncher.launch(intent);
+        });
     }
 
     private void setupListRecipesListeners(){
