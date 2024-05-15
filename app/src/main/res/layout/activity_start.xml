@@ -66,10 +66,20 @@
                     android:hint="@string/search_bar_hint"
                     android:textColorHint="@color/inactive"
                     android:imeOptions="actionSearch"
-                    app:layout_constraintEnd_toStartOf="@+id/toggle_search_options_btn"
+                    app:layout_constraintEnd_toStartOf="@+id/clear_searchbar_btn"
                     app:layout_constraintStart_toEndOf="@+id/search_icon_searchbar"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent" />
+
+                <ImageButton
+                    android:id="@+id/clear_searchbar_btn"
+                    android:src="@drawable/baseline_close_24"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toEndOf="@+id/searchbar_edit_text"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:backgroundTint="@color/transparent" />
 
                 <ImageButton
                     android:id="@+id/toggle_search_options_btn"
@@ -78,13 +88,30 @@
                     android:contentDescription="@string/context_search_dropdown"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="0dp"
-                    android:layout_marginEnd="4dp"
+                    app:layout_constraintStart_toEndOf="@+id/clear_searchbar_btn"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:visibility="gone"
+                android:id="@+id/category_reminder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/searchbar_container"
+                app:layout_constraintStart_toStartOf="parent"
+                android:text="@string/category"
+                android:drawableStart="@drawable/baseline_folder_16"
+                android:drawablePadding="4dp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:paddingTop="4dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
 
             <TableLayout
                 android:visibility="gone"
@@ -123,7 +150,7 @@
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/search_categories_text"
                         android:drawablePadding="3dp"
-                        android:drawableStart="@drawable/baseline_change_circle_24"
+                        android:drawableStart="@drawable/baseline_folder_24"
                         android:text="@string/category"
                         android:textSize="16sp"
                         android:textColor="@color/white"

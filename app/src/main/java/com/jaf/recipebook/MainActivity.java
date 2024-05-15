@@ -97,7 +97,9 @@ public class MainActivity extends AppCompatActivity {
     Fragment listRecipesFrag;
     Fragment noSavedRecipesFrag;
     Fragment searchReturnsEmptyFrag;
+    ImageButton clearSearchBarBtn;
     ImageButton expandSearchOptionsBtn;
+    MaterialTextView categoryReminder;
     MaterialTextView categoryTv;
     MaterialTextView searchingForReminderTv;
     RecyclerView mainRecyclerView;
@@ -138,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
         queryForCategories();
         queryForRecipes();
         if (!searchBarEditText.getText().toString().isEmpty()) {
-            searchBar.setVisibility(View.VISIBLE);
+            setSearchBarVisible(false);
         } else if (categoryTabLayout.getTabCount() > 0 && categoryTabLayout.getSelectedTabPosition() > 0){
             setCategoriesTabsVisible();
         }
@@ -267,6 +269,7 @@ public class MainActivity extends AppCompatActivity {
         searchBar = findViewById(R.id.main_search_bar);
         searchBarEditText = findViewById(R.id.searchbar_edit_text);
         searchBarOptionsContainer = findViewById(R.id.searchbar_options_container);
+        clearSearchBarBtn = findViewById(R.id.clear_searchbar_btn);
         expandSearchOptionsBtn = findViewById(R.id.toggle_search_options_btn);
         categoryTabContainer = findViewById(R.id.category_tab_container);
         categoryTabLayout = findViewById(R.id.category_tab_layout);
@@ -276,6 +279,7 @@ public class MainActivity extends AppCompatActivity {
         ingredientCB = findViewById(R.id.search_ingredients_checkbox);
         directionsCB = findViewById(R.id.search_directions_checkbox);
         sourceCB = findViewById(R.id.search_source_checkbox);
+        categoryReminder = findViewById(R.id.category_reminder);
         categoryTv = findViewById(R.id.search_categories_text);
         searchingForReminderTv = findViewById(R.id.searching_for_reminder);
     }
@@ -305,6 +309,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 categoryTv.setText(tab.getText().toString());
+                if (tab.getPosition() > 0) {
+                    setCategoryReminderVisible();
+                } else {
+                    setCategoryReminderGone();
+                }
                 queryForRecipes();
             }
 
@@ -316,6 +325,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         expandSearchOptionsBtn.setOnClickListener(v -> toggleSearchOptionsVisible());
+        clearSearchBarBtn.setOnClickListener(v -> searchBarEditText.setText("") );
 
         titleCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
         tagsCB.setOnClickListener(v -> searchCheckboxListener((CheckBox) v));
@@ -633,11 +643,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void toggleSearchOptionsVisible(){
-        boolean isOptionsVisible = searchBarOptionsContainer.getVisibility() == View.VISIBLE;
-        searchBarOptionsContainer.setVisibility(isOptionsVisible ? View.GONE : View.VISIBLE);
-        expandSearchOptionsBtn.setImageDrawable(isOptionsVisible ?
-                getDrawable(R.drawable.baseline_expand_less_32) :
-                getDrawable(R.drawable.baseline_expand_more_32));
+        if (searchBarOptionsContainer.getVisibility() == View.VISIBLE) {
+            setSearchOptionsGone();
+        } else {
+            setSearchOptionsVisible();
+        }
     }
 
     private void toggleCategoryTabVisibility(){
@@ -663,6 +673,35 @@ public class MainActivity extends AppCompatActivity {
         searchBar.setVisibility(View.GONE);
         ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
                 .hideSoftInputFromWindow(searchBarEditText.getWindowToken(), 0);
+    }
+
+    private void setSearchOptionsVisible() {
+        searchBarOptionsContainer.setVisibility(View.VISIBLE);
+        setCategoryReminderGone();
+        expandSearchOptionsBtn.setImageDrawable(getDrawable(R.drawable.baseline_expand_more_32));
+    }
+
+    private void setSearchOptionsGone() {
+        searchBarOptionsContainer.setVisibility(View.GONE);
+        setCategoryReminderVisible();
+        expandSearchOptionsBtn.setImageDrawable(getDrawable(R.drawable.baseline_expand_less_32));
+    }
+
+    private void setCategoryReminderVisible(){
+        if (categoryTabLayout.getSelectedTabPosition() > 0) {
+            categoryReminder.setVisibility(View.VISIBLE);
+            categoryReminder.setText(
+                    categoryTabLayout.getTabAt(
+                            categoryTabLayout.getSelectedTabPosition()
+                    ).getText().toString()
+            );
+        } else {
+            categoryReminder.setVisibility(View.GONE);
+        }
+    }
+
+    private void setCategoryReminderGone(){
+        categoryReminder.setVisibility(View.GONE);
     }
 
     private void setCategoriesTabsVisible(){
