@@ -3,15 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/tag_view_chip"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:scrollbars="none"
-    android:textColor="@color/white"
-    android:textSize="12sp"
-    android:layout_marginHorizontal="2.5dp"
-    app:chipBackgroundColor="@color/tertiary"
     app:closeIconEnabled="false"
-    app:closeIconTint="@android:color/white"
+    style="@style/Theme.RecipeBook.Chip"
     tools:text="@tools:sample/cities">
 
 </com.google.android.material.chip.Chip>

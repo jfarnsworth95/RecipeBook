@@ -106,9 +106,12 @@ public class MainActivity extends AppCompatActivity {
     TabLayout categoryTabLayout;
     TableLayout searchBarOptionsContainer;
 
-    // TODO Dark mode is fucked on Mobile test
+    // TODO Setup Darkmode theming:
+    //      Button inheritance
+    //      Logo White Stroke for main landing page
+    //      EditText highlight when selected
+    //      Settings page buttons
     // TODO Tablet View Compatibility - Ingredients & Directions Side by side
-    // TODO Add Clear Search Bar Button
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -489,6 +492,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupNoSavedRecipesListeners(){
         addFirstRecipeBtn = noSavedRecipesFrag.getView().findViewById(R.id.add_first_recipe_btn);
+        // TODO ... maybe actually allow the user to add a recipe here.
     }
 
     private void setupListRecipesListeners(){
