@@ -108,7 +108,8 @@ public class MainActivity extends AppCompatActivity {
     TableLayout searchBarOptionsContainer;
 
     // TODO Tablet View Compatibility - Ingredients & Directions Side by side
-    // TODO Allow user to set Dark/Light/(OS Default) mode from Settings
+    // TODO Maybe move Category & Search Reminders to bottom of screen, show when relevant frag
+    //      isn't shown. Eg: Search & Category selector hidden, still show at bottom
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

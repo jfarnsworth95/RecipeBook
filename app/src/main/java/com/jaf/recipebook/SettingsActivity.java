@@ -4,6 +4,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.UiModeManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.net.Uri;
@@ -18,6 +20,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -77,6 +80,7 @@ public class SettingsActivity extends AppCompatActivity {
     private HashSet<String> categories;
 
     private AlertDialog loadingIndicator;
+    private Button changeDisplayModeBtn;
     private Button changeStoragePermissionBtn;
     private Button importDownloadsBtn;
     private Button changeCategoryOrderBtn;
@@ -105,6 +109,22 @@ public class SettingsActivity extends AppCompatActivity {
                 .addCategory("android.intent.category.DEFAULT")
                 .setData(Uri.fromParts("package", getPackageName(), null))
         ));
+
+        changeDisplayModeBtn.setOnClickListener(v -> {
+            UiModeManager umm = (UiModeManager) getSystemService(UI_MODE_SERVICE);
+            int displayModeIndex = fileHelper.getPreference(fileHelper.DISPLAY_MODE_PREFERENCE, fileHelper.DISPLAY_MODE_OS);
+
+            new AlertDialog.Builder(this)
+                .setTitle(getString(R.string.display_mode_popup_title))
+                .setSingleChoiceItems(R.array.display_mode_options, displayModeIndex, (dialog, which) -> { })
+                .setNegativeButton(R.string.negative_text, (dialog, which) -> { })
+                .setPositiveButton(R.string.affirmative_text, (dialog, which) -> {
+                    int setDisplayMode =((AlertDialog)dialog).getListView().getCheckedItemPosition();
+                    fileHelper.setPreference(fileHelper.DISPLAY_MODE_PREFERENCE, setDisplayMode);
+                    umm.setApplicationNightMode(setDisplayMode);
+                })
+                .create().show();
+        });
 
         // Add button listener for moving to the Drive Settings Activity, and hide it if user isn't signed in
         goToDriveSettingsBtn.setOnClickListener(this::onGoToDriveSettingsButtonClicked);
@@ -173,6 +193,7 @@ public class SettingsActivity extends AppCompatActivity {
         googlePhotoImg = findViewById(R.id.google_account_image);
 
         changeStoragePermissionBtn = findViewById(R.id.toggle_external_storage_btn);
+        changeDisplayModeBtn = findViewById(R.id.change_display_mode);
         importDownloadsBtn = findViewById(R.id.import_downloaded_files_btn);
         changeCategoryOrderBtn = findViewById(R.id.change_category_order_btn);
         goToDriveSettingsBtn = findViewById(R.id.go_to_drive_settings_btn);

@@ -5,6 +5,7 @@
     <string name="preference_local_storage_key" translatable="false">is_external_manager</string>
     <string name="preference_cloud_storage_active_key" translatable="false">is_connected_to_cloud</string>
     <string name="preference_category_ordering" translatable="false">category_ordering</string>
+    <string name="preference_display_mode" translatable="false">display_mode</string>
     <string name="title">Title</string>
     <string name="servings">Servings</string>
     <string name="ingredients">Ingredients</string>
@@ -44,6 +45,7 @@
     <string name="google_sign_in_header">Connect to Google Drive</string>
     <string name="toggle_preferences_header">Options &amp; Preferences</string>
     <string name="option_toggle_external_text">Allow Access to Downloads</string>
+    <string name="option_change_display_mode_text">Change Display Mode</string>
     <string name="option_import_downloaded_text">Import Downloaded Recipes</string>
     <string name="change_category_order_text">Change Category Order</string>
     <string name="options_go_to_drive_settings">Go to Drive Settings</string>
@@ -55,6 +57,10 @@
     <string name="google_sign_in_button">SIGN IN WITH GOOGLE</string>
     <string name="google_sign_out_button">SIGN OUT OF GOOGLE</string>
     <string name="google_sign_in_descriptor">You are signed in as</string>
+    <string name="display_mode_popup_title">Change Display Mode</string>
+    <string name="display_mode_os_default">OS Default</string>
+    <string name="display_mode_light_mode">Light Mode</string>
+    <string name="display_mode_dark_mode">Dark Mode</string>
 
     <!-- Reorder Categories Page Strings -->
     <string name="confirm_new_order">Confirm Reordering</string>
@@ -106,5 +112,11 @@
     <string name="dialog_recipe_view_delete_confirmation">Are you sure you want to delete this recipe?</string>
     <string name="affirmative_text">Yes</string>
     <string name="negative_text">Cancel</string>
+
+    <string-array name="display_mode_options">
+        <item>OS Default</item>
+        <item>Light Mode</item>
+        <item>Dark Mode</item>
+    </string-array>
 
 </resources>

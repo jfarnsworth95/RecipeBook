@@ -42,6 +42,10 @@ public class FileHelper {
 
     public final int EXTERNAL_STORAGE_PREFERENCE = 0;
     public final int CATEGORY_ORDER_PREFERENCE = 1;
+    public final int DISPLAY_MODE_PREFERENCE = 2;
+    public final int DISPLAY_MODE_OS = 0;
+    public final int DISPLAY_MODE_LIGHT = 1;
+    public final int DISPLAY_MODE_DARK = 2;
     public final String JSON_NAME = "NAME";
     public final String JSON_INGREDIENTS = "INGREDIENTS";
     public final String JSON_DIRECTIONS = "DIRECTIONS";
@@ -105,6 +109,31 @@ public class FileHelper {
         switch(preference){
             case EXTERNAL_STORAGE_PREFERENCE:
                 return appPreferences.getBoolean(context.getString(R.string.preference_local_storage_key), defaultRtn);
+
+            default:
+                Log.w(TAG, "getPreference: Unknown Preference Int Provided: "
+                        + Integer.toString(preference));
+                return defaultRtn;
+        }
+
+    }
+
+    public void setPreference(int preference, int i){
+        switch(preference){
+            case DISPLAY_MODE_PREFERENCE:
+                appPreferences.edit()
+                        .putInt(context.getString(R.string.preference_display_mode), i)
+                        .apply();
+            default:
+                Log.w(TAG, "setPreference: Unknown Preference Int Provided: "
+                        + Integer.toString(preference));
+        }
+    }
+
+    public int getPreference(int preference, int defaultRtn){
+        switch(preference){
+            case DISPLAY_MODE_PREFERENCE:
+                return appPreferences.getInt(context.getString(R.string.preference_display_mode), defaultRtn);
 
             default:
                 Log.w(TAG, "getPreference: Unknown Preference Int Provided: "
