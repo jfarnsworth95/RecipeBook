@@ -73,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
     private RecipeBookRepo rbr;
 
     boolean leaveMenuEmpty = false;
+    boolean hasRecipes = false;
+    boolean showingOptions = false;
     private Fragment currentFrag = null;
     private Handler mainHandler;
     private MutableLiveData<List<RecipeBookDao.BasicRecipeTuple>> recipesToRender;
@@ -108,17 +110,15 @@ public class MainActivity extends AppCompatActivity {
     TableLayout searchBarOptionsContainer;
 
     // TODO Setup Darkmode theming:
-    //      Button inheritance
     //      Logo White Stroke for main landing page
     //      EditText highlight when selected
-    //      Settings page buttons
     //      Loading Animated Spinner
     // TODO Tablet View Compatibility - Ingredients & Directions Side by side
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // TODO Temp fix while testing locally
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+//        // TODO Temp fix while testing locally
+//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState);
 
         SplashScreen.installSplashScreen(this);
@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (bulkActionList.isEmpty()) {
             getMenuInflater().inflate(R.menu.menu_main, menu);
-            if (recipesToRender.getValue() != null && !recipesToRender.getValue().isEmpty()){
+            if (hasRecipes){
                 getMenuInflater().inflate(R.menu.menu_search, menu);
             }
             if (!categories.isEmpty()){
@@ -456,6 +456,9 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<RecipeBookDao.BasicRecipeTuple> recipes;
             if (searchQuery.isEmpty() && currentTabIndex < 1) {
                 recipes = new ArrayList<>(rbd.recipeBookDao().getAllRecipes());
+                if (!recipes.isEmpty()){
+                    hasRecipes = true;
+                }
             } else if (currentTabIndex >= 1 && !searchQuery.isEmpty()) {
                 String categoryText = categoryTabLayout.getTabAt(currentTabIndex).getText().toString();
                 recipes = new ArrayList<>(rbd.recipeBookDao().searchAllForParameter(
@@ -698,19 +701,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setSearchOptionsVisible() {
+        showingOptions = true;
         searchBarOptionsContainer.setVisibility(View.VISIBLE);
         setCategoryReminderGone();
         expandSearchOptionsBtn.setImageDrawable(getDrawable(R.drawable.baseline_expand_more_32));
     }
 
     private void setSearchOptionsGone() {
+        showingOptions = false;
         searchBarOptionsContainer.setVisibility(View.GONE);
         setCategoryReminderVisible();
         expandSearchOptionsBtn.setImageDrawable(getDrawable(R.drawable.baseline_expand_less_32));
     }
 
     private void setCategoryReminderVisible(){
-        if (categoryTabLayout.getSelectedTabPosition() > 0) {
+        if (categoryTabLayout.getSelectedTabPosition() > 0 && !showingOptions) {
             categoryReminder.setVisibility(View.VISIBLE);
             categoryReminder.setText(
                     categoryTabLayout.getTabAt(
