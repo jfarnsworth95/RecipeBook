@@ -5,7 +5,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.fragment.app.Fragment;
@@ -14,7 +13,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -55,7 +54,6 @@ import com.jaf.recipebook.helpers.FileHelper;
 import com.jaf.recipebook.helpers.GeneralHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -109,16 +107,11 @@ public class MainActivity extends AppCompatActivity {
     TabLayout categoryTabLayout;
     TableLayout searchBarOptionsContainer;
 
-    // TODO Setup Darkmode theming:
-    //      Logo White Stroke for main landing page
-    //      EditText highlight when selected
-    //      Loading Animated Spinner
     // TODO Tablet View Compatibility - Ingredients & Directions Side by side
+    // TODO Allow user to set Dark/Light/(OS Default) mode from Settings
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        // TODO Temp fix while testing locally
-//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState);
 
         SplashScreen.installSplashScreen(this);

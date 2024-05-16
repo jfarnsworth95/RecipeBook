@@ -9,9 +9,10 @@
     <color name="white">#FFFF</color>
     <color name="danger">#FF880808</color>
     <color name="inactive">#FFD3D3D3</color>
-    <color name="inactive_text">#61000000</color>
+    <color name="inactive_text">#FFD3D3D3</color>
     <color name="transparent">#00000000</color>
 
+    <color name="loading_spinner">@color/secondary</color>
     <color name="popup_background">@color/secondary</color>
     <color name="popup_stroke">@color/secondary</color>
     <color name="empty_background">#fff</color>

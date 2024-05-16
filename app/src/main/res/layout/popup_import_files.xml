@@ -27,7 +27,7 @@
             android:orientation="vertical" />
     </ScrollView>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/confirm_imports_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -39,7 +39,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/import_popup_scrollview" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/import_all_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -64,7 +64,7 @@
                     android:autofillHints="food"
                     android:inputType="text"
                     android:hint="@string/search_bar_hint"
-                    android:textColorHint="@color/inactive"
+                    android:textColorHint="@color/inactive_text"
                     android:imeOptions="actionSearch"
                     app:layout_constraintEnd_toStartOf="@+id/clear_searchbar_btn"
                     app:layout_constraintStart_toEndOf="@+id/search_icon_searchbar"

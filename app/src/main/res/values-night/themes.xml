@@ -5,6 +5,9 @@
         <item name="colorPrimaryDark">@color/primary</item>
         <item name="colorPrimaryVariant">@color/tertiary</item>
         <item name="colorOnPrimary">@color/black</item>
+
+        <item name="colorAccent">@color/tertiary</item>
+
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/highlight</item>
@@ -17,6 +20,9 @@
         <item name="android:actionMenuTextColor">@color/white</item>
         <item name="checkboxStyle">@style/Widget.App.CheckBox</item>
         <item name="materialButtonStyle">@style/Theme.RecipeBook.Button</item>
+        <item name="tabStyle">@style/Theme.RecipeBook.TabLayout</item>
+        <item name="alertDialogTheme">@style/Theme.RecipeBook.AlertDialog</item>
+        <item name="textInputStyle">@style/Theme.RecipeBook.EditText</item>
     </style>
 
     <style name="Widget.App.CheckBox.Imports" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
@@ -36,9 +42,40 @@
         <item name="android:layout_height">wrap_content</item>
     </style>
 
-    <style name="Theme.RecipeBook.Button" parent="Widget.AppCompat.Button">
-        <item name="android:paddingLeft">24dp</item>
-        <item name="android:paddingRight">24dp</item>
+    <style name="Theme.RecipeBook.Button" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">@color/button_tint_dark_rb</item>
+        <item name="android:textColor">@color/white</item>
     </style>
+
+    <style name="Theme.RecipeBook.TabLayout" parent="Widget.MaterialComponents.TabLayout">
+        <item name="tabSelectedTextColor">@color/white</item>
+        <item name="tabIndicatorColor">@color/white</item>
+    </style>
+
+    <style name="Theme.RecipeBook.AlertDialog" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+        <item name="buttonBarPositiveButtonStyle">@style/Theme.RecipeBook.AlertDialog.Button.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Theme.RecipeBook.AlertDialog.Button.Neutral</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Theme.RecipeBook.AlertDialog.Button.Neutral</item>
+    </style>
+
+    <style name="Theme.RecipeBook.AlertDialog.Button.Positive" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="backgroundTint">@color/transparent</item>
+        <item name="android:textColor">@color/tertiary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Theme.RecipeBook.AlertDialog.Button.Neutral" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="backgroundTint">@color/transparent</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Theme.RecipeBook.EditText" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="boxStrokeColor">@color/white</item>
+        <item name="hintTextColor">@color/white</item>
+        <item name="cursorColor">@color/tertiary</item>
+    </style>
+
+
 
 </resources>

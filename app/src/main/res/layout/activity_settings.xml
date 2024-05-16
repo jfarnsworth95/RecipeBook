@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/toggle_external_storage_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -29,7 +29,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settings_header_toggle" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/import_downloaded_files_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -40,7 +40,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toggle_external_storage_btn" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/change_category_order_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -51,7 +51,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/import_downloaded_files_btn" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/go_to_drive_settings_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -86,7 +86,7 @@
         app:layout_constraintTop_toBottomOf="@+id/settings_header_signin"
         app:layout_constraintWidth_max="100dp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/google_sign_in_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
