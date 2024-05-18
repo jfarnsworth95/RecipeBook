@@ -95,24 +95,6 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <com.google.android.material.textview.MaterialTextView
-                android:visibility="gone"
-                android:id="@+id/category_reminder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/searchbar_container"
-                app:layout_constraintStart_toStartOf="parent"
-                android:text="@string/category"
-                android:drawableStart="@drawable/baseline_folder_16"
-                android:drawablePadding="4dp"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:paddingTop="4dp"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:textColor="@color/white"
-                android:textSize="14sp" />
-
             <TableLayout
                 android:visibility="gone"
                 android:id="@+id/searchbar_options_container"
@@ -183,24 +165,6 @@
                 app:layout_constraintStart_toStartOf="parent">
             </com.google.android.material.tabs.TabLayout>
 
-            <com.google.android.material.textview.MaterialTextView
-                android:visibility="gone"
-                android:id="@+id/searching_for_reminder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/category_tab_layout"
-                app:layout_constraintStart_toStartOf="parent"
-                android:text="@string/search_for"
-                android:drawableStart="@drawable/ic_baseline_search_16"
-                android:drawablePadding="4dp"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:paddingTop="4dp"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:textColor="@color/white"
-                android:textSize="14sp" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -212,6 +176,57 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/main_optional_top_dropdowns"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toTopOf="@+id/reminder_footer"/>
+
+    <TableLayout
+        android:id="@+id/reminder_footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/secondary"
+        app:layout_constraintTop_toBottomOf="@+id/main_fragment_container_view"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:stretchColumns="*" >
+
+        <TableRow>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:visibility="gone"
+                android:id="@+id/category_reminder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/category"
+                android:drawableStart="@drawable/baseline_folder_16"
+                android:drawablePadding="4dp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:visibility="gone"
+                android:id="@+id/searching_for_reminder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/search_for"
+                android:drawableStart="@drawable/ic_baseline_search_16"
+                android:drawablePadding="4dp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+
+        </TableRow>
+
+    </TableLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
     // TODO Tablet View Compatibility - Ingredients & Directions Side by side
     // TODO Maybe move Category & Search Reminders to bottom of screen, show when relevant frag
     //      isn't shown. Eg: Search & Category selector hidden, still show at bottom
+    // TODO Source URL scrolls in View activity, stop that.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -697,14 +698,12 @@ public class MainActivity extends AppCompatActivity {
     private void setSearchOptionsVisible() {
         showingOptions = true;
         searchBarOptionsContainer.setVisibility(View.VISIBLE);
-        setCategoryReminderGone();
         expandSearchOptionsBtn.setImageDrawable(getDrawable(R.drawable.baseline_expand_more_32));
     }
 
     private void setSearchOptionsGone() {
         showingOptions = false;
         searchBarOptionsContainer.setVisibility(View.GONE);
-        setCategoryReminderVisible();
         expandSearchOptionsBtn.setImageDrawable(getDrawable(R.drawable.baseline_expand_less_32));
     }
 
