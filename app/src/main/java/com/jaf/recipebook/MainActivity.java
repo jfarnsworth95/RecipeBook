@@ -107,11 +107,6 @@ public class MainActivity extends AppCompatActivity {
     TabLayout categoryTabLayout;
     TableLayout searchBarOptionsContainer;
 
-    // TODO Tablet View Compatibility - Ingredients & Directions Side by side
-    // TODO Maybe move Category & Search Reminders to bottom of screen, show when relevant frag
-    //      isn't shown. Eg: Search & Category selector hidden, still show at bottom
-    // TODO Source URL scrolls in View activity, stop that.
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
