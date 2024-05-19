@@ -43,6 +43,9 @@ public class FileHelper {
     public final int EXTERNAL_STORAGE_PREFERENCE = 0;
     public final int CATEGORY_ORDER_PREFERENCE = 1;
     public final int DISPLAY_MODE_PREFERENCE = 2;
+    public final int CLOUD_STORAGE_ACTIVE_PREFERENCE = 3;
+    public final int STARTUP_COUNTER_PREFERENCE = 4;
+    public final int AUTO_BACKUP_ACTIVE_PREFERENCE = 5;
     public final int DISPLAY_MODE_OS = 0;
     public final int DISPLAY_MODE_LIGHT = 1;
     public final int DISPLAY_MODE_DARK = 2;
@@ -74,8 +77,10 @@ public class FileHelper {
                 appPreferences.edit()
                         .putString(context.getString(R.string.preference_category_ordering), s)
                         .apply();
+                break;
+
             default:
-                Log.w(TAG, "setPreference: Unknown Preference Int Provided: "
+                Log.w(TAG, "setPreference: Unknown Preference Int Provided for string: "
                         + Integer.toString(preference));
         }
     }
@@ -86,7 +91,7 @@ public class FileHelper {
                 return appPreferences.getString(context.getString(R.string.preference_category_ordering), defaultRtn);
 
             default:
-                Log.w(TAG, "getPreference: Unknown Preference Int Provided: "
+                Log.w(TAG, "getPreference: Unknown Preference Int Provided for string: "
                         + Integer.toString(preference));
                 return defaultRtn;
         }
@@ -99,8 +104,22 @@ public class FileHelper {
                 appPreferences.edit()
                         .putBoolean(context.getString(R.string.preference_local_storage_key), b)
                         .apply();
+                break;
+
+            case CLOUD_STORAGE_ACTIVE_PREFERENCE:
+                appPreferences.edit()
+                        .putBoolean(context.getString(R.string.preference_cloud_storage_active_key), b)
+                        .apply();
+                break;
+
+            case AUTO_BACKUP_ACTIVE_PREFERENCE:
+                appPreferences.edit()
+                        .putBoolean(context.getString(R.string.preference_auto_backup), b)
+                        .apply();
+                break;
+
             default:
-                Log.w(TAG, "setPreference: Unknown Preference Int Provided: "
+                Log.w(TAG, "setPreference: Unknown Preference Int Provided for boolean: "
                         + Integer.toString(preference));
         }
     }
@@ -110,8 +129,14 @@ public class FileHelper {
             case EXTERNAL_STORAGE_PREFERENCE:
                 return appPreferences.getBoolean(context.getString(R.string.preference_local_storage_key), defaultRtn);
 
+            case CLOUD_STORAGE_ACTIVE_PREFERENCE:
+                return appPreferences.getBoolean(context.getString(R.string.preference_cloud_storage_active_key), defaultRtn);
+
+            case AUTO_BACKUP_ACTIVE_PREFERENCE:
+                return appPreferences.getBoolean(context.getString(R.string.preference_auto_backup), defaultRtn);
+
             default:
-                Log.w(TAG, "getPreference: Unknown Preference Int Provided: "
+                Log.w(TAG, "getPreference: Unknown Preference Int Provided for boolean: "
                         + Integer.toString(preference));
                 return defaultRtn;
         }
@@ -124,8 +149,16 @@ public class FileHelper {
                 appPreferences.edit()
                         .putInt(context.getString(R.string.preference_display_mode), i)
                         .apply();
+                break;
+
+            case STARTUP_COUNTER_PREFERENCE:
+                appPreferences.edit()
+                        .putInt(context.getString(R.string.startup_counter), i)
+                        .apply();
+                break;
+
             default:
-                Log.w(TAG, "setPreference: Unknown Preference Int Provided: "
+                Log.w(TAG, "setPreference: Unknown Preference Int Provided for integer: "
                         + Integer.toString(preference));
         }
     }
@@ -135,8 +168,11 @@ public class FileHelper {
             case DISPLAY_MODE_PREFERENCE:
                 return appPreferences.getInt(context.getString(R.string.preference_display_mode), defaultRtn);
 
+            case STARTUP_COUNTER_PREFERENCE:
+                return appPreferences.getInt(context.getString(R.string.startup_counter), defaultRtn);
+
             default:
-                Log.w(TAG, "getPreference: Unknown Preference Int Provided: "
+                Log.w(TAG, "getPreference: Unknown Preference Int Provided for integer: "
                         + Integer.toString(preference));
                 return defaultRtn;
         }

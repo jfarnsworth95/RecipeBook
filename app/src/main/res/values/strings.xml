@@ -6,6 +6,8 @@
     <string name="preference_cloud_storage_active_key" translatable="false">is_connected_to_cloud</string>
     <string name="preference_category_ordering" translatable="false">category_ordering</string>
     <string name="preference_display_mode" translatable="false">display_mode</string>
+    <string name="preference_auto_backup" translatable="false">automatic_backup</string>
+    <string name="startup_counter" translatable="false">startup_counter</string>
     <string name="title">Title</string>
     <string name="servings">Servings</string>
     <string name="ingredients">Ingredients</string>
@@ -17,6 +19,7 @@
     <!-- Permission Button Options -->
     <string name='dialog_allow'>Allow</string>
     <string name='dialog_deny'>Deny</string>
+    <string name="maybe_later">Maybe Later</string>
 
     <!-- Menu Strings -->
     <string name="search_btn_title">Search Button</string>
@@ -70,6 +73,7 @@
     <string name="last_synced_text">Checking the last time you saved to your Drive…</string>
     <string name="upload_local_to_drive">Upload Local to Google Drive</string>
     <string name="download_drive_to_local">Download Drive data to Local</string>
+    <string name="auto_backup_to_drive">Automatically Backup Data to Drive</string>
     <string name="delete_drive_data">DELETE ALL DRIVE DATA</string>
     <string name="final_warning">You are about to delete all app data in your Google Drive for this application. This cannot be undone. Are you sure you want to continue?</string>
     <string name="final_delete_btn">Press and hold to delete drive data</string>

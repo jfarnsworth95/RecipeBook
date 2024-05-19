@@ -59,7 +59,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    FileHelper fileHelper;
+    FileHelper fh;
     public final String TAG = "JAF-MAIN";
 
     private final int FRAGMENT_LOADING = 11;
@@ -117,6 +117,10 @@ public class MainActivity extends AppCompatActivity {
         setClassVars();
         setupListeners();
 
+        fh.setPreference(
+                fh.STARTUP_COUNTER_PREFERENCE,
+                fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0
+                ) + 1);
     }
 
     @Override
@@ -130,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
         validateExternalPermission();
 
         // Check if user wants to connect to their Google Drive to backup the Recipe Files
-        // TODO: Add method for adding Google Drive connection
+        promptGoogleDriveLogin();
 
         dataRefresh();
         if (!searchBarEditText.getText().toString().isEmpty()) {
@@ -228,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setClassVars(){
         mainHandler = new Handler(getMainLooper());
-        fileHelper = new FileHelper(this);
+        fh = new FileHelper(this);
         bulkActionList = new HashSet<>();
 
         addEditActivityResultLauncher = registerForActivityResult(
@@ -377,7 +381,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void validateExternalPermission(){
-        if (fileHelper.getPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true)
+        if (fh.getPreference(fh.EXTERNAL_STORAGE_PREFERENCE, true)
                 && !Environment.isExternalStorageManager()) {
             // Permission missing, but the user has indicated that they want external storage
             //      Could also be their first time starting up the app.
@@ -392,15 +396,32 @@ public class MainActivity extends AppCompatActivity {
                                 .addCategory("android.intent.category.DEFAULT")
                                 .setData(uri)
                         );
-                        fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true);
+                        fh.setPreference(fh.EXTERNAL_STORAGE_PREFERENCE, true);
                         dialogInterface.dismiss();
                     })
                     .setNegativeButton(this.getString(R.string.dialog_deny), (dialogInterface, i) -> {
-                                fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true);
+                                fh.setPreference(fh.EXTERNAL_STORAGE_PREFERENCE, true);
                     })
                     .show();
-        } else if (Environment.isExternalStorageManager() && !fileHelper.getPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, false)){
-            fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE, true);
+        } else if (Environment.isExternalStorageManager() && !fh.getPreference(fh.EXTERNAL_STORAGE_PREFERENCE, false)){
+            fh.setPreference(fh.EXTERNAL_STORAGE_PREFERENCE, true);
+        }
+    }
+
+    private void promptGoogleDriveLogin(){
+        boolean cloudStorageActive = fh.getPreference(fh.CLOUD_STORAGE_ACTIVE_PREFERENCE, false);
+        int startupCounter = fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0);
+        Log.i(TAG, "Login #" + startupCounter);
+        if (!cloudStorageActive && startupCounter == 2){
+            new AlertDialog.Builder(this)
+                .setTitle("Enable Google Drive Backups?")
+                .setMessage("To make sure your Recipes are safe, you can set this app to auto backup your collection to your Google Drive. Would you like to enable it?")
+                .setPositiveButton(this.getString(R.string.affirmative_text), (dialogInterface, i) -> {
+                    settingsActivityResultLauncher
+                            .launch(new Intent(this, SettingsActivity.class));
+                })
+                .setNegativeButton(this.getString(R.string.maybe_later), (dialogInterface, i) -> {})
+                .show();
         }
     }
 
@@ -410,8 +431,8 @@ public class MainActivity extends AppCompatActivity {
             categories.remove(null);
 
             runOnUiThread(() -> {
-                GeneralHelper.ensureCategoryPrefUpdated(categories, fileHelper);
-                ArrayList<String> orderedCategories = GeneralHelper.getCategoryOrderPreference(fileHelper);
+                GeneralHelper.ensureCategoryPrefUpdated(categories, fh);
+                ArrayList<String> orderedCategories = GeneralHelper.getCategoryOrderPreference(fh);
                 if (!orderedCategories.isEmpty()){
                     HashSet<String> activeTabLabels = new HashSet<>();
                     for (int i = 1; i < categoryTabLayout.getTabCount(); i ++) {
@@ -737,7 +758,7 @@ public class MainActivity extends AppCompatActivity {
                     ((TextView) recipeRow.findViewById(R.id.frag_recipe_list_row_recipe_id))
                     .getText().toString());
                 FullRecipeTuple frt = rbr.getFullRecipeData(recipeId);
-                fileHelper.saveRecipeToDownloads(
+                fh.saveRecipeToDownloads(
                         frt.recipesModel,
                         frt.ingredientsModel,
                         frt.directionsModel,

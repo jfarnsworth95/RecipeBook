@@ -8,12 +8,9 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.CompoundButton;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -23,12 +20,14 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.jaf.recipebook.db.RecipeBookDatabase;
 import com.jaf.recipebook.events.DbRefreshEvent;
 import com.jaf.recipebook.events.DriveDataDeletedEvent;
 import com.jaf.recipebook.events.DriveDbLastModifiedEvent;
 import com.jaf.recipebook.events.DriveUploadCompeleteEvent;
 import com.jaf.recipebook.helpers.DriveServiceHelper;
+import com.jaf.recipebook.helpers.FileHelper;
 import com.jaf.recipebook.helpers.GeneralHelper;
 import com.jaf.recipebook.helpers.GoogleSignInHelper;
 
@@ -43,24 +42,32 @@ public class DriveSettingsActivity extends AppCompatActivity {
     private Button uploadBtn;
     private Button downloadBtn;
     private Button deleteBtn;
+    private SwitchMaterial autoBackupToggle;
     private TextView lastUpdatedTextView;
     private ProgressBar progressBar;
 
     private DriveServiceHelper mDriveServiceHelper;
+    private FileHelper fh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        fh = new FileHelper(this);
         setContentView(R.layout.activity_drive_settings);
 
         uploadBtn = findViewById(R.id.drive_setting_upload_btn);
         downloadBtn = findViewById(R.id.drive_setting_download_btn);
+        autoBackupToggle = findViewById(R.id.auto_backup_toggle);
         deleteBtn = findViewById(R.id.drive_setting_delete_btn);
         lastUpdatedTextView = findViewById(R.id.drive_setting_last_updated);
         progressBar = findViewById(R.id.drive_settings_progress_bar);
 
         uploadBtn.setOnClickListener(onUploadClicked());
         downloadBtn.setOnClickListener(onDownloadClicked());
+
+        autoBackupToggle.setChecked(fh.getPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, false));
+        autoBackupToggle.setOnCheckedChangeListener(onBackupDataToggled());
+
         deleteBtn.setOnClickListener(onDeleteClicked());
 
         mDriveServiceHelper = GoogleSignInHelper.getDriveServiceHelper(this);
@@ -113,35 +120,34 @@ public class DriveSettingsActivity extends AppCompatActivity {
     }
 
     private View.OnClickListener onUploadClicked() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        return view -> {
+            setPendingState(true);
+            Toast.makeText(view.getContext(), "Uploading...", Toast.LENGTH_LONG).show();
+            mDriveServiceHelper.upload();
+        };
+    }
+
+    private View.OnClickListener onDownloadClicked() {
+        return view -> {
+            setPendingState(true);
+            Toast.makeText(view.getContext(), "Downloading...", Toast.LENGTH_LONG).show();
+            RecipeBookDatabase.stopDb();
+            mDriveServiceHelper.download();
+        };
+    }
+
+    private CompoundButton.OnCheckedChangeListener onBackupDataToggled() {
+        return (buttonView, isChecked) -> {
+            fh.setPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, isChecked);
+            if (isChecked){
                 setPendingState(true);
-                Toast.makeText(view.getContext(), "Uploading...", Toast.LENGTH_LONG).show();
                 mDriveServiceHelper.upload();
             }
         };
     }
 
-    private View.OnClickListener onDownloadClicked() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                setPendingState(true);
-                Toast.makeText(view.getContext(), "Downloading...", Toast.LENGTH_LONG).show();
-                RecipeBookDatabase.stopDb();
-                mDriveServiceHelper.download();
-            }
-        };
-    }
-
     private View.OnClickListener onDeleteClicked() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                spawnWarningPopup(view);
-            }
-        };
+        return view -> spawnWarningPopup(view);
     }
 
     private void spawnWarningPopup(View view){
@@ -155,28 +161,6 @@ public class DriveSettingsActivity extends AppCompatActivity {
             return false;
         });
     }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void getLastUploadedString(DriveDbLastModifiedEvent driveDbLastModifiedEvent){
-        setPendingState(false);
-        lastUpdatedTextView.setText(driveDbLastModifiedEvent.status);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void downloadDone(DbRefreshEvent dbRefreshEvent){
-        onResume();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void uploadDone(DriveUploadCompeleteEvent driveUploadCompeleteEvent){
-        onResume();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void driveDataDoneDeleting(DriveDataDeletedEvent ddde){
-        onResume();
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
         switch (requestCode) {
@@ -208,4 +192,26 @@ public class DriveSettingsActivity extends AppCompatActivity {
                 }
             });
     }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void getLastUploadedString(DriveDbLastModifiedEvent driveDbLastModifiedEvent){
+        setPendingState(false);
+        lastUpdatedTextView.setText(driveDbLastModifiedEvent.status);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void downloadDone(DbRefreshEvent dbRefreshEvent){
+        onResume();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void uploadDone(DriveUploadCompeleteEvent driveUploadCompeleteEvent){
+        onResume();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void driveDataDoneDeleting(DriveDataDeletedEvent ddde){
+        onResume();
+    }
+
 }
