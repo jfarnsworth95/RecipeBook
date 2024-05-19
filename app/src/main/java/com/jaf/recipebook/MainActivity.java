@@ -46,20 +46,26 @@ import com.jaf.recipebook.db.RecipeBookDao;
 import com.jaf.recipebook.db.RecipeBookDatabase;
 import com.jaf.recipebook.db.RecipeBookRepo;
 import com.jaf.recipebook.db.recipes.RecipesModel;
+import com.jaf.recipebook.events.RecipeSavedEvent;
 import com.jaf.recipebook.fragments.IsLoading;
 import com.jaf.recipebook.fragments.ListRecipes;
 import com.jaf.recipebook.fragments.NoSavedRecipes;
 import com.jaf.recipebook.fragments.SearchReturnsEmpty;
+import com.jaf.recipebook.helpers.DriveServiceHelper;
 import com.jaf.recipebook.helpers.FileHelper;
 import com.jaf.recipebook.helpers.GeneralHelper;
+import com.jaf.recipebook.helpers.GoogleSignInHelper;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    FileHelper fh;
     public final String TAG = "JAF-MAIN";
 
     private final int FRAGMENT_LOADING = 11;
@@ -67,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
     private final int FRAGMENT_NO_SAVED_RECIPES = 13;
     private final int FRAGMENT_SEARCH_RETURNED_EMPTY = 14;
 
+    FileHelper fh;
+    private DriveServiceHelper dsh;
     private RecipeBookDatabase rbd;
     private RecipeBookRepo rbr;
 
@@ -107,6 +115,8 @@ public class MainActivity extends AppCompatActivity {
     TabLayout categoryTabLayout;
     TableLayout searchBarOptionsContainer;
 
+    // TODO Check if data in cloud is newer than device data, prompt user to grab it on startup
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -117,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
         setClassVars();
         setupListeners();
 
+        dsh = GoogleSignInHelper.getDriveServiceHelper(this, false);
         fh.setPreference(
                 fh.STARTUP_COUNTER_PREFERENCE,
                 fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0
@@ -127,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
         swapFragments(FRAGMENT_LOADING);
+
         clearBulkActionList();
 
         // If MANAGE_EXTERNAL_STORAGE permission not granted and the Shared Preference for using
@@ -142,6 +154,20 @@ public class MainActivity extends AppCompatActivity {
         } else if (categoryTabLayout.getTabCount() > 0 && categoryTabLayout.getSelectedTabPosition() > 0){
             setCategoriesTabsVisible();
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -411,7 +437,6 @@ public class MainActivity extends AppCompatActivity {
     private void promptGoogleDriveLogin(){
         boolean cloudStorageActive = fh.getPreference(fh.CLOUD_STORAGE_ACTIVE_PREFERENCE, false);
         int startupCounter = fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0);
-        Log.i(TAG, "Login #" + startupCounter);
         if (!cloudStorageActive && startupCounter == 2){
             new AlertDialog.Builder(this)
                 .setTitle("Enable Google Drive Backups?")
@@ -778,15 +803,30 @@ public class MainActivity extends AppCompatActivity {
         setSearchBarGone();
 
         rbd.getQueryExecutor().execute(() -> {
-            for (ConstraintLayout recipeRow : bulkActionList) {
+            Iterator<ConstraintLayout> iterator = bulkActionList.iterator();
+            while (iterator.hasNext()) {
+                ConstraintLayout recipeRow = iterator.next();
                 long recipeId = Long.valueOf(
                     ((TextView) recipeRow.findViewById(R.id.frag_recipe_list_row_recipe_id))
                     .getText().toString());
                 RecipesModel rm = rbd.recipeDao().getRecipe(recipeId).blockingGet();
-                rbr.deleteRecipe(rm, true);
+                rbr.deleteRecipe(rm, !iterator.hasNext());
             }
-            mainHandler.postDelayed(this::dataRefresh, 2000);
         });
+    }
+
+    @Subscribe
+    public void onRecipeSaved(RecipeSavedEvent recipeSavedEvent){
+        Log.i(TAG, "onRecipeSaved called from Main");
+        if (recipeSavedEvent.recipeSaved) {
+            if (dsh != null && fh.getPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, false)) {
+                Log.i(TAG, "Backing up from Main");
+                dsh.upload();
+            }
+        } else {
+            Log.e(TAG, "Recipe Save failed...");
+        }
+        runOnUiThread(this::dataRefresh);
     }
 
 }

@@ -70,7 +70,7 @@ public class DriveSettingsActivity extends AppCompatActivity {
 
         deleteBtn.setOnClickListener(onDeleteClicked());
 
-        mDriveServiceHelper = GoogleSignInHelper.getDriveServiceHelper(this);
+        mDriveServiceHelper = GoogleSignInHelper.getDriveServiceHelper(this, true);
     }
 
     @Override

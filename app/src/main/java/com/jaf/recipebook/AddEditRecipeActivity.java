@@ -2,7 +2,6 @@ package com.jaf.recipebook;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatAutoCompleteTextView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,8 +11,6 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -31,7 +28,6 @@ import android.widget.Toast;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import com.jaf.recipebook.db.FullRecipeTuple;
 import com.jaf.recipebook.db.RecipeBookDatabase;
 import com.jaf.recipebook.db.RecipeBookRepo;
@@ -40,8 +36,11 @@ import com.jaf.recipebook.db.ingredients.IngredientsModel;
 import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.db.tags.TagsModel;
 import com.jaf.recipebook.events.RecipeSavedEvent;
+import com.jaf.recipebook.helpers.DriveServiceHelper;
+import com.jaf.recipebook.helpers.FileHelper;
 import com.jaf.recipebook.helpers.GeneralHelper;
 import com.jaf.recipebook.adapters.TagViewAdapter;
+import com.jaf.recipebook.helpers.GoogleSignInHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -58,6 +57,8 @@ public class AddEditRecipeActivity extends AppCompatActivity {
     final String TAG = "JAF-AddEditRecipe";
 
     long recipeId;
+    private DriveServiceHelper dsh;
+    private FileHelper fh;
     private RecipeBookDatabase rbdb;
     private RecipeBookRepo rbr;
 
@@ -88,9 +89,11 @@ public class AddEditRecipeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         recipeId = getIntent().getLongExtra("recipe_id", -1);
-        Log.i(TAG, "onCreate: " + recipeId);
         rbdb = RecipeBookDatabase.getInstance(this);
         rbr = new RecipeBookRepo(rbdb);
+        fh = new FileHelper(this);
+        dsh = GoogleSignInHelper.getDriveServiceHelper(this, false);
+
         mainHandler = new Handler(getMainLooper());
 
         if (recipeId >= 0){
@@ -517,10 +520,10 @@ public class AddEditRecipeActivity extends AppCompatActivity {
 
         if (recipeId == -1){
             Log.d(TAG, "Attempting to INSERT new recipe");
-            rbr.insertRecipe(rm, ims, tms, dm, false);
+            rbr.insertRecipe(rm, ims, tms, dm, true);
         } else {
             Log.d(TAG, "Updating recipe with ID: " + recipeId);
-            rbr.updateRecipe(rm, ims, tms, dm, false);
+            rbr.updateRecipe(rm, ims, tms, dm, true);
         }
 
         setContentView(R.layout.activity_is_loading);
@@ -528,8 +531,12 @@ public class AddEditRecipeActivity extends AppCompatActivity {
 
     @Subscribe
     public void onRecipeSaved(RecipeSavedEvent recipeSavedEvent){
-        Log.i(TAG, "EVENT IS: " + recipeSavedEvent.recipeAdded);
-        if(recipeSavedEvent.recipeAdded){
+        Log.i(TAG, "onRecipeSaved called from Add/Edit");
+        if(recipeSavedEvent.recipeSaved){
+            if (dsh != null && fh.getPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, false)){
+                Log.i(TAG, "Backing up from Add/Edit");
+                dsh.upload();
+            }
             setResult(Activity.RESULT_OK);
             finish();
         } else {

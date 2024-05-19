@@ -16,10 +16,12 @@ public class GoogleSignInHelper {
     public static final String APP_NAME = "appName";
     public static final int REQUEST_CODE_SIGN_IN = 100;
 
-    public static DriveServiceHelper getDriveServiceHelper(Activity activity){
+    public static DriveServiceHelper getDriveServiceHelper(Activity activity, boolean attemptSignIn){
         GoogleSignInAccount account = getGoogleSignInAccount(activity);
         if (account == null) {
-            signIn(activity);
+            if (attemptSignIn){
+                signIn(activity);
+            }
             return null;
         } else {
             return new DriveServiceHelper(DriveServiceHelper

@@ -22,7 +22,6 @@ import java.util.concurrent.Executors;
 
 public class RecipeBookRepo {
     private final RecipeBookDatabase rbdb;
-    private final RecipeBookDao recipeBookDao;
     private final TagsDao tagsDao;
     private final DirectionsDao directionsDao;
     private final IngredientsDao ingredientsDao;
@@ -32,7 +31,6 @@ public class RecipeBookRepo {
 
     public RecipeBookRepo(RecipeBookDatabase rbdb){
         this.rbdb = rbdb;
-        recipeBookDao = rbdb.recipeBookDao();
         recipeDao = rbdb.recipeDao();
         ingredientsDao = rbdb.ingredientsDao();
         directionsDao = rbdb.directionsDao();
@@ -41,7 +39,7 @@ public class RecipeBookRepo {
 
     // Add Recipe
     public void insertRecipe(@NonNull RecipesModel rm, @NonNull List<IngredientsModel> ims,
-                             @NonNull List<TagsModel> tms, @NonNull DirectionsModel dm, boolean isBulk){
+                             @NonNull List<TagsModel> tms, @NonNull DirectionsModel dm, boolean isLast){
         rbdb.getTransactionExecutor().execute(() -> {
             rbdb.runInTransaction(() -> {
                 try {
@@ -60,7 +58,9 @@ public class RecipeBookRepo {
                     directionsDao.insertDirections(dm);
                     tagsDao.insertTag(tms);
 
-                    if (!isBulk) EventBus.getDefault().post(new RecipeSavedEvent(true));
+                    if (isLast) {
+                        EventBus.getDefault().post(new RecipeSavedEvent(true));
+                    }
                 } catch (Exception ex){
                     Log.e(TAG, "Failed to save recipe data while running INSERT: ", ex);
                     EventBus.getDefault().post(new RecipeSavedEvent(false));
@@ -72,7 +72,7 @@ public class RecipeBookRepo {
     }
 
     // Delete Recipe
-    public void deleteRecipe(RecipesModel rpModel, boolean isBulk){
+    public void deleteRecipe(RecipesModel rpModel, boolean isLast){
         rbdb.getTransactionExecutor().execute(() -> {
             rbdb.runInTransaction(() -> {
                 try {
@@ -86,7 +86,9 @@ public class RecipeBookRepo {
                         Log.d(TAG, "Tag entries deleted: " + (tagDeleted > 0));
                     }
 
-                    if (!isBulk) EventBus.getDefault().post(new RecipeSavedEvent(true));
+                    if (isLast) {
+                        EventBus.getDefault().post(new RecipeSavedEvent(true));
+                    }
                 } catch (Exception ex){
                     Log.e(TAG, "Failed to save recipe data while running DELETE: ", ex);
                     EventBus.getDefault().post(new RecipeSavedEvent(false));
@@ -99,7 +101,7 @@ public class RecipeBookRepo {
 
     // Update Recipe
     public void updateRecipe(@NonNull RecipesModel rm, @NonNull List<IngredientsModel> ims,
-                             @NonNull List<TagsModel> tms, @NonNull DirectionsModel dm, boolean isBulk) {
+                             @NonNull List<TagsModel> tms, @NonNull DirectionsModel dm, boolean isLast) {
         rbdb.getTransactionExecutor().execute(() -> {
             rbdb.runInTransaction(() -> {
                 try {
@@ -107,6 +109,9 @@ public class RecipeBookRepo {
                         rm.setId(recipeDao.getRecipeByUuid(rm.getUuid()).blockingGet().getId());
                         for (IngredientsModel im : ims){
                             im.setRecipe_id(rm.getId());
+                        }
+                        for (TagsModel tm : tms){
+                            tm.setRecipe_id(rm.getId());
                         }
                     }
                     recipeDao.updateRecipe(rm);
@@ -122,7 +127,9 @@ public class RecipeBookRepo {
                         tagsDao.insertTag(tms);
                     }
 
-                    if (!isBulk) EventBus.getDefault().post(new RecipeSavedEvent(true));
+                    if (isLast){
+                        EventBus.getDefault().post(new RecipeSavedEvent(true));
+                    }
 
                 } catch (Exception ex) {
                     Log.e(TAG, "Failed to save recipe data while running UPDATE: ", ex);

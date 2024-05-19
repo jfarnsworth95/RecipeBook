@@ -5,7 +5,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.UiModeManager;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.net.Uri;
@@ -20,7 +19,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -41,6 +39,7 @@ import com.jaf.recipebook.db.tags.TagsModel;
 import com.jaf.recipebook.events.DbRefreshEvent;
 import com.jaf.recipebook.events.DbShutdownEvent;
 import com.jaf.recipebook.events.RecipeSavedEvent;
+import com.jaf.recipebook.helpers.DriveServiceHelper;
 import com.jaf.recipebook.helpers.FileHelper;
 import com.jaf.recipebook.helpers.GoogleSignInHelper;
 
@@ -53,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -60,13 +60,14 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    FileHelper fileHelper;
+    FileHelper fh;
     public final String TAG = "JAF-SETTINGS";
     public final int signInCode = 101;
     public final int IMPORT_ALL = 1000;
     public final int IMPORT_SELECTED = 1001;
     GoogleSignInClient gsc;
     GoogleSignInAccount gsa;
+    private DriveServiceHelper dsh;
     private RecipeBookDatabase rbdb;
     private RecipeBookRepo rbr;
     private Handler mainHandler;
@@ -90,7 +91,8 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        fileHelper = new FileHelper(this);
+        fh = new FileHelper(this);
+        dsh = GoogleSignInHelper.getDriveServiceHelper(this, false);
         setContentView(R.layout.activity_settings);
         mainHandler = new Handler(getMainLooper());
 
@@ -112,7 +114,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         changeDisplayModeBtn.setOnClickListener(v -> {
             UiModeManager umm = (UiModeManager) getSystemService(UI_MODE_SERVICE);
-            int displayModeIndex = fileHelper.getPreference(fileHelper.DISPLAY_MODE_PREFERENCE, fileHelper.DISPLAY_MODE_OS);
+            int displayModeIndex = fh.getPreference(fh.DISPLAY_MODE_PREFERENCE, fh.DISPLAY_MODE_OS);
 
             new AlertDialog.Builder(this)
                 .setTitle(getString(R.string.display_mode_popup_title))
@@ -120,7 +122,7 @@ public class SettingsActivity extends AppCompatActivity {
                 .setNegativeButton(R.string.negative_text, (dialog, which) -> { })
                 .setPositiveButton(R.string.affirmative_text, (dialog, which) -> {
                     int setDisplayMode =((AlertDialog)dialog).getListView().getCheckedItemPosition();
-                    fileHelper.setPreference(fileHelper.DISPLAY_MODE_PREFERENCE, setDisplayMode);
+                    fh.setPreference(fh.DISPLAY_MODE_PREFERENCE, setDisplayMode);
                     umm.setApplicationNightMode(setDisplayMode);
                 })
                 .create().show();
@@ -144,7 +146,7 @@ public class SettingsActivity extends AppCompatActivity {
         super.onResume();
         // On return from permission request activity, set preference
         // based on if the permission was granted or not
-        fileHelper.setPreference(fileHelper.EXTERNAL_STORAGE_PREFERENCE,
+        fh.setPreference(fh.EXTERNAL_STORAGE_PREFERENCE,
                                 Environment.isExternalStorageManager());
 
         // Add button listener for Importing Downloaded recipes
@@ -276,8 +278,10 @@ public class SettingsActivity extends AppCompatActivity {
      * that to the database.
      */
     private void importLocalFiles(boolean shouldOverwriteDuplicates) throws IOException{
-        for (File recipeFile : filesToImport){
-            HashMap<String, Object> jsonData = fileHelper.returnGsonFromFile(recipeFile);
+        Iterator<File> iterator = filesToImport.iterator();
+        while (iterator.hasNext()){
+            File recipeFile = iterator.next();
+            HashMap<String, Object> jsonData = fh.returnGsonFromFile(recipeFile);
 
             // Create Recipe Model
             Float servings = null;
@@ -321,10 +325,10 @@ public class SettingsActivity extends AppCompatActivity {
 
             if (duplicateImports.contains(recipeFile)){
                 if (shouldOverwriteDuplicates){ // Either we overwrite, or ignore entirely
-                    rbr.updateRecipe(rm, ingredients, tags, dm, true);
+                    rbr.updateRecipe(rm, ingredients, tags, dm, !iterator.hasNext());
                 }
             } else {
-                rbr.insertRecipe(rm, ingredients, tags, dm, true);
+                rbr.insertRecipe(rm, ingredients, tags, dm, !iterator.hasNext());
             }
         }
 
@@ -335,7 +339,7 @@ public class SettingsActivity extends AppCompatActivity {
      * @return List of files that can be imported into the application
      */
     private ArrayList<File> returnAvailableImports(){
-        File[] downloadFiles = fileHelper.getDownloadsFolderFiles();
+        File[] downloadFiles = fh.getDownloadsFolderFiles();
         ArrayList<File> availableImports = new ArrayList<>();
         for (File downloadFile : downloadFiles){
             // Check if the file has an extension, and if that extension is the app recipe extension
@@ -355,12 +359,12 @@ public class SettingsActivity extends AppCompatActivity {
         duplicateImports = new HashSet<>();
         HashSet<UUID> scannedUuids = new HashSet<>();
         for (File potentialImport : availableImports){
-            if (!fileHelper.validateRecipeFileFormat(potentialImport, scannedUuids)){
+            if (!fh.validateRecipeFileFormat(potentialImport, scannedUuids)){
                 invalidImports.put(potentialImport, "The file structure is corrupted, or this unique id was found in another file.");
-            } else if (currentRecipeUuids.contains(fileHelper.getImportFileUuid(potentialImport))){
+            } else if (currentRecipeUuids.contains(fh.getImportFileUuid(potentialImport))){
                 duplicateImports.add(potentialImport);
             }
-            scannedUuids.add(fileHelper.getImportFileUuid(potentialImport));
+            scannedUuids.add(fh.getImportFileUuid(potentialImport));
         }
 
         validImports = new HashSet<>(availableImports);
@@ -580,7 +584,16 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     @Subscribe
-    public void onRecipeAdded(RecipeSavedEvent recipeSavedEvent){
+    public void onRecipeSaved(RecipeSavedEvent recipeSavedEvent){
+        Log.i(TAG, "onRecipeSaved called from Settings");
         refreshRecipeNameList();
+        if (recipeSavedEvent.recipeSaved) {
+            if (dsh != null && fh.getPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, false)) {
+                Log.i(TAG, "Backing up from Settings");
+                dsh.upload();
+            }
+        } else {
+            Log.e(TAG, "One or more recipe imports failed in Settings");
+        }
     }
 }

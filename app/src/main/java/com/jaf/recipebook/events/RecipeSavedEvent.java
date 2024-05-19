@@ -1,9 +1,9 @@
 package com.jaf.recipebook.events;
 
 public class RecipeSavedEvent {
-    public boolean recipeAdded;
+    public boolean recipeSaved;
 
-    public RecipeSavedEvent(boolean recipeAdded){
-        this.recipeAdded = recipeAdded;
+    public RecipeSavedEvent(boolean recipeSaved){
+        this.recipeSaved = recipeSaved;
     }
 }

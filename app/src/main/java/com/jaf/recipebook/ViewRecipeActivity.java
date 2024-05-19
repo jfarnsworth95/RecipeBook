@@ -24,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.textview.MaterialTextView;
 import com.jaf.recipebook.db.FullRecipeTuple;
@@ -33,9 +34,15 @@ import com.jaf.recipebook.db.directions.DirectionsModel;
 import com.jaf.recipebook.db.ingredients.IngredientsModel;
 import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.db.tags.TagsModel;
+import com.jaf.recipebook.events.RecipeSavedEvent;
+import com.jaf.recipebook.helpers.DriveServiceHelper;
 import com.jaf.recipebook.helpers.FileHelper;
 import com.jaf.recipebook.helpers.GeneralHelper;
 import com.jaf.recipebook.adapters.TagViewAdapter;
+import com.jaf.recipebook.helpers.GoogleSignInHelper;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +55,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
 
     long recipeId;
     String recipeName;
+    private DriveServiceHelper dsh;
     private RecipeBookDatabase rbdb;
     private RecipeBookRepo rbr;
 
@@ -86,6 +94,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
         recipeName = getIntent().getStringExtra("recipe_name");
 
         fh = new FileHelper(this);
+        dsh = GoogleSignInHelper.getDriveServiceHelper(this, false);
         Objects.requireNonNull(this.getSupportActionBar()).setTitle(recipeName);
 
         deleteConfirmationDialog = setupDeleteRecipeConfirmationDialog();
@@ -94,10 +103,24 @@ public class ViewRecipeActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         setContentView(R.layout.activity_is_loading);
         refreshData();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -315,10 +338,21 @@ public class ViewRecipeActivity extends AppCompatActivity {
 
     private void deleteRecipe(){
         setContentView(R.layout.activity_is_loading);
-        rbdb.getTransactionExecutor().execute(() -> {
-            rbr.deleteRecipe(rm, false);
-            setResult(GeneralHelper.ACTIVITY_RESULT_DELETE_RECIPE);
-            this.finish();
-        });
+        rbr.deleteRecipe(rm, true);
+    }
+
+    @Subscribe
+    public void onRecipeSaved(RecipeSavedEvent recipeSavedEvent){
+        Log.i(TAG, "onRecipeSaved called from View Activity");
+        if (recipeSavedEvent.recipeSaved) {
+            if (dsh != null && fh.getPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, false)) {
+                Log.i(TAG, "Backing up from View");
+                dsh.upload();
+            }
+        } else {
+            Log.e(TAG, "Failed to delete recipe in View");
+        }
+        setResult(GeneralHelper.ACTIVITY_RESULT_DELETE_RECIPE);
+        this.finish();
     }
 }
