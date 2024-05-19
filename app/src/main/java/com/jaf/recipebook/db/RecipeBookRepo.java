@@ -27,7 +27,6 @@ public class RecipeBookRepo {
     private final DirectionsDao directionsDao;
     private final IngredientsDao ingredientsDao;
     private final RecipeDao recipeDao;
-    private final Executor executor = Executors.newSingleThreadExecutor();
 
     private String TAG = "RecipeBookRepo";
 
@@ -42,10 +41,10 @@ public class RecipeBookRepo {
 
     // Add Recipe
     public void insertRecipe(@NonNull RecipesModel rm, @NonNull List<IngredientsModel> ims,
-                             @NonNull List<TagsModel> tms, @NonNull DirectionsModel dm){
-        try {
-            executor.execute(() -> {
-                rbdb.runInTransaction(() -> {
+                             @NonNull List<TagsModel> tms, @NonNull DirectionsModel dm, boolean isBulk){
+        rbdb.getTransactionExecutor().execute(() -> {
+            rbdb.runInTransaction(() -> {
+                try {
                     long pk = recipeDao.insertRecipe(rm);
                     Log.i(TAG, "Primary Key of inserted Row: " + pk);
 
@@ -61,22 +60,22 @@ public class RecipeBookRepo {
                     directionsDao.insertDirections(dm);
                     tagsDao.insertTag(tms);
 
-                    EventBus.getDefault().post(new RecipeSavedEvent(true));
-                });
+                    if (!isBulk) EventBus.getDefault().post(new RecipeSavedEvent(true));
+                } catch (Exception ex){
+                    Log.e(TAG, "Failed to save recipe data while running INSERT: ", ex);
+                    EventBus.getDefault().post(new RecipeSavedEvent(false));
+                } finally {
+                    Log.d(TAG, "INSERT Transaction END");
+                }
             });
-        } catch (Exception ex){
-            Log.e(TAG, "Failed to save recipe data while running INSERT: ", ex);
-            EventBus.getDefault().post(new RecipeSavedEvent(false));
-        } finally {
-            Log.d(TAG, "INSERT Transaction END");
-        }
+        });
     }
 
     // Delete Recipe
-    public void deleteRecipe(RecipesModel rpModel){
-        try {
-            executor.execute(() -> {
-                rbdb.runInTransaction(() -> {
+    public void deleteRecipe(RecipesModel rpModel, boolean isBulk){
+        rbdb.getTransactionExecutor().execute(() -> {
+            rbdb.runInTransaction(() -> {
+                try {
                     long deleted = recipeDao.deleteRecipe(rpModel);
                     if (deleted > 0) {
                         long ingDeleted = ingredientsDao.deleteIngredientsById(rpModel.getId());
@@ -87,21 +86,21 @@ public class RecipeBookRepo {
                         Log.d(TAG, "Tag entries deleted: " + (tagDeleted > 0));
                     }
 
-                    EventBus.getDefault().post(new RecipeSavedEvent(true));
-                });
+                    if (!isBulk) EventBus.getDefault().post(new RecipeSavedEvent(true));
+                } catch (Exception ex){
+                    Log.e(TAG, "Failed to save recipe data while running DELETE: ", ex);
+                    EventBus.getDefault().post(new RecipeSavedEvent(false));
+                } finally {
+                    Log.d(TAG, "DELETE Transaction END");
+                }
             });
-        } catch (Exception ex){
-            Log.e(TAG, "Failed to save recipe data while running DELETE: ", ex);
-            EventBus.getDefault().post(new RecipeSavedEvent(false));
-        } finally {
-            Log.d(TAG, "DELETE Transaction END");
-        }
+        });
     }
 
     // Update Recipe
     public void updateRecipe(@NonNull RecipesModel rm, @NonNull List<IngredientsModel> ims,
-                             @NonNull List<TagsModel> tms, @NonNull DirectionsModel dm) {
-        executor.execute(() -> {
+                             @NonNull List<TagsModel> tms, @NonNull DirectionsModel dm, boolean isBulk) {
+        rbdb.getTransactionExecutor().execute(() -> {
             rbdb.runInTransaction(() -> {
                 try {
                     if (rm.getId() < 1 && rm.getUuid() != null){
@@ -123,7 +122,7 @@ public class RecipeBookRepo {
                         tagsDao.insertTag(tms);
                     }
 
-                    EventBus.getDefault().post(new RecipeSavedEvent(true));
+                    if (!isBulk) EventBus.getDefault().post(new RecipeSavedEvent(true));
 
                 } catch (Exception ex) {
                     Log.e(TAG, "Failed to save recipe data while running UPDATE: ", ex);

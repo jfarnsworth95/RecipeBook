@@ -783,7 +783,7 @@ public class MainActivity extends AppCompatActivity {
                     ((TextView) recipeRow.findViewById(R.id.frag_recipe_list_row_recipe_id))
                     .getText().toString());
                 RecipesModel rm = rbd.recipeDao().getRecipe(recipeId).blockingGet();
-                rbr.deleteRecipe(rm);
+                rbr.deleteRecipe(rm, true);
             }
             mainHandler.postDelayed(this::dataRefresh, 2000);
         });

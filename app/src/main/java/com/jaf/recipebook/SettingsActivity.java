@@ -321,12 +321,13 @@ public class SettingsActivity extends AppCompatActivity {
 
             if (duplicateImports.contains(recipeFile)){
                 if (shouldOverwriteDuplicates){ // Either we overwrite, or ignore entirely
-                    rbr.updateRecipe(rm, ingredients, tags, dm);
+                    rbr.updateRecipe(rm, ingredients, tags, dm, true);
                 }
             } else {
-                rbr.insertRecipe(rm, ingredients, tags, dm);
+                rbr.insertRecipe(rm, ingredients, tags, dm, true);
             }
         }
+
     }
 
     /**

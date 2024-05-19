@@ -316,7 +316,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
     private void deleteRecipe(){
         setContentView(R.layout.activity_is_loading);
         rbdb.getTransactionExecutor().execute(() -> {
-            rbr.deleteRecipe(rm);
+            rbr.deleteRecipe(rm, false);
             setResult(GeneralHelper.ACTIVITY_RESULT_DELETE_RECIPE);
             this.finish();
         });

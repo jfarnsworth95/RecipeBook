@@ -517,10 +517,10 @@ public class AddEditRecipeActivity extends AppCompatActivity {
 
         if (recipeId == -1){
             Log.d(TAG, "Attempting to INSERT new recipe");
-            rbr.insertRecipe(rm, ims, tms, dm);
+            rbr.insertRecipe(rm, ims, tms, dm, false);
         } else {
             Log.d(TAG, "Updating recipe with ID: " + recipeId);
-            rbr.updateRecipe(rm, ims, tms, dm);
+            rbr.updateRecipe(rm, ims, tms, dm, false);
         }
 
         setContentView(R.layout.activity_is_loading);
