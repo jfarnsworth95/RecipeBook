@@ -500,8 +500,8 @@ public class AddEditRecipeActivity extends AppCompatActivity {
         if (!sourceUrlInput.getText().toString().equals("")){
             sourceUrlSave = sourceUrlInput.getText().toString();
         }
-        if(!categoryInput.getText().toString().equals("")){
-            categorySave = categoryInput.getText().toString();
+        if(!categoryInput.getText().toString().trim().equals("")){
+            categorySave = categoryInput.getText().toString().trim();
         }
 
         RecipesModel rm;
