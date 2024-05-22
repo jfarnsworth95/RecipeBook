@@ -1,8 +1,11 @@
 package com.jaf.recipebook.db;
 
+import android.database.Cursor;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.sqlite.db.SupportSQLiteProgram;
+import androidx.sqlite.db.SupportSQLiteQuery;
 
 import com.jaf.recipebook.db.directions.DirectionsDao;
 import com.jaf.recipebook.db.directions.DirectionsModel;
@@ -12,6 +15,7 @@ import com.jaf.recipebook.db.recipes.RecipeDao;
 import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.db.tags.TagsDao;
 import com.jaf.recipebook.db.tags.TagsModel;
+import com.jaf.recipebook.events.DbCheckpointCreated;
 import com.jaf.recipebook.events.RecipeSavedEvent;
 
 import org.greenrobot.eventbus.EventBus;
@@ -35,6 +39,29 @@ public class RecipeBookRepo {
         ingredientsDao = rbdb.ingredientsDao();
         directionsDao = rbdb.directionsDao();
         tagsDao = rbdb.tagsDao();
+    }
+
+    // Create Checkpoint for Uploading
+    public void createCheckpoint() {
+        rbdb.getTransactionExecutor().execute(() -> {
+            try {
+                Cursor cursor = rbdb.query("pragma wal_checkpoint(full)", null);
+                if (cursor != null && cursor.moveToFirst()) {
+                    int a = cursor.getInt(0);
+                    int b = cursor.getInt(1);
+                    int c = cursor.getInt(2);
+                    Log.i(TAG, "Checkpoint response: [a: " + a + ", b: " + b + ", c: " + c + "]");
+                }
+                if (cursor != null) {
+                    cursor.close();
+                }
+//                rbdb.close(); // Double check if this is necessary
+                EventBus.getDefault().post(new DbCheckpointCreated(true));
+            } catch (Exception ex) {
+                Log.e(TAG, "Failed to create checkpoint...", ex);
+                EventBus.getDefault().post(new DbCheckpointCreated(false));
+            }
+        });
     }
 
     // Add Recipe

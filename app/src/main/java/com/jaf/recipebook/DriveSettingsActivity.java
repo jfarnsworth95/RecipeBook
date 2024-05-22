@@ -22,6 +22,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.jaf.recipebook.db.RecipeBookDatabase;
+import com.jaf.recipebook.db.RecipeBookRepo;
+import com.jaf.recipebook.events.DbCheckpointCreated;
 import com.jaf.recipebook.events.DbRefreshEvent;
 import com.jaf.recipebook.events.DriveDataDeletedEvent;
 import com.jaf.recipebook.events.DriveDbLastModifiedEvent;
@@ -103,14 +105,10 @@ public class DriveSettingsActivity extends AppCompatActivity {
 
         if (isPending){
             lastUpdatedTextView.setText(this.getString(R.string.last_synced_text));
-            progressBar.setVisibility(View.VISIBLE);
-            uploadBtn.setBackgroundTintList(ColorStateList.valueOf(this.getColor(R.color.inactive)));
-            downloadBtn.setBackgroundTintList(ColorStateList.valueOf(this.getColor(R.color.inactive)));
             deleteBtn.setBackgroundTintList(ColorStateList.valueOf(this.getColor(R.color.inactive)));
+            progressBar.setVisibility(View.VISIBLE);
         } else {
             progressBar.setVisibility(View.GONE);
-            uploadBtn.setBackgroundTintList(ColorStateList.valueOf(this.getColor(R.color.secondary)));
-            downloadBtn.setBackgroundTintList(ColorStateList.valueOf(this.getColor(R.color.secondary)));
             deleteBtn.setBackgroundTintList(ColorStateList.valueOf(this.getColor(R.color.danger)));
         }
 
@@ -123,7 +121,7 @@ public class DriveSettingsActivity extends AppCompatActivity {
         return view -> {
             setPendingState(true);
             Toast.makeText(view.getContext(), "Uploading...", Toast.LENGTH_LONG).show();
-            mDriveServiceHelper.upload();
+            new RecipeBookRepo(RecipeBookDatabase.getInstance(this)).createCheckpoint();
         };
     }
 
@@ -139,10 +137,6 @@ public class DriveSettingsActivity extends AppCompatActivity {
     private CompoundButton.OnCheckedChangeListener onBackupDataToggled() {
         return (buttonView, isChecked) -> {
             fh.setPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, isChecked);
-            if (isChecked){
-                setPendingState(true);
-                mDriveServiceHelper.upload();
-            }
         };
     }
 
@@ -197,6 +191,9 @@ public class DriveSettingsActivity extends AppCompatActivity {
     public void getLastUploadedString(DriveDbLastModifiedEvent driveDbLastModifiedEvent){
         setPendingState(false);
         lastUpdatedTextView.setText(driveDbLastModifiedEvent.status);
+        if (!driveDbLastModifiedEvent.hasBackups) {
+            downloadBtn.setEnabled(false);
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -212,6 +209,15 @@ public class DriveSettingsActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void driveDataDoneDeleting(DriveDataDeletedEvent ddde){
         onResume();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void checkpointAttempted(DbCheckpointCreated dbCheckpointCreated) {
+        if (dbCheckpointCreated.success){
+            mDriveServiceHelper.upload();
+        } else {
+            Toast.makeText(this, "Database failed to save, aborting...", Toast.LENGTH_LONG).show();
+        }
     }
 
 }

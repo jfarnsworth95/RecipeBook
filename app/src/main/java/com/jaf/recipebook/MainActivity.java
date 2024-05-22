@@ -46,6 +46,10 @@ import com.jaf.recipebook.db.RecipeBookDao;
 import com.jaf.recipebook.db.RecipeBookDatabase;
 import com.jaf.recipebook.db.RecipeBookRepo;
 import com.jaf.recipebook.db.recipes.RecipesModel;
+import com.jaf.recipebook.events.DbCheckpointCreated;
+import com.jaf.recipebook.events.DbRefreshEvent;
+import com.jaf.recipebook.events.DbShutdownEvent;
+import com.jaf.recipebook.events.DriveTimestampResultEvent;
 import com.jaf.recipebook.events.RecipeSavedEvent;
 import com.jaf.recipebook.fragments.IsLoading;
 import com.jaf.recipebook.fragments.ListRecipes;
@@ -58,6 +62,7 @@ import com.jaf.recipebook.helpers.GoogleSignInHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -87,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
     private Runnable workRunnableSearch = null;
     private HashSet<String> categories;
     private HashSet<ConstraintLayout> bulkActionList;
+    private long newTimestamp = 0;
 
     ActivityResultLauncher<Intent> addEditActivityResultLauncher;
     ActivityResultLauncher<Intent> settingsActivityResultLauncher;
@@ -116,6 +122,11 @@ public class MainActivity extends AppCompatActivity {
     TableLayout searchBarOptionsContainer;
 
     // TODO Check if data in cloud is newer than device data, prompt user to grab it on startup
+    // TODO Add menu button during bulk select to select all
+    // TODO Login on Settings page can cause import loading spinner to show in top right corner (in dark mode?)
+    // TODO Add/Edit return to View instead of Main
+    // TODO Popup request to auto backup still spawns if user already has it on
+    // TODO Popup request to pull more recent data popping up after syncing most recent data.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,6 +143,10 @@ public class MainActivity extends AppCompatActivity {
                 fh.STARTUP_COUNTER_PREFERENCE,
                 fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0
                 ) + 1);
+
+        if (dsh != null){
+            dsh.downloadTimestamp();
+        }
     }
 
     @Override
@@ -445,7 +460,12 @@ public class MainActivity extends AppCompatActivity {
                     settingsActivityResultLauncher
                             .launch(new Intent(this, SettingsActivity.class));
                 })
-                .setNegativeButton(this.getString(R.string.maybe_later), (dialogInterface, i) -> {})
+                .setNegativeButton(this.getString(R.string.maybe_later), (dialogInterface, i) -> {
+                    fh.setPreference(
+                            fh.STARTUP_COUNTER_PREFERENCE,
+                            fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0
+                            ) + 1);
+                })
                 .show();
         }
     }
@@ -821,12 +841,62 @@ public class MainActivity extends AppCompatActivity {
         if (recipeSavedEvent.recipeSaved) {
             if (dsh != null && fh.getPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, false)) {
                 Log.i(TAG, "Backing up from Main");
-                dsh.upload();
+                rbr.createCheckpoint();
             }
         } else {
             Log.e(TAG, "Recipe Save failed...");
         }
         runOnUiThread(this::dataRefresh);
+    }
+
+    // TODO Download from sync not working, names don't match
+
+    @Subscribe
+    public void onTimestampDownloaded(DriveTimestampResultEvent driveTimestampResultEvent){
+        Log.i(TAG, "Last timestamp at " + Long.toString(driveTimestampResultEvent.timestamp));
+        if (dsh != null
+                && fh.getPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, false)
+                && driveTimestampResultEvent.timestamp > fh.getPreference(fh.BACKUP_TIMESTAMP_PREFERENCE, (long) 0)) {
+            runOnUiThread(() -> {
+                new AlertDialog.Builder(this)
+                        .setTitle(getString(R.string.cloud_has_more_recent_upload))
+                        .setMessage(getString(R.string.request_replace_data))
+                        .setNegativeButton(R.string.negative_response, (dialog, which) -> { })
+                        .setPositiveButton(R.string.affirmative_text, (dialog, which) -> {
+                            swapFragments(FRAGMENT_LOADING);
+                            leaveMenuEmpty = true;
+                            invalidateMenu();
+                            newTimestamp = driveTimestampResultEvent.timestamp;
+                            dsh.download();
+                        })
+                        .create().show();
+            });
+        }
+    }
+
+    @Subscribe
+    public void onDbShutdownEvent(DbShutdownEvent dbShutdownEvent) {
+        rbd.close();
+        rbr = null;
+    }
+
+    @Subscribe
+    public void onDbRefreshEvent(DbRefreshEvent dbRefreshEvent){
+        if (dbRefreshEvent.shouldRefresh){
+            fh.setPreference(fh.BACKUP_TIMESTAMP_PREFERENCE, newTimestamp);
+        }
+        rbd = RecipeBookDatabase.getInstance(this);
+        rbr =  new RecipeBookRepo(rbd);
+        dataRefresh();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void checkpointAttempted(DbCheckpointCreated dbCheckpointCreated) {
+        if (dbCheckpointCreated.success){
+            dsh.upload();
+        } else {
+            Toast.makeText(this, "Database failed to save, aborting backup...", Toast.LENGTH_LONG).show();
+        }
     }
 
 }

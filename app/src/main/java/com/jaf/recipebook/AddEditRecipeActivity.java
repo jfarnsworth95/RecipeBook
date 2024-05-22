@@ -35,6 +35,7 @@ import com.jaf.recipebook.db.directions.DirectionsModel;
 import com.jaf.recipebook.db.ingredients.IngredientsModel;
 import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.db.tags.TagsModel;
+import com.jaf.recipebook.events.DbCheckpointCreated;
 import com.jaf.recipebook.events.RecipeSavedEvent;
 import com.jaf.recipebook.helpers.DriveServiceHelper;
 import com.jaf.recipebook.helpers.FileHelper;
@@ -44,6 +45,7 @@ import com.jaf.recipebook.helpers.GoogleSignInHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -535,13 +537,25 @@ public class AddEditRecipeActivity extends AppCompatActivity {
         if(recipeSavedEvent.recipeSaved){
             if (dsh != null && fh.getPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, false)){
                 Log.i(TAG, "Backing up from Add/Edit");
-                dsh.upload();
+                rbr.createCheckpoint();
+            } else {
+                setResult(Activity.RESULT_OK);
+                finish();
             }
-            setResult(Activity.RESULT_OK);
-            finish();
         } else {
             Toast.makeText(this, getString(R.string.recipe_save_failed), Toast.LENGTH_LONG).show();
             setContentView(R.layout.activity_add_edit_recipe);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void checkpointAttempted(DbCheckpointCreated dbCheckpointCreated) {
+        if (dbCheckpointCreated.success){
+            dsh.upload();
+            setResult(Activity.RESULT_OK);
+            finish();
+        } else {
+            Toast.makeText(this, "Database failed to save, aborting backup...", Toast.LENGTH_LONG).show();
         }
     }
 }

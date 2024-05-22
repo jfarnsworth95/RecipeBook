@@ -40,12 +40,12 @@ public class RecipeViewAdapter extends ListAdapter<BasicRecipeTuple, RecipeViewH
 
         @Override
         public boolean areItemsTheSame(@NonNull BasicRecipeTuple oldItem, @NonNull BasicRecipeTuple newItem) {
-            return oldItem.getId() == newItem.getId();
+            return oldItem.getId() == newItem.getId() && oldItem.getName().equals(newItem.getName());
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull BasicRecipeTuple oldItem, @NonNull BasicRecipeTuple newItem) {
-            return oldItem.getName().equals(newItem.getName());
+            return oldItem.getId() == newItem.getId() && oldItem.getName().equals(newItem.getName());
         }
     }
 }

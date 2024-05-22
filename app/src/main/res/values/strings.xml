@@ -7,7 +7,8 @@
     <string name="preference_category_ordering" translatable="false">category_ordering</string>
     <string name="preference_display_mode" translatable="false">display_mode</string>
     <string name="preference_auto_backup" translatable="false">automatic_backup</string>
-    <string name="startup_counter" translatable="false">startup_counter</string>
+    <string name="preference_backup_timestamp" translatable="false">backup_timestamp</string>
+    <string name="preference_startup_counter" translatable="false">startup_counter</string>
     <string name="title">Title</string>
     <string name="servings">Servings</string>
     <string name="ingredients">Ingredients</string>
@@ -43,6 +44,8 @@
     <string name="context_search_dropdown">Show more search options</string>
     <string name="search_bar_hint">What are you looking for?</string>
     <string name="all_recipes">All Recipes</string>
+    <string name="cloud_has_more_recent_upload">Google Drive has a more recent version</string>
+    <string name="request_replace_data">Would you like to sync with the more recent data in your Drive?</string>
 
     <!-- Settings Page Strings -->
     <string name="google_sign_in_header">Connect to Google Drive</string>
@@ -116,6 +119,7 @@
     <string name="dialog_recipe_view_delete_confirmation">Are you sure you want to delete this recipe?</string>
     <string name="affirmative_text">Yes</string>
     <string name="negative_text">Cancel</string>
+    <string name="negative_response">No</string>
 
     <string-array name="display_mode_options">
         <item>OS Default</item>

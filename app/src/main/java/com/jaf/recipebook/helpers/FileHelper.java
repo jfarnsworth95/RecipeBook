@@ -22,7 +22,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -46,6 +45,7 @@ public class FileHelper {
     public final int CLOUD_STORAGE_ACTIVE_PREFERENCE = 3;
     public final int STARTUP_COUNTER_PREFERENCE = 4;
     public final int AUTO_BACKUP_ACTIVE_PREFERENCE = 5;
+    public final int BACKUP_TIMESTAMP_PREFERENCE = 6;
     public final int DISPLAY_MODE_OS = 0;
     public final int DISPLAY_MODE_LIGHT = 1;
     public final int DISPLAY_MODE_DARK = 2;
@@ -153,7 +153,7 @@ public class FileHelper {
 
             case STARTUP_COUNTER_PREFERENCE:
                 appPreferences.edit()
-                        .putInt(context.getString(R.string.startup_counter), i)
+                        .putInt(context.getString(R.string.preference_startup_counter), i)
                         .apply();
                 break;
 
@@ -169,10 +169,38 @@ public class FileHelper {
                 return appPreferences.getInt(context.getString(R.string.preference_display_mode), defaultRtn);
 
             case STARTUP_COUNTER_PREFERENCE:
-                return appPreferences.getInt(context.getString(R.string.startup_counter), defaultRtn);
+                return appPreferences.getInt(context.getString(R.string.preference_startup_counter), defaultRtn);
 
             default:
                 Log.w(TAG, "getPreference: Unknown Preference Int Provided for integer: "
+                        + Integer.toString(preference));
+                return defaultRtn;
+        }
+
+    }
+
+    public void setPreference(int preference, long l) {
+        switch(preference){
+            case BACKUP_TIMESTAMP_PREFERENCE:
+                appPreferences.edit()
+                        .putLong(context.getString(R.string.preference_backup_timestamp), l)
+                        .apply();
+                break;
+
+            default:
+                Log.w(TAG, "setPreference: Unknown Preference Int Provided for long: "
+                        + Integer.toString(preference));
+        }
+
+    }
+
+    public long getPreference(int preference, long defaultRtn) {
+        switch(preference){
+            case BACKUP_TIMESTAMP_PREFERENCE:
+                return appPreferences.getLong(context.getString(R.string.preference_backup_timestamp), defaultRtn);
+
+            default:
+                Log.w(TAG, "getPreference: Unknown Preference Int Provided for long: "
                         + Integer.toString(preference));
                 return defaultRtn;
         }

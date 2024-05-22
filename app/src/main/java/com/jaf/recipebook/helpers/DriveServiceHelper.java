@@ -4,6 +4,7 @@ import android.content.Context;
 import android.icu.text.RelativeDateTimeFormatter;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.TimeZone;
+import android.media.metrics.Event;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -31,10 +32,15 @@ import com.jaf.recipebook.events.DbRefreshEvent;
 import com.jaf.recipebook.events.DbShutdownEvent;
 import com.jaf.recipebook.events.DriveDataDeletedEvent;
 import com.jaf.recipebook.events.DriveDbLastModifiedEvent;
+import com.jaf.recipebook.events.DriveTimestampResultEvent;
 import com.jaf.recipebook.events.DriveUploadCompeleteEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,6 +50,7 @@ import java.nio.file.StandardCopyOption;
 import java.sql.Time;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -55,25 +62,26 @@ import java.util.concurrent.TimeUnit;
  * file picker UI via Storage Access Framework.
  */
 public class DriveServiceHelper {
+    private FileHelper fh;
     private final Executor mExecutor = Executors.newSingleThreadExecutor();
     private final Drive mDriveService;
     private Context context;
-    private final String TAG = "DriveServiceHelper";
+    private final String TAG = "JAF-DriveServiceHelper";
 
     final String mainStorageFileName = "recipeBookDatabase";
     final String shmStorageFileName = "recipeBookDatabase-shm";
     final String walStorageFileName = "recipeBookDatabase-wal";
+    final String timestampFileName = "recipeBookTimestamp";
 
     public DriveServiceHelper(Drive driveService, Context context) {
         mDriveService = driveService;
         this.context = context;
+        fh = new FileHelper(context);
     }
 
-    private OnFailureListener queryFileFailureListener = new OnFailureListener() {
-        @Override
-        public void onFailure(@NonNull Exception e) {
-            Log.e(TAG, "Failed to fetch app files from the user's drive", e);
-        }
+    private OnFailureListener queryFileFailureListener = e -> {
+        Log.e(TAG, "Failed to fetch app files from the user's drive", e);
+        EventBus.getDefault().post(new DbRefreshEvent(false));
     };
 
     public static Drive getGoogleDriveService(Context context, GoogleSignInAccount account, String appName) {
@@ -104,11 +112,9 @@ public class DriveServiceHelper {
      * Developer's Console</a> and be submitted to Google for verification.</p>
      */
     protected Task<FileList> queryFiles() {
-        final TaskCompletionSource<FileList> tcs = new TaskCompletionSource<FileList>();
+        final TaskCompletionSource<FileList> tcs = new TaskCompletionSource<>();
         mExecutor.execute(
-            new Runnable() {
-                @Override
-                public void run() {
+                () -> {
                     FileList result = null;
                     try {
                         result = mDriveService.files()
@@ -123,8 +129,7 @@ public class DriveServiceHelper {
                     }
                     FileList finalResult = result;
                     new Handler(Looper.getMainLooper()).postDelayed(() -> tcs.setResult(finalResult), 1000);
-                }
-            });
+                });
 
         return tcs.getTask();
     }
@@ -238,28 +243,19 @@ public class DriveServiceHelper {
 
         if (dbFileLastModified == null){
             Log.d(TAG, "Database is not currently backed up to the drive");
-            EventBus.getDefault().post(new DriveDbLastModifiedEvent(context.getString(R.string.database_not_backed_up)));
+            EventBus.getDefault().post(new DriveDbLastModifiedEvent(context.getString(R.string.database_not_backed_up), false));
         } else {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
             sdf.setTimeZone(TimeZone.getDefault());
             EventBus.getDefault().post(new DriveDbLastModifiedEvent(
-                    context.getString(R.string.database_last_backed_up) + " " + sdf.format(dbFileLastModified.getValue())));
+                    context.getString(R.string.database_last_backed_up) + " " + sdf.format(dbFileLastModified.getValue()),
+                    true));
             Log.d(TAG, "Database last updated: " + dbFileLastModified);
         }
     }
 
     public void getLastBackupDate() {
-        OnSuccessListener queryFileSuccessListener = new OnSuccessListener<FileList>() {
-            @Override
-            public void onSuccess(FileList driveFileList) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        getLastBackupDateTask(driveFileList);
-                    }
-                }).start();
-            }
-        };
+        OnSuccessListener queryFileSuccessListener = (OnSuccessListener<FileList>) driveFileList -> new Thread(() -> getLastBackupDateTask(driveFileList)).start();
 
         queryFiles()
                 .addOnSuccessListener(queryFileSuccessListener)
@@ -267,16 +263,35 @@ public class DriveServiceHelper {
 
     }
 
-    private void uploadTask(FileList driveFileList){
+    private void uploadTask(FileList driveFileList, long timestamp){
+        // TODO Add event listeners for when failing to upload files
+
+        try {
+            FileOutputStream fos = this.context.openFileOutput(timestampFileName, Context.MODE_PRIVATE);
+            char[] charArray = Long.toString(timestamp).toCharArray();
+            for (char ch : charArray){
+                fos.write(ch);
+            }
+            fos.close();
+        } catch (FileNotFoundException ex){
+            // TODO Add event post with 'false' result for failures
+            Log.e(TAG, ex.getMessage());
+            return;
+        } catch (IOException ex) {
+            // TODO Add event post with 'false' result for failures
+            Log.e(TAG, ex.getMessage());
+        }
 
         String mainDbFileId = null;
         String shmDbFileId = null;
         String walDbFileId = null;
+        String timestampFileId = null;
         for(File df : driveFileList.getFiles()){
             switch (df.getName()){
                 case mainStorageFileName: mainDbFileId = df.getId(); break;
                 case shmStorageFileName: shmDbFileId = df.getId(); break;
                 case walStorageFileName: walDbFileId = df.getId(); break;
+                case timestampFileName: timestampFileId = df.getId(); break;
                 default:
                     Log.e(TAG, "Unknown file in App Drive Folder: ("
                             + df.getName() + " | " + df.getId() + ")");
@@ -293,64 +308,130 @@ public class DriveServiceHelper {
         File storageFileWal = new File();
         storageFileWal.setName(walStorageFileName);
 
+        File storageTimestampFile = new File();
+        storageTimestampFile.setName(timestampFileName);
+
+
         java.io.File dbFile = getLocalDatabaseFile();
         java.io.File shmFile = new java.io.File(dbFile.getPath() + "-shm");
         java.io.File walFile = new java.io.File(dbFile.getPath() + "-wal");
+        java.io.File timestampFile = new java.io.File(this.context.getFilesDir() + "/" + timestampFileName);
         FileContent mediaContent = new FileContent("", dbFile);
         FileContent mediaContentShm = new FileContent("", shmFile);
         FileContent mediaContentWal = new FileContent("", walFile);
+        FileContent mediaContentTimestamp = new FileContent("", timestampFile);
         try {
-            File file;
             if (mainDbFileId != null){
-                file = mDriveService.files().update(mainDbFileId, storageFile, mediaContent).execute();
+                mDriveService.files().update(mainDbFileId, storageFile, mediaContent).execute();
             } else {
                 storageFile.setParents(Collections.singletonList("appDataFolder"));
-                file = mDriveService.files().create(storageFile, mediaContent).execute();
+                mDriveService.files().create(storageFile, mediaContent).execute();
             }
 
-            File fileShm;
             if (shmDbFileId != null){
-                fileShm = mDriveService.files().update(shmDbFileId, storageFileShm, mediaContentShm).execute();
+                if (shmFile.exists()){
+                    mDriveService.files().update(shmDbFileId, storageFileShm, mediaContentShm).execute();
+                } else {
+                    mDriveService.files().delete(shmDbFileId).execute();
+                }
             } else {
-                storageFileShm.setParents(Collections.singletonList("appDataFolder"));
-                fileShm = mDriveService.files().create(storageFileShm, mediaContentShm).execute();
+                if (shmFile.exists()) {
+                    storageFileShm.setParents(Collections.singletonList("appDataFolder"));
+                    mDriveService.files().create(storageFileShm, mediaContentShm).execute();
+                }
             }
 
-            File fileWal;
             if (walDbFileId != null){
-                fileWal = mDriveService.files().update(walDbFileId, storageFileWal, mediaContentWal).execute();
+                if (walFile.exists()){
+                    mDriveService.files().update(walDbFileId, storageFileWal, mediaContentWal).execute();
+                } else {
+                    mDriveService.files().delete(walDbFileId).execute();
+                }
             } else {
-                fileWal = mDriveService.files().create(storageFileWal, mediaContentWal).execute();
-                storageFileWal.setParents(Collections.singletonList("appDataFolder"));
+                if (walFile.exists()) {
+                    storageFileWal.setParents(Collections.singletonList("appDataFolder"));
+                    mDriveService.files().create(storageFileWal, mediaContentWal).execute();
+                }
+            }
+
+            if (timestampFileId != null) {
+                mDriveService.files().update(timestampFileId, storageTimestampFile, mediaContentTimestamp).execute();
+            } else {
+                storageTimestampFile.setParents(Collections.singletonList("appDataFolder"));
+                mDriveService.files().create(storageTimestampFile, mediaContentTimestamp).execute();
             }
         }
         catch(UserRecoverableAuthIOException ex){
+            // TODO Add event post with 'false' result for failures
             context.startActivity(ex.getIntent());
         }
         catch(Exception e){
+            // TODO Add event post with 'false' result for failures
             e.printStackTrace();
         } finally {
+            Log.i(TAG, "Drive upload finished");
             EventBus.getDefault().post(new DriveUploadCompeleteEvent(true));
         }
     }
 
     public void upload(){
-        OnSuccessListener queryFileSuccessListener = new OnSuccessListener<FileList>() {
-            @Override
-            public void onSuccess(FileList driveFileList) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        uploadTask(driveFileList);
-                    }
-                }).start();
-            }
-        };
+        long timestamp = new Date().getTime();
+        fh.setPreference(fh.BACKUP_TIMESTAMP_PREFERENCE, timestamp);
+
+        OnSuccessListener queryFileSuccessListener = (OnSuccessListener<FileList>) driveFileList -> new Thread(() -> uploadTask(driveFileList, timestamp)).start();
 
         queryFiles()
                 .addOnSuccessListener(queryFileSuccessListener)
                 .addOnFailureListener(queryFileFailureListener);
     }
+
+    private void downloadTimestampTask(FileList driveFileList) {
+        String timestampFileId = null;
+        for(File df : driveFileList.getFiles()) {
+            switch (df.getName()) {
+                case timestampFileName:
+                    timestampFileId = df.getId();
+                    break;
+            }
+        }
+
+        if (timestampFileId == null){
+            Log.w(TAG, "Timestamp file not found in Google Drive. Aborting...");
+            EventBus.getDefault().post(new DriveTimestampResultEvent(Long.valueOf(0)));
+            return;
+        }
+
+        java.io.File cacheFolder = context.getCacheDir();
+        java.io.File tmpFileTs =
+                new java.io.File(cacheFolder.getPath() + "/" + timestampFileName);
+
+        try {
+            ExecutorService es = Executors.newCachedThreadPool();
+            es.execute(downloadFileToTmp(timestampFileId, tmpFileTs));
+            es.shutdown();
+            boolean finished = es.awaitTermination(1, TimeUnit.MINUTES);
+            if (finished) {
+                if (tmpFileTs.exists()) {
+                    String timestampStr = fh.readFile(tmpFileTs);
+                    EventBus.getDefault().post(new DriveTimestampResultEvent(Long.valueOf(timestampStr)));
+                }
+            }
+        } catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+
+    }
+
+    public void downloadTimestamp(){
+        OnSuccessListener queryFileSuccessListener = (OnSuccessListener<FileList>) driveFileList -> new Thread(() -> downloadTimestampTask(driveFileList)).start();
+
+        queryFiles()
+                .addOnSuccessListener(queryFileSuccessListener)
+                .addOnFailureListener(queryFileFailureListener);
+
+    }
+
+    // TODO Something isn't right with the WAL or SHM I think. Database is always one transaction before the current data when uploaded.
 
     private void downloadTask(FileList driveFileList){
         // Validate all files are present in the Drive space
@@ -362,6 +443,7 @@ public class DriveServiceHelper {
                 case mainStorageFileName: mainDbFileId = df.getId(); break;
                 case shmStorageFileName: shmDbFileId = df.getId(); break;
                 case walStorageFileName: walDbFileId = df.getId(); break;
+                case timestampFileName: break;
                 default:
                     Log.e(TAG, "Unknown file in App Drive Folder: ("
                             + df.getName() + " | " + df.getId() + ")");
@@ -371,6 +453,7 @@ public class DriveServiceHelper {
 
         if (mainDbFileId == null){
             Log.w(TAG, "Main DB file not found in Google Drive. Aborting...");
+            EventBus.getDefault().post(new DbRefreshEvent(false));
             return;
         }
 
@@ -401,11 +484,10 @@ public class DriveServiceHelper {
 
             boolean finished = es.awaitTermination(1, TimeUnit.MINUTES);
             if (finished){
-                if (tmpFileDb.exists() && tmpFileShm.exists() && tmpFileWal.exists()){
+                if (tmpFileDb.exists()){
                     Log.i(TAG, "Closing DB to move in Drive backups...");
 
-                    RecipeBookDatabase rbdb = RecipeBookDatabase.getInstance(context);
-                    rbdb.stopDb();
+                    RecipeBookDatabase.stopDb();
                     EventBus.getDefault().post(new DbShutdownEvent(true));
                     java.io.File dbFile = getLocalDatabaseFile();
                     java.io.File shmFile = new java.io.File(dbFile.getPath() + "-shm");
@@ -420,13 +502,21 @@ public class DriveServiceHelper {
                     Log.i(TAG, "Replacing DB files with downloads");
                     Path dbMove = Files.move(tmpFileDb.toPath(), dbFile.toPath(),
                             StandardCopyOption.REPLACE_EXISTING);
-                    Path shmMove = Files.move(tmpFileShm.toPath(), shmFile.toPath(),
-                            StandardCopyOption.REPLACE_EXISTING);
-                    Path walMove = Files.move(tmpFileWal.toPath(), walFile.toPath(),
-                            StandardCopyOption.REPLACE_EXISTING);
+
+                    Path dbShmMove = null;
+                    if (tmpFileShm.exists()){
+                        dbShmMove = Files.move(tmpFileShm.toPath(), shmFile.toPath(),
+                                StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    Path dbWalMove = null;
+                    if (tmpFileWal.exists()){
+                        dbWalMove = Files.move(tmpFileWal.toPath(), walFile.toPath(),
+                                StandardCopyOption.REPLACE_EXISTING);
+                    }
 
                     boolean clearCache = false;
-                    if (dbMove != null && shmMove != null && walMove != null){
+                    // Verify files copied, only check if WAL or SHM got moved if their tmp files exist
+                    if (dbMove != null && (!tmpFileShm.exists() || dbShmMove != null) && (!tmpFileWal.exists() || dbWalMove != null)){
                         Log.i(TAG, "DB Files successfully replaced, clearing cache/tmp files...");
                         clearCache = true;
                     } else {
@@ -450,37 +540,29 @@ public class DriveServiceHelper {
                     }
 
                 } else {
-                    Log.e(TAG, "Not all DB files were downloaded to the temp folder, aborting... " +
+                    Log.e(TAG, "Main DB file not downloaded to the temp folder, aborting... " +
                         "(tmpFileDb:" + tmpFileDb.exists() +
                         ", tmpFileShm:" + tmpFileShm.exists() +
                         ", tmpFileWal:" + tmpFileWal.exists() +
                         ")");
                 }
+                EventBus.getDefault().post(new DbRefreshEvent(true));
             } else {
                 Log.e(TAG, "Failed to download DB files from user drive before time expired");
+                EventBus.getDefault().post(new DbRefreshEvent(false));
             }
         }
         catch(Exception e){
             attemptRecoverFromCache();
+            EventBus.getDefault().post(new DbRefreshEvent(false));
             e.printStackTrace();
         } finally {
             clearTempFiles();
-            EventBus.getDefault().post(new DbRefreshEvent(true));
         }
     }
 
     public void download(){
-        OnSuccessListener queryFileSuccessListener = new OnSuccessListener<FileList>() {
-            @Override
-            public void onSuccess(FileList driveFileList) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        downloadTask(driveFileList);
-                    }
-                }).start();
-            }
-        };
+        OnSuccessListener queryFileSuccessListener = (OnSuccessListener<FileList>) driveFileList -> new Thread(() -> downloadTask(driveFileList)).start();
 
         queryFiles()
                 .addOnSuccessListener(queryFileSuccessListener)

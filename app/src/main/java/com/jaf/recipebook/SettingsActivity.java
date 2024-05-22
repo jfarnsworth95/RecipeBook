@@ -36,6 +36,7 @@ import com.jaf.recipebook.db.directions.DirectionsModel;
 import com.jaf.recipebook.db.ingredients.IngredientsModel;
 import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.db.tags.TagsModel;
+import com.jaf.recipebook.events.DbCheckpointCreated;
 import com.jaf.recipebook.events.DbRefreshEvent;
 import com.jaf.recipebook.events.DbShutdownEvent;
 import com.jaf.recipebook.events.RecipeSavedEvent;
@@ -45,6 +46,7 @@ import com.jaf.recipebook.helpers.GoogleSignInHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.IOException;
@@ -590,10 +592,19 @@ public class SettingsActivity extends AppCompatActivity {
         if (recipeSavedEvent.recipeSaved) {
             if (dsh != null && fh.getPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, false)) {
                 Log.i(TAG, "Backing up from Settings");
-                dsh.upload();
+                rbr.createCheckpoint();
             }
         } else {
             Log.e(TAG, "One or more recipe imports failed in Settings");
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void checkpointAttempted(DbCheckpointCreated dbCheckpointCreated) {
+        if (dbCheckpointCreated.success){
+            dsh.upload();
+        } else {
+            Toast.makeText(this, "Database failed to save, aborting backup...", Toast.LENGTH_LONG).show();
         }
     }
 }

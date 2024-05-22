@@ -34,6 +34,7 @@ import com.jaf.recipebook.db.directions.DirectionsModel;
 import com.jaf.recipebook.db.ingredients.IngredientsModel;
 import com.jaf.recipebook.db.recipes.RecipesModel;
 import com.jaf.recipebook.db.tags.TagsModel;
+import com.jaf.recipebook.events.DbCheckpointCreated;
 import com.jaf.recipebook.events.RecipeSavedEvent;
 import com.jaf.recipebook.helpers.DriveServiceHelper;
 import com.jaf.recipebook.helpers.FileHelper;
@@ -43,6 +44,7 @@ import com.jaf.recipebook.helpers.GoogleSignInHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -118,8 +120,8 @@ public class ViewRecipeActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onStop() {
+        super.onStop();
         EventBus.getDefault().unregister(this);
     }
 
@@ -347,12 +349,26 @@ public class ViewRecipeActivity extends AppCompatActivity {
         if (recipeSavedEvent.recipeSaved) {
             if (dsh != null && fh.getPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, false)) {
                 Log.i(TAG, "Backing up from View");
-                dsh.upload();
+                rbr.createCheckpoint();
+            } else {
+                setResult(GeneralHelper.ACTIVITY_RESULT_DELETE_RECIPE);
+                this.finish();
             }
         } else {
             Log.e(TAG, "Failed to delete recipe in View");
+            setResult(GeneralHelper.ACTIVITY_RESULT_DB_ERROR);
+            this.finish();
         }
-        setResult(GeneralHelper.ACTIVITY_RESULT_DELETE_RECIPE);
-        this.finish();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void checkpointAttempted(DbCheckpointCreated dbCheckpointCreated) {
+        if (dbCheckpointCreated.success){
+            dsh.upload();
+            setResult(GeneralHelper.ACTIVITY_RESULT_DELETE_RECIPE);
+            this.finish();
+        } else {
+            Toast.makeText(this, "Database failed to save, aborting backup...", Toast.LENGTH_LONG).show();
+        }
     }
 }
