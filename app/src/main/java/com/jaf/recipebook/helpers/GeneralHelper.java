@@ -2,16 +2,25 @@ package com.jaf.recipebook.helpers;
 
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
+import android.os.Handler;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
 import androidx.appcompat.content.res.AppCompatResources;
 
+import com.jaf.recipebook.R;
 import com.jaf.recipebook.db.RecipeBookDatabase;
 import com.jaf.recipebook.db.ingredients.IngredientsModel;
 
@@ -24,6 +33,7 @@ public class GeneralHelper {
     public static final int ACTIVITY_RESULT_DB_ERROR = 10001;
     public static final int ACTIVITY_RESULT_DELETE_RECIPE = 10002;
     public static final int ACTIVITY_RESULT_UPDATE_SEARCH = 10003;
+    public static final int ACTIVITY_RESULT_SIGN_IN_PROMPT = 10003;
 
     public static StringBuilder convertIngredientModelArrayToString(List<IngredientsModel> ims){
         StringBuilder ingredientSb = new StringBuilder();
@@ -93,4 +103,23 @@ public class GeneralHelper {
             fh.setPreference(fh.CATEGORY_ORDER_PREFERENCE, rebuildList.toString());
         }
     }
+
+    public static Animation createFlashAnimation(int repeatCount){
+        Animation flashField = new AlphaAnimation(1.0f, 0.0f);
+        flashField.setDuration(300);
+        flashField.setStartOffset(100);
+        flashField.setRepeatMode(Animation.REVERSE);
+        flashField.setRepeatCount(repeatCount * 2);
+        return flashField;
+    }
+
+    public static void backgroundHighlightAnimation(Context context, View viewToAnim, Handler handler) {
+        ColorDrawable startColor = new ColorDrawable(context.getColor(R.color.transparent));
+        Drawable endColor = context.getDrawable(R.drawable.rounded_edit_text);
+        TransitionDrawable td = new TransitionDrawable(new Drawable[]{startColor, endColor});
+        viewToAnim.setBackground(td);
+        td.startTransition(2000);
+        handler.postDelayed(() -> td.reverseTransition(2000), 2000);
+    }
+
 }

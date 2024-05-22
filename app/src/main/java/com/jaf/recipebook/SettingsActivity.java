@@ -42,6 +42,7 @@ import com.jaf.recipebook.events.DbShutdownEvent;
 import com.jaf.recipebook.events.RecipeSavedEvent;
 import com.jaf.recipebook.helpers.DriveServiceHelper;
 import com.jaf.recipebook.helpers.FileHelper;
+import com.jaf.recipebook.helpers.GeneralHelper;
 import com.jaf.recipebook.helpers.GoogleSignInHelper;
 
 import org.greenrobot.eventbus.EventBus;
@@ -74,6 +75,8 @@ public class SettingsActivity extends AppCompatActivity {
     private RecipeBookRepo rbr;
     private Handler mainHandler;
 
+    private boolean flashSignIn;
+
     private CircleImageView googlePhotoImg;
     private HashSet<File> filesToImport;
     private HashSet<File> duplicateImports;
@@ -95,6 +98,7 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         fh = new FileHelper(this);
         dsh = GoogleSignInHelper.getDriveServiceHelper(this, false);
+        flashSignIn = getIntent().getBooleanExtra("flashSignIn", false);
         setContentView(R.layout.activity_settings);
         mainHandler = new Handler(getMainLooper());
 
@@ -258,7 +262,14 @@ public class SettingsActivity extends AppCompatActivity {
             findViewById(R.id.sign_in_descriptor).setVisibility(View.GONE);
             findViewById(R.id.go_to_drive_settings_btn).setVisibility(View.GONE);
             googlePhotoImg.setVisibility(View.GONE);
+
+            if (flashSignIn) {
+                googleSignInBtn.startAnimation(GeneralHelper.createFlashAnimation(2));
+            }
         }else{
+            if (flashSignIn) {
+                setResult(GeneralHelper.ACTIVITY_RESULT_SIGN_IN_PROMPT);
+            }
             googleSignInBtn.setText(R.string.google_sign_out_button);
             if (gsa.getPhotoUrl() != null) {
                 Log.i(TAG, "updateUi: User profile found, assigning to Image View.");

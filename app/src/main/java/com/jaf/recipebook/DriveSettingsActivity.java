@@ -4,9 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -48,13 +51,18 @@ public class DriveSettingsActivity extends AppCompatActivity {
     private TextView lastUpdatedTextView;
     private ProgressBar progressBar;
 
+    private boolean flashToggle;
+
     private DriveServiceHelper mDriveServiceHelper;
     private FileHelper fh;
+    private Handler mainHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         fh = new FileHelper(this);
+        mainHandler = new Handler(getMainLooper());
+        flashToggle = getIntent().getBooleanExtra("flashToggle", false);
         setContentView(R.layout.activity_drive_settings);
 
         uploadBtn = findViewById(R.id.drive_setting_upload_btn);
@@ -88,6 +96,9 @@ public class DriveSettingsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         setPendingState(true);
+        if (flashToggle) {
+            GeneralHelper.backgroundHighlightAnimation(this, autoBackupToggle, mainHandler);
+        }
         refreshLastUpdate();
     }
 

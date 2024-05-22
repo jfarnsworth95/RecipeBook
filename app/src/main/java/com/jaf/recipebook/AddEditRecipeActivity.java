@@ -107,7 +107,7 @@ public class AddEditRecipeActivity extends AppCompatActivity {
             addEditSetup();
         }
 
-        createFlashAnimation();
+        flashField = GeneralHelper.createFlashAnimation(1);
     }
 
     @Override
@@ -232,14 +232,6 @@ public class AddEditRecipeActivity extends AppCompatActivity {
         chipGroup.setAdapter(tla);
         chipGroup.setClickable(true);
         mutable_tms.observe(this, tla::submitList);
-    }
-
-    private void createFlashAnimation(){
-        flashField = new AlphaAnimation(1.0f, 0.0f);
-        flashField.setDuration(300);
-        flashField.setStartOffset(100);
-        flashField.setRepeatMode(Animation.REVERSE);
-        flashField.setRepeatCount(3);
     }
 
     private void setupCategoryAutoComplete(){

@@ -1,6 +1,8 @@
 package com.jaf.recipebook;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -95,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
     private long newTimestamp = 0;
 
     ActivityResultLauncher<Intent> addEditActivityResultLauncher;
+    ActivityResultLauncher<Intent> driveSettingsActivityResultLauncher;
     ActivityResultLauncher<Intent> settingsActivityResultLauncher;
     ActivityResultLauncher<Intent> viewActivityResultLauncher;
 
@@ -121,11 +124,13 @@ public class MainActivity extends AppCompatActivity {
     TabLayout categoryTabLayout;
     TableLayout searchBarOptionsContainer;
 
-    // TODO Check if data in cloud is newer than device data, prompt user to grab it on startup
+    // TODO CURRENT: Popups redirect to Settings & Drive Settings, then flash relevant buttons
+
+    // TODO Load View Activity after an Add event instead of Main
     // TODO Add menu button during bulk select to select all
     // TODO Login on Settings page can cause import loading spinner to show in top right corner (in dark mode?)
-    // TODO Add/Edit return to View instead of Main
     // TODO Popup request to auto backup still spawns if user already has it on
+    // TODO Update text for Drive Settings UI to reflect update period vs check last backup period
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
                 fh.STARTUP_COUNTER_PREFERENCE,
                 fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0
                 ) + 1);
+        Log.i(TAG, String.valueOf(fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0)));
 
         if (dsh != null){
             dsh.downloadTimestamp();
@@ -285,7 +291,20 @@ public class MainActivity extends AppCompatActivity {
             }
         );
 
-        settingsActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {});
+        driveSettingsActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {});
+
+        settingsActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
+            if (o.getResultCode() == GeneralHelper.ACTIVITY_RESULT_SIGN_IN_PROMPT) {
+                dsh = GoogleSignInHelper.getDriveServiceHelper(this, false);
+                if (dsh != null) {
+                    fh.setPreference(
+                            fh.STARTUP_COUNTER_PREFERENCE,
+                            fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0
+                            ) + 1);
+                    promptGoogleDriveLogin();
+                }
+            }
+        });
 
         viewActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), o -> {
@@ -449,23 +468,42 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void promptGoogleDriveLogin(){
-        boolean cloudStorageActive = fh.getPreference(fh.CLOUD_STORAGE_ACTIVE_PREFERENCE, false);
+        boolean cloudStorageActive = fh.getPreference(fh.BACKUP_TIMESTAMP_PREFERENCE, false);
         int startupCounter = fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0);
-        if (!cloudStorageActive && startupCounter == 2){
+        if (dsh == null && startupCounter == 2){
             new AlertDialog.Builder(this)
-                .setTitle("Enable Google Drive Backups?")
-                .setMessage("To make sure your Recipes are safe, you can set this app to auto backup your collection to your Google Drive. Would you like to enable it?")
-                .setPositiveButton(this.getString(R.string.affirmative_text), (dialogInterface, i) -> {
-                    settingsActivityResultLauncher
-                            .launch(new Intent(this, SettingsActivity.class));
-                })
-                .setNegativeButton(this.getString(R.string.maybe_later), (dialogInterface, i) -> {
-                    fh.setPreference(
-                            fh.STARTUP_COUNTER_PREFERENCE,
-                            fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0
-                            ) + 1);
-                })
-                .show();
+                    .setTitle("Sign into Google Drive?")
+                    .setMessage("To make sure your Recipes are safe, you can set this app to auto backup your collection to your Google Drive. Would you like to sign in?")
+                    .setPositiveButton(this.getString(R.string.affirmative_text), (dialogInterface, i) -> {
+                        Intent intent = new Intent(this, SettingsActivity.class);
+                        intent.putExtra("flashSignIn", true);
+                        settingsActivityResultLauncher.launch(intent);
+                        dialogInterface.cancel();
+                    })
+                    .setNegativeButton(this.getString(R.string.maybe_later), (dialogInterface, i) -> {
+                        fh.setPreference(
+                                fh.STARTUP_COUNTER_PREFERENCE,
+                                fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0
+                                ) + 1);
+                    })
+                    .show();
+        }
+        if (dsh != null && !cloudStorageActive && startupCounter == 3){
+            fh.setPreference(
+                    fh.STARTUP_COUNTER_PREFERENCE,
+                    fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0
+                    ) + 1);
+            new AlertDialog.Builder(this)
+                    .setTitle("Turn on Google Drive Auto Backup?")
+                    .setMessage("You're signed into your Google Account, but backups aren't enabled yet. Would you like to turn this on?")
+                    .setPositiveButton(this.getString(R.string.affirmative_text), (dialogInterface, i) -> {
+                        Intent intent = new Intent(this, DriveSettingsActivity.class);
+                        intent.putExtra("flashToggle", true);
+                        driveSettingsActivityResultLauncher.launch(intent);
+                        dialogInterface.cancel();
+                    })
+                    .setNegativeButton(this.getString(R.string.maybe_later), (dialogInterface, i) -> {})
+                    .show();
         }
     }
 

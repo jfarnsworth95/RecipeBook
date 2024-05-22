@@ -39,7 +39,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="24dp"
             android:text="@string/auto_backup_to_drive"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/drive_setting_download_btn" />
 
