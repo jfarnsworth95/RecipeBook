@@ -126,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
     // TODO Login on Settings page can cause import loading spinner to show in top right corner (in dark mode?)
     // TODO Add/Edit return to View instead of Main
     // TODO Popup request to auto backup still spawns if user already has it on
-    // TODO Popup request to pull more recent data popping up after syncing most recent data.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

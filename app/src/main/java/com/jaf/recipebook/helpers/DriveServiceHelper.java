@@ -438,12 +438,13 @@ public class DriveServiceHelper {
         String mainDbFileId = null;
         String shmDbFileId = null;
         String walDbFileId = null;
+        String timestampFileId = null;
         for(File df : driveFileList.getFiles()){
             switch (df.getName()){
                 case mainStorageFileName: mainDbFileId = df.getId(); break;
                 case shmStorageFileName: shmDbFileId = df.getId(); break;
                 case walStorageFileName: walDbFileId = df.getId(); break;
-                case timestampFileName: break;
+                case timestampFileName: timestampFileId = df.getId(); break;
                 default:
                     Log.e(TAG, "Unknown file in App Drive Folder: ("
                             + df.getName() + " | " + df.getId() + ")");
@@ -471,6 +472,8 @@ public class DriveServiceHelper {
                 new java.io.File(tmpFolder.getPath() + "/" + currentDbFile.getName() + "-shm");
         java.io.File tmpFileWal =
                 new java.io.File(tmpFolder.getPath() + "/" + currentDbFile.getName() + "-wal");
+        java.io.File tmpFileTs =
+                new java.io.File(tmpFolder.getPath() + "/" + timestampFileName);
         try {
             ExecutorService es = Executors.newCachedThreadPool();
             es.execute(downloadFileToTmp(mainDbFileId, tmpFileDb));
@@ -479,6 +482,9 @@ public class DriveServiceHelper {
             }
             if (walDbFileId != null){
                 es.execute(downloadFileToTmp(walDbFileId, tmpFileShm));
+            }
+            if (timestampFileId != null) {
+                es.execute(downloadFileToTmp(timestampFileId, tmpFileTs));
             }
             es.shutdown();
 
@@ -537,6 +543,11 @@ public class DriveServiceHelper {
                         } else {
                             Log.w(TAG, "Failed to clear cache of DB backups");
                         }
+                    }
+
+                    if (tmpFileTs.exists()) {
+                        String timestampStr = fh.readFile(tmpFileTs);
+                        fh.setPreference(fh.BACKUP_TIMESTAMP_PREFERENCE, Long.valueOf(timestampStr));
                     }
 
                 } else {
