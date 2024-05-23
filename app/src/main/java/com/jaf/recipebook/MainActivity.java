@@ -124,12 +124,9 @@ public class MainActivity extends AppCompatActivity {
     TabLayout categoryTabLayout;
     TableLayout searchBarOptionsContainer;
 
-    // TODO CURRENT: Popups redirect to Settings & Drive Settings, then flash relevant buttons
 
-    // TODO Load View Activity after an Add event instead of Main
     // TODO Add menu button during bulk select to select all
     // TODO Login on Settings page can cause import loading spinner to show in top right corner (in dark mode?)
-    // TODO Popup request to auto backup still spawns if user already has it on
     // TODO Update text for Drive Settings UI to reflect update period vs check last backup period
 
     @Override
