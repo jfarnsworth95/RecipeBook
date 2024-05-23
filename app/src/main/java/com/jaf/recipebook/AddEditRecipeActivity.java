@@ -97,6 +97,7 @@ public class AddEditRecipeActivity extends AppCompatActivity {
         dsh = GoogleSignInHelper.getDriveServiceHelper(this, false);
 
         mainHandler = new Handler(getMainLooper());
+        flashField = GeneralHelper.createFlashAnimation(1);
 
         if (recipeId >= 0){
             setContentView(R.layout.activity_is_loading);
@@ -106,14 +107,11 @@ public class AddEditRecipeActivity extends AppCompatActivity {
             Objects.requireNonNull(this.getSupportActionBar()).setTitle(R.string.add_new_recipe);
             addEditSetup();
         }
-
-        flashField = GeneralHelper.createFlashAnimation(1);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
         if(!EventBus.getDefault().isRegistered(this)){
             EventBus.getDefault().register(this);
         }

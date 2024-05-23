@@ -23,6 +23,8 @@
         <item name="tabStyle">@style/Theme.RecipeBook.TabLayout</item>
         <item name="alertDialogTheme">@style/Theme.RecipeBook.AlertDialog</item>
         <item name="textInputStyle">@style/Theme.RecipeBook.EditText</item>
+
+        <item name="colorPrimary">@color/tertiary</item>
     </style>
 
     <style name="Widget.App.CheckBox.Imports" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
@@ -74,6 +76,7 @@
         <item name="boxStrokeColor">@color/white</item>
         <item name="hintTextColor">@color/white</item>
         <item name="cursorColor">@color/tertiary</item>
+        <item name="colorAccent">@color/white</item>
     </style>
 
 
