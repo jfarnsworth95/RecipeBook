@@ -413,13 +413,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (workRunnableSearch != null) {
-                    mainHandler.removeCallbacks(workRunnableSearch);
-                }
-                workRunnableSearch = () -> {
-                    queryForRecipes();
-                };
-                mainHandler.postDelayed(workRunnableSearch, 500);
+                queryForRecipes();
             }
         });
         searchBarEditText.setOnKeyListener(new View.OnKeyListener() {
