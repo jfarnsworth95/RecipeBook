@@ -143,6 +143,7 @@
     <string name="negative_response">No</string>
     <string name="search_needs_something">We can\'t search nothing…</string>
     <string name="save_failed">Database failed to save…</string>
+    <string name="upload_failed">Failed to upload to cloud</string>
 
     <string-array name="display_mode_options">
         <item>OS Default</item>

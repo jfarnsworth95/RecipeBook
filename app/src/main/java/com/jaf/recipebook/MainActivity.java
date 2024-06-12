@@ -50,6 +50,7 @@ import com.jaf.recipebook.events.DbCheckpointCreated;
 import com.jaf.recipebook.events.DbRefreshEvent;
 import com.jaf.recipebook.events.DbShutdownEvent;
 import com.jaf.recipebook.events.DriveTimestampResultEvent;
+import com.jaf.recipebook.events.DriveUploadCompeleteEvent;
 import com.jaf.recipebook.events.RecipeSavedEvent;
 import com.jaf.recipebook.fragments.IsLoading;
 import com.jaf.recipebook.fragments.ListRecipes;
@@ -884,8 +885,6 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(this::dataRefresh);
     }
 
-    // TODO Download from sync not working, names don't match
-
     @Subscribe
     public void onTimestampDownloaded(DriveTimestampResultEvent driveTimestampResultEvent){
         Log.i(TAG, "Last timestamp at " + Long.toString(driveTimestampResultEvent.timestamp));
@@ -931,6 +930,16 @@ public class MainActivity extends AppCompatActivity {
             dsh.upload();
         } else {
             Toast.makeText(this, getString(R.string.save_failed), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void uploadAttempted(DriveUploadCompeleteEvent duce) {
+        if(duce.done){
+            Log.i(TAG, "Successful upload");
+        } else {
+            Log.e(TAG, "Failed to upload");
+            Toast.makeText(this, getString(R.string.upload_failed), Toast.LENGTH_SHORT).show();
         }
     }
 

@@ -264,8 +264,6 @@ public class DriveServiceHelper {
     }
 
     private void uploadTask(FileList driveFileList, long timestamp){
-        // TODO Add event listeners for when failing to upload files
-
         try {
             FileOutputStream fos = this.context.openFileOutput(timestampFileName, Context.MODE_PRIVATE);
             char[] charArray = Long.toString(timestamp).toCharArray();
@@ -273,13 +271,10 @@ public class DriveServiceHelper {
                 fos.write(ch);
             }
             fos.close();
-        } catch (FileNotFoundException ex){
-            // TODO Add event post with 'false' result for failures
-            Log.e(TAG, ex.getMessage());
-            return;
         } catch (IOException ex) {
-            // TODO Add event post with 'false' result for failures
-            Log.e(TAG, ex.getMessage());
+            EventBus.getDefault().post(new DriveUploadCompeleteEvent(false));
+            Log.e(TAG, (ex.getMessage() != null ? ex.getMessage() : "IO Exception when uploading"));
+            return;
         }
 
         String mainDbFileId = null;
@@ -362,11 +357,11 @@ public class DriveServiceHelper {
             }
         }
         catch(UserRecoverableAuthIOException ex){
-            // TODO Add event post with 'false' result for failures
+            EventBus.getDefault().post(new DriveUploadCompeleteEvent(false));
             context.startActivity(ex.getIntent());
         }
         catch(Exception e){
-            // TODO Add event post with 'false' result for failures
+            EventBus.getDefault().post(new DriveUploadCompeleteEvent(false));
             e.printStackTrace();
         } finally {
             Log.i(TAG, "Drive upload finished");

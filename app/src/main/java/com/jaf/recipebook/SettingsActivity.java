@@ -39,6 +39,7 @@ import com.jaf.recipebook.db.tags.TagsModel;
 import com.jaf.recipebook.events.DbCheckpointCreated;
 import com.jaf.recipebook.events.DbRefreshEvent;
 import com.jaf.recipebook.events.DbShutdownEvent;
+import com.jaf.recipebook.events.DriveUploadCompeleteEvent;
 import com.jaf.recipebook.events.RecipeSavedEvent;
 import com.jaf.recipebook.helpers.DriveServiceHelper;
 import com.jaf.recipebook.helpers.FileHelper;
@@ -616,6 +617,16 @@ public class SettingsActivity extends AppCompatActivity {
             dsh.upload();
         } else {
             Toast.makeText(this, getString(R.string.save_failed), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void uploadAttempted(DriveUploadCompeleteEvent duce) {
+        if(duce.done){
+            Log.i(TAG, "Successful upload");
+        } else {
+            Log.e(TAG, "Failed to upload");
+            Toast.makeText(this, getString(R.string.upload_failed), Toast.LENGTH_SHORT).show();
         }
     }
 }
