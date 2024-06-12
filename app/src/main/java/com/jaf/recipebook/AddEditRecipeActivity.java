@@ -17,7 +17,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
@@ -545,7 +544,7 @@ public class AddEditRecipeActivity extends AppCompatActivity {
             setResult(Activity.RESULT_OK);
             finish();
         } else {
-            Toast.makeText(this, "Database failed to save, aborting backup...", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.save_failed), Toast.LENGTH_LONG).show();
         }
     }
 }

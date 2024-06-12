@@ -24,7 +24,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.textview.MaterialTextView;
 import com.jaf.recipebook.db.FullRecipeTuple;
@@ -368,7 +367,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
             setResult(GeneralHelper.ACTIVITY_RESULT_DELETE_RECIPE);
             this.finish();
         } else {
-            Toast.makeText(this, "Database failed to save, aborting backup...", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.save_failed), Toast.LENGTH_LONG).show();
         }
     }
 }

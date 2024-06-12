@@ -1,8 +1,6 @@
 package com.jaf.recipebook;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -256,8 +254,8 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.bulk_delete_btn:
                 new AlertDialog.Builder(this)
-                        .setTitle("Delete Selected Recipes")
-                        .setMessage("Are you sure? If you haven't backed up your recipes, there's no getting them back.")
+                        .setTitle(getString(R.string.delete_confirmation_title))
+                        .setMessage(getString(R.string.delete_confirmation_msg))
                         .setPositiveButton(this.getString(R.string.bulk_delete_confirm), (dialogInterface, i) -> {
                             leaveMenuEmpty = true;
                             invalidateMenu();
@@ -366,7 +364,7 @@ public class MainActivity extends AppCompatActivity {
             public void handleOnBackPressed() {
                 if (bulkActionList.isEmpty()){
                     new AlertDialog.Builder(context)
-                        .setTitle("Are you sure you want to exit?")
+                        .setTitle(getString(R.string.exit_confirmation))
                         .setPositiveButton(context.getString(R.string.affirmative_text),
                                 (dialogInterface, i) -> {
                                     finish();
@@ -449,10 +447,8 @@ public class MainActivity extends AppCompatActivity {
             // Permission missing, but the user has indicated that they want external storage
             //      Could also be their first time starting up the app.
             new AlertDialog.Builder(this)
-                    .setTitle("Requesting Access to Files")
-                    .setMessage("Optionally, this app can put it's files where you can view/edit " +
-                            "them in the explorer. Primarily, this is intended so you can back " +
-                            "them up yourself, or import new recipes by dropping a file there.")
+                    .setTitle(getString(R.string.validate_ext_permission_title))
+                    .setMessage(getString(R.string.validate_ext_permission_msg))
                     .setPositiveButton(this.getString(R.string.dialog_allow), (dialogInterface, i) -> {
                         Uri uri = Uri.fromParts("package", getPackageName(), null);
                         startActivity(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
@@ -476,8 +472,8 @@ public class MainActivity extends AppCompatActivity {
         int startupCounter = fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0);
         if (dsh == null && startupCounter == 2){
             new AlertDialog.Builder(this)
-                    .setTitle("Sign into Google Drive?")
-                    .setMessage("To make sure your Recipes are safe, you can set this app to auto backup your collection to your Google Drive. Would you like to sign in?")
+                    .setTitle(getString(R.string.sign_in_prompt_title))
+                    .setMessage(getString(R.string.sign_in_prompt_msg))
                     .setPositiveButton(this.getString(R.string.affirmative_text), (dialogInterface, i) -> {
                         Intent intent = new Intent(this, SettingsActivity.class);
                         intent.putExtra("flashSignIn", true);
@@ -498,8 +494,8 @@ public class MainActivity extends AppCompatActivity {
                     fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0
                     ) + 1);
             new AlertDialog.Builder(this)
-                    .setTitle("Turn on Google Drive Auto Backup?")
-                    .setMessage("You're signed into your Google Account, but backups aren't enabled yet. Would you like to turn this on?")
+                    .setTitle(getString(R.string.enable_backup_prompt_title))
+                    .setMessage(getString(R.string.enable_backup_prompt_msg))
                     .setPositiveButton(this.getString(R.string.affirmative_text), (dialogInterface, i) -> {
                         Intent intent = new Intent(this, DriveSettingsActivity.class);
                         intent.putExtra("flashToggle", true);
@@ -599,7 +595,7 @@ public class MainActivity extends AppCompatActivity {
         if (!titleCB.isChecked() && !tagsCB.isChecked() && !ingredientCB.isChecked() &&
                 !directionsCB.isChecked() && !sourceCB.isChecked()){
             checkBoxClicked.setChecked(true);
-            Toast.makeText(this, "We can't search nothing...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.search_needs_something), Toast.LENGTH_SHORT).show();
         } else {
             queryForRecipes();
         }
@@ -851,7 +847,7 @@ public class MainActivity extends AppCompatActivity {
                 );
             }
             runOnUiThread(() -> {
-                Toast.makeText(this, "Selected Recipes saved to Downloads!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.download_to_local_success), Toast.LENGTH_SHORT).show();
             });
         });
     }
@@ -934,7 +930,7 @@ public class MainActivity extends AppCompatActivity {
         if (dbCheckpointCreated.success){
             dsh.upload();
         } else {
-            Toast.makeText(this, "Database failed to save, aborting backup...", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.save_failed), Toast.LENGTH_LONG).show();
         }
     }
 

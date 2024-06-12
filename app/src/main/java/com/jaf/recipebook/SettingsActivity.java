@@ -247,7 +247,7 @@ public class SettingsActivity extends AppCompatActivity {
                 updateUi();
             } catch (ApiException e) {
                 Log.e(TAG, "onActivityResult: Failed to log user in.", e);
-                Toast.makeText(this, "Something went wrong when signing you in...", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.sign_in_failed), Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -404,7 +404,7 @@ public class SettingsActivity extends AppCompatActivity {
             if (imports.isEmpty()){
                 Toast.makeText(
                         view.getContext(),
-                        "No recipe files (.rp) found to import...",
+                        getString(R.string.no_rp_files_found),
                         Toast.LENGTH_LONG
                 ).show();
             } else {
@@ -501,14 +501,14 @@ public class SettingsActivity extends AppCompatActivity {
             if (filesToImport.isEmpty()){
                 Toast.makeText(
                         v.getContext(),
-                        "No files selected to import...",
+                        getString(R.string.no_files_found_for_import),
                         Toast.LENGTH_LONG
                 ).show();
                 return;
             }
 
             if (duplicateImports.containsAll(filesToImport) && !shouldOverwrite){
-                Toast.makeText(v.getContext(), "Only duplicates to import. Skipping...", Toast.LENGTH_LONG)
+                Toast.makeText(v.getContext(), getString(R.string.only_dups), Toast.LENGTH_LONG)
                         .show();
                 return;
             }
@@ -516,17 +516,17 @@ public class SettingsActivity extends AppCompatActivity {
             importLocalFiles(shouldOverwrite);
             Toast.makeText(
                     v.getContext(),
-                    "Selected file(s) imported successfully!",
+                    getString(R.string.import_success),
                     Toast.LENGTH_LONG
             ).show();
         }
         catch (IOException ex){
+            Log.e(TAG, ex.getMessage(), ex);
             Toast.makeText(
                     v.getContext(),
                     "Failed to import due to " + ex.getMessage(),
                     Toast.LENGTH_LONG
             ).show();
-            Log.e(TAG, ex.getMessage(), ex);
         } finally {
             getCategories();
             popupWindow.dismiss();
@@ -542,13 +542,13 @@ public class SettingsActivity extends AppCompatActivity {
             }
 
             if (validImports.equals(duplicateImports) && !shouldOverwrite){
-                Toast.makeText(v.getContext(), "Only duplicates to import. Skipping...", Toast.LENGTH_LONG)
+                Toast.makeText(v.getContext(), getString(R.string.only_dups), Toast.LENGTH_LONG)
                         .show();
                 return;
             }
 
             importLocalFiles(shouldOverwrite);
-            Toast.makeText(v.getContext(), "All files imported successfully!", Toast.LENGTH_LONG)
+            Toast.makeText(v.getContext(), getString(R.string.import_success), Toast.LENGTH_LONG)
                     .show();
         } catch (IOException ex) {
             Toast.makeText(v.getContext(), "Failed to import due to " + ex.getMessage(), Toast.LENGTH_LONG)
@@ -615,7 +615,7 @@ public class SettingsActivity extends AppCompatActivity {
         if (dbCheckpointCreated.success){
             dsh.upload();
         } else {
-            Toast.makeText(this, "Database failed to save, aborting backup...", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.save_failed), Toast.LENGTH_LONG).show();
         }
     }
 }

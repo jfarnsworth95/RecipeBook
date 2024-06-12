@@ -30,6 +30,13 @@
     <string name="more_options_action">More Options</string>
     <string name="show_categories">Toggle Show Categories</string>
     <string name="hide_categories">Toggle Hide Categories</string>
+    <string name="select_all">Select All</string>
+    <string name="deselect_all">Deselect All</string>
+
+    <!-- Google Sign-in Strings -->
+    <string name="sign_in_prompt_title">Sign into Google Drive?</string>
+    <string name="sign_in_prompt_msg">To make sure your Recipes are safe, you can set this app to auto backup your collection to your Google Drive. Would you like to sign in?</string>
+    <string name="sign_in_failed">Something went wrong when signing you in…</string>
 
     <!-- Main Activity Strings -->
     <string name="recipe_saved">Recipe Saved</string>
@@ -44,10 +51,16 @@
     <string name="context_search_dropdown">Show more search options</string>
     <string name="search_bar_hint">What are you looking for?</string>
     <string name="all_recipes">All Recipes</string>
-    <string name="select_all">Select All</string>
-    <string name="deselect_all">Deselect All</string>
     <string name="cloud_has_more_recent_upload">Google Drive has more recent data than this device</string>
     <string name="request_replace_data">Would you like to sync with the more recent data in your Drive?</string>
+    <string name="delete_confirmation_title">Delete Selected Recipes</string>
+    <string name="delete_confirmation_msg">Are you sure? If you haven\'t backed up your recipes, there's no getting them back.</string>
+    <string name="exit_confirmation">Are you sure you want to exit?</string>
+    <string name="validate_ext_permission_title">Requesting Access to Files</string>
+    <string name="validate_ext_permission_msg">Optionally, this app can put it\'s files where you can view/edit them in the explorer. Primarily, this is intended so you can back them up yourself, or import new recipes by dropping a file there.</string>
+    <string name="enable_backup_prompt_title">Turn on Google Drive Auto Backup?</string>
+    <string name="enable_backup_prompt_msg">You\'re signed into your Google Account, but backups aren\'t enabled yet. Would you like to turn this on?</string>
+    <string name="download_to_local_success">Selected Recipes saved to Downloads!</string>
 
     <!-- Settings Page Strings -->
     <string name="google_sign_in_header">Connect to Google Drive</string>
@@ -60,8 +73,10 @@
     <string name="confirm_imports_btn_text">Confirm\nImports</string>
     <string name="import_all_btn_text">Import\nAll</string>
     <string name="duplicate_warning_message">Some of the recipes you want to import are duplicates of your existing recipes. Do you want to overwrite them, or ignore them?</string>
+    <string name="only_dups">"Only duplicates to import. Skipping…</string>
     <string name="confirm_overwrite">Overwrite</string>
     <string name="ignore_duplicates">Ignore</string>
+    <string name="import_success">Selected file(s) imported successfully!</string>
     <string name="google_sign_in_button">SIGN IN WITH GOOGLE</string>
     <string name="google_sign_out_button">SIGN OUT OF GOOGLE</string>
     <string name="google_sign_in_descriptor">You are signed in as</string>
@@ -69,6 +84,8 @@
     <string name="display_mode_os_default">OS Default</string>
     <string name="display_mode_light_mode">Light Mode</string>
     <string name="display_mode_dark_mode">Dark Mode</string>
+    <string name="no_rp_files_found">No recipe files (.rp) found to import…</string>
+    <string name="no_files_found_for_import">No files selected to import…</string>
 
     <!-- Reorder Categories Page Strings -->
     <string name="confirm_new_order">Confirm Reordering</string>
@@ -82,6 +99,9 @@
     <string name="delete_drive_data">DELETE ALL DRIVE DATA</string>
     <string name="final_warning">You are about to delete all app data in your Google Drive for this application. This cannot be undone. Are you sure you want to continue?</string>
     <string name="final_delete_btn">Press and hold to delete drive data</string>
+    <string name="uploading_message">Upload in progress…</string>
+    <string name="downloading_message">Download in progress…</string>
+    <string name="deleting_message">Delete in progress…</string>
 
     <!-- Add/Edit Page Strings -->
     <string name="add_new_recipe">Add New Recipe</string>
@@ -109,7 +129,6 @@
     <string name="recipe_view_copy_to_clipboard">Copy to Clipboard</string>
     <string name="recipe_view_delete_recipe">Delete Recipe</string>
 
-
     <!-- Other -->
     <string name="database_name">recipeBookDatabase</string>
     <string name="default_loading_string">Loading…</string>
@@ -122,6 +141,8 @@
     <string name="affirmative_text">Yes</string>
     <string name="negative_text">Cancel</string>
     <string name="negative_response">No</string>
+    <string name="search_needs_something">We can\'t search nothing…</string>
+    <string name="save_failed">Database failed to save…</string>
 
     <string-array name="display_mode_options">
         <item>OS Default</item>

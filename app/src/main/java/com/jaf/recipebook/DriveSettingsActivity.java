@@ -4,10 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -130,16 +128,14 @@ public class DriveSettingsActivity extends AppCompatActivity {
 
     private View.OnClickListener onUploadClicked() {
         return view -> {
-            setPendingState(true, "Upload in progress...");
-            Toast.makeText(view.getContext(), "Uploading...", Toast.LENGTH_LONG).show();
+            setPendingState(true, getString(R.string.uploading_message));
             new RecipeBookRepo(RecipeBookDatabase.getInstance(this)).createCheckpoint();
         };
     }
 
     private View.OnClickListener onDownloadClicked() {
         return view -> {
-            setPendingState(true, "Download in progress...");
-            Toast.makeText(view.getContext(), "Downloading...", Toast.LENGTH_LONG).show();
+            setPendingState(true, getString(R.string.downloading_message));
             RecipeBookDatabase.stopDb();
             mDriveServiceHelper.download();
         };
@@ -159,9 +155,8 @@ public class DriveSettingsActivity extends AppCompatActivity {
         PopupWindow popupWindow = GeneralHelper.popupInflator(this, view, R.layout.popup_drive_deletion_warning);
 
         popupWindow.getContentView().findViewById(R.id.delete_drive_data_final_btn).setOnLongClickListener(v -> {
-            Toast.makeText(v.getContext(), "Deleting...", Toast.LENGTH_LONG).show();
             mDriveServiceHelper.delete();
-            setPendingState(true, "Delete in progress...");
+            setPendingState(true, getString(R.string.deleting_message));
             popupWindow.dismiss();
             return false;
         });
@@ -227,7 +222,7 @@ public class DriveSettingsActivity extends AppCompatActivity {
         if (dbCheckpointCreated.success){
             mDriveServiceHelper.upload();
         } else {
-            Toast.makeText(this, "Database failed to save, aborting...", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.save_failed), Toast.LENGTH_LONG).show();
         }
     }
 
