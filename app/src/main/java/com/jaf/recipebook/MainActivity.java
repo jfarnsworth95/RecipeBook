@@ -125,7 +125,6 @@ public class MainActivity extends AppCompatActivity {
     TableLayout searchBarOptionsContainer;
 
 
-    // TODO Add menu button during bulk select to select all
     // TODO Login on Settings page can cause import loading spinner to show in top right corner (in dark mode?)
     // TODO Update text for Drive Settings UI to reflect update period vs check last backup period
 
@@ -215,6 +214,11 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             getMenuInflater().inflate(R.menu.main_menu_bulk_action, menu);
+            if (bulkActionList.size() < recipesToRender.getValue().size()){
+                getMenuInflater().inflate(R.menu.menu_bulk_select_all, menu);
+            } else {
+                getMenuInflater().inflate(R.menu.menu_bulk_deselect_all, menu);
+            }
         }
         return true;
     }
@@ -239,6 +243,19 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_category_hide:
                 // Toggle Category tabs show/hide
                 toggleCategoryTabVisibility();
+                return true;
+
+            case R.id.bulk_select_all_btn:
+                for(int i = 0; i < mainRecyclerView.getChildCount(); i ++) {
+                    ConstraintLayout cl = (ConstraintLayout) mainRecyclerView.getChildAt(i);
+                    cl.findViewById(R.id.frag_recipe_list_row_selected).setVisibility(View.VISIBLE);
+                    bulkActionList.add(cl);
+                }
+                invalidateOptionsMenu();
+                return true;
+
+            case R.id.bulk_deselect_all_btn:
+                clearBulkActionList();
                 return true;
 
             case R.id.bulk_delete_btn:
@@ -644,9 +661,7 @@ public class MainActivity extends AppCompatActivity {
             v.findViewById(R.id.frag_recipe_list_row_selected).setVisibility(View.VISIBLE);
             bulkActionList.add(v);
         }
-        if (bulkActionList.isEmpty() || bulkActionList.size() == 1){
-            invalidateOptionsMenu();
-        }
+        invalidateOptionsMenu();
     }
 
     private void swapFragments(int fragmentAttach){

@@ -44,6 +44,8 @@
     <string name="context_search_dropdown">Show more search options</string>
     <string name="search_bar_hint">What are you looking for?</string>
     <string name="all_recipes">All Recipes</string>
+    <string name="select_all">Select All</string>
+    <string name="deselect_all">Deselect All</string>
     <string name="cloud_has_more_recent_upload">Google Drive has more recent data than this device</string>
     <string name="request_replace_data">Would you like to sync with the more recent data in your Drive?</string>
 
