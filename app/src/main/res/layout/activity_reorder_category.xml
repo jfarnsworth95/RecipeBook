@@ -7,8 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".ReorderCategoryActivity">
 
-    <!-- TODO CHANGE THEME COLOR WHEN FOCUSED -->
-
     <ScrollView
         android:id="@+id/reorder_scrollview"
         android:layout_width="match_parent"

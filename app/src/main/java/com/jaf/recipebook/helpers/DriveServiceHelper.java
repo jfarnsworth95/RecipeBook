@@ -426,8 +426,6 @@ public class DriveServiceHelper {
 
     }
 
-    // TODO Something isn't right with the WAL or SHM I think. Database is always one transaction before the current data when uploaded.
-
     private void downloadTask(FileList driveFileList){
         // Validate all files are present in the Drive space
         String mainDbFileId = null;
