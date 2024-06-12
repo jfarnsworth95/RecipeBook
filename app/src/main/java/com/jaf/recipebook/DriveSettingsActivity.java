@@ -95,7 +95,7 @@ public class DriveSettingsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setPendingState(true);
+        setPendingState(true, this.getString(R.string.last_synced_text));
         if (flashToggle) {
             GeneralHelper.backgroundHighlightAnimation(this, autoBackupToggle, mainHandler);
         }
@@ -112,10 +112,10 @@ public class DriveSettingsActivity extends AppCompatActivity {
         mDriveServiceHelper.getLastBackupDate();
     }
 
-    private void setPendingState(boolean isPending) {
+    private void setPendingState(boolean isPending, String infoMessage) {
 
         if (isPending){
-            lastUpdatedTextView.setText(this.getString(R.string.last_synced_text));
+            lastUpdatedTextView.setText(infoMessage);
             deleteBtn.setBackgroundTintList(ColorStateList.valueOf(this.getColor(R.color.inactive)));
             progressBar.setVisibility(View.VISIBLE);
         } else {
@@ -130,7 +130,7 @@ public class DriveSettingsActivity extends AppCompatActivity {
 
     private View.OnClickListener onUploadClicked() {
         return view -> {
-            setPendingState(true);
+            setPendingState(true, "Upload in progress...");
             Toast.makeText(view.getContext(), "Uploading...", Toast.LENGTH_LONG).show();
             new RecipeBookRepo(RecipeBookDatabase.getInstance(this)).createCheckpoint();
         };
@@ -138,7 +138,7 @@ public class DriveSettingsActivity extends AppCompatActivity {
 
     private View.OnClickListener onDownloadClicked() {
         return view -> {
-            setPendingState(true);
+            setPendingState(true, "Download in progress...");
             Toast.makeText(view.getContext(), "Downloading...", Toast.LENGTH_LONG).show();
             RecipeBookDatabase.stopDb();
             mDriveServiceHelper.download();
@@ -161,7 +161,7 @@ public class DriveSettingsActivity extends AppCompatActivity {
         popupWindow.getContentView().findViewById(R.id.delete_drive_data_final_btn).setOnLongClickListener(v -> {
             Toast.makeText(v.getContext(), "Deleting...", Toast.LENGTH_LONG).show();
             mDriveServiceHelper.delete();
-            setPendingState(true);
+            setPendingState(true, "Delete in progress...");
             popupWindow.dismiss();
             return false;
         });
@@ -200,7 +200,7 @@ public class DriveSettingsActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getLastUploadedString(DriveDbLastModifiedEvent driveDbLastModifiedEvent){
-        setPendingState(false);
+        setPendingState(false, null);
         lastUpdatedTextView.setText(driveDbLastModifiedEvent.status);
         if (!driveDbLastModifiedEvent.hasBackups) {
             downloadBtn.setEnabled(false);

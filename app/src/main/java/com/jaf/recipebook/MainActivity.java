@@ -124,10 +124,6 @@ public class MainActivity extends AppCompatActivity {
     TabLayout categoryTabLayout;
     TableLayout searchBarOptionsContainer;
 
-
-    // TODO Login on Settings page can cause import loading spinner to show in top right corner (in dark mode?)
-    // TODO Update text for Drive Settings UI to reflect update period vs check last backup period
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
