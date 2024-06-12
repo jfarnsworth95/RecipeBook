@@ -18,8 +18,8 @@
     <string name="category">Category</string>
 
     <!-- Permission Button Options -->
-    <string name='dialog_allow'>Allow</string>
-    <string name='dialog_deny'>Deny</string>
+    <string name="dialog_allow">Allow</string>
+    <string name="dialog_deny">Deny</string>
     <string name="maybe_later">Maybe Later</string>
 
     <!-- Menu Strings -->
@@ -54,7 +54,7 @@
     <string name="cloud_has_more_recent_upload">Google Drive has more recent data than this device</string>
     <string name="request_replace_data">Would you like to sync with the more recent data in your Drive?</string>
     <string name="delete_confirmation_title">Delete Selected Recipes</string>
-    <string name="delete_confirmation_msg">Are you sure? If you haven\'t backed up your recipes, there's no getting them back.</string>
+    <string name="delete_confirmation_msg">Are you sure? If you haven\'t backed up your recipes, there\'s no getting them back.</string>
     <string name="exit_confirmation">Are you sure you want to exit?</string>
     <string name="validate_ext_permission_title">Requesting Access to Files</string>
     <string name="validate_ext_permission_msg">Optionally, this app can put it\'s files where you can view/edit them in the explorer. Primarily, this is intended so you can back them up yourself, or import new recipes by dropping a file there.</string>
