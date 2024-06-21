@@ -469,7 +469,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void promptGoogleDriveLogin(){
-        boolean cloudStorageActive = fh.getPreference(fh.BACKUP_TIMESTAMP_PREFERENCE, false);
+        boolean cloudStorageActive = fh.getPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, false);
         int startupCounter = fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0);
         if (dsh == null && startupCounter == 2){
             new AlertDialog.Builder(this)
