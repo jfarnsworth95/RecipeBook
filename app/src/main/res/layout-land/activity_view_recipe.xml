@@ -39,14 +39,14 @@
                 android:layout_marginTop="48dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:stretchColumns="1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <TableRow>
                     <LinearLayout
                         android:id="@+id/view_ingredients_container"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight=".25"
                         android:layout_height="wrap_content"
                         android:orientation="vertical" >
 
@@ -69,6 +69,7 @@
                     <LinearLayout
                         android:id="@+id/view_directions_container"
                         android:layout_width="0dp"
+                        android:layout_weight=".75"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="48dp"
                         android:orientation="vertical" >
