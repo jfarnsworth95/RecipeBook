@@ -79,7 +79,11 @@ public class GeneralHelper {
 
     public static ArrayList<String> getCategoryOrderPreference(FileHelper fh){
         String stringyCategoryOrder = fh.getPreference(fh.CATEGORY_ORDER_PREFERENCE, "");
-        return new ArrayList<>(Arrays.asList(stringyCategoryOrder.split(",")));
+        if (stringyCategoryOrder.isEmpty()){
+            return new ArrayList<>();
+        } else {
+            return new ArrayList<>(Arrays.asList(stringyCategoryOrder.split(",")));
+        }
     }
 
     public static void ensureCategoryPrefUpdated(HashSet<String> recipeCategories, FileHelper fh){

@@ -534,6 +534,8 @@ public class MainActivity extends AppCompatActivity {
                             categoryTabLayout.addTab(newTab);
                         }
                     }
+                } else {
+                    setCategoriesTabsGone();
                 }
                 clearBulkActionList();
             });
