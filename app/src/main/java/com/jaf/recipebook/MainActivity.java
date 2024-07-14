@@ -14,13 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import androidx.appcompat.app.AlertDialog;
+
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
-import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -138,8 +136,6 @@ public class MainActivity extends AppCompatActivity {
                 fh.STARTUP_COUNTER_PREFERENCE,
                 fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0
                 ) + 1);
-        Log.i(TAG, String.valueOf(fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0)));
-
         if (dsh != null){
             dsh.downloadTimestamp();
         }
@@ -151,10 +147,6 @@ public class MainActivity extends AppCompatActivity {
         swapFragments(FRAGMENT_LOADING);
 
         clearBulkActionList();
-
-        // If MANAGE_EXTERNAL_STORAGE permission not granted and the Shared Preference for using
-        // external storage is true (or doesn't exist yet), open dialog requesting the permission
-        validateExternalPermission();
 
         // Check if user wants to connect to their Google Drive to backup the Recipe Files
         promptGoogleDriveLogin();
@@ -442,36 +434,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void validateExternalPermission(){
-        if (fh.getPreference(fh.EXTERNAL_STORAGE_PREFERENCE, true)
-                && !Environment.isExternalStorageManager()) {
-            // Permission missing, but the user has indicated that they want external storage
-            //      Could also be their first time starting up the app.
-            new AlertDialog.Builder(this)
-                    .setTitle(getString(R.string.validate_ext_permission_title))
-                    .setMessage(getString(R.string.validate_ext_permission_msg))
-                    .setPositiveButton(this.getString(R.string.dialog_allow), (dialogInterface, i) -> {
-                        Uri uri = Uri.fromParts("package", getPackageName(), null);
-                        startActivity(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                                .addCategory("android.intent.category.DEFAULT")
-                                .setData(uri)
-                        );
-                        fh.setPreference(fh.EXTERNAL_STORAGE_PREFERENCE, true);
-                        dialogInterface.dismiss();
-                    })
-                    .setNegativeButton(this.getString(R.string.dialog_deny), (dialogInterface, i) -> {
-                                fh.setPreference(fh.EXTERNAL_STORAGE_PREFERENCE, true);
-                    })
-                    .show();
-        } else if (Environment.isExternalStorageManager() && !fh.getPreference(fh.EXTERNAL_STORAGE_PREFERENCE, false)){
-            fh.setPreference(fh.EXTERNAL_STORAGE_PREFERENCE, true);
-        }
-    }
-
     private void promptGoogleDriveLogin(){
         boolean cloudStorageActive = fh.getPreference(fh.AUTO_BACKUP_ACTIVE_PREFERENCE, false);
         int startupCounter = fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0);
-        if (dsh == null && startupCounter == 2){
+        if (dsh == null && startupCounter == 1){
             new AlertDialog.Builder(this)
                     .setTitle(getString(R.string.sign_in_prompt_title))
                     .setMessage(getString(R.string.sign_in_prompt_msg))
@@ -489,7 +455,7 @@ public class MainActivity extends AppCompatActivity {
                     })
                     .show();
         }
-        if (dsh != null && !cloudStorageActive && startupCounter == 3){
+        if (dsh != null && !cloudStorageActive && startupCounter == 2){
             fh.setPreference(
                     fh.STARTUP_COUNTER_PREFERENCE,
                     fh.getPreference(fh.STARTUP_COUNTER_PREFERENCE, 0

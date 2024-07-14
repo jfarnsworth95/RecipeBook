@@ -1,17 +1,18 @@
 package com.jaf.recipebook;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.documentfile.provider.DocumentFile;
 
 import android.app.UiModeManager;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -50,7 +51,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -79,20 +80,21 @@ public class SettingsActivity extends AppCompatActivity {
     private boolean flashSignIn;
 
     private CircleImageView googlePhotoImg;
-    private HashSet<File> filesToImport;
-    private HashSet<File> duplicateImports;
-    private HashMap<File, String> invalidImports;
-    private HashSet<File> validImports;
+    private HashSet<Uri> filesToImport;
+    private HashSet<Uri> duplicateImports;
+    private HashMap<Uri, String> invalidImports;
+    private HashSet<Uri> validImports;
     private HashSet<UUID> currentRecipeUuids;
     private HashSet<String> categories;
 
     private AlertDialog loadingIndicator;
     private Button changeDisplayModeBtn;
-    private Button changeStoragePermissionBtn;
     private Button importDownloadsBtn;
     private Button changeCategoryOrderBtn;
     private Button goToDriveSettingsBtn;
     private Button googleSignInBtn;
+
+    ActivityResultLauncher<Intent> downloadToLocal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,12 +114,38 @@ public class SettingsActivity extends AppCompatActivity {
         // Google Sign-in vars
         gsc = GoogleSignInHelper.getGoogleSignInClient(this);
 
-        // Add button listener for Changing External Storage
-        changeStoragePermissionBtn.setOnClickListener(view ->
-            startActivity(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                .addCategory("android.intent.category.DEFAULT")
-                .setData(Uri.fromParts("package", getPackageName(), null))
-        ));
+        downloadToLocal = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), o -> {
+                loadingIndicator.hide();
+                if (o.getData() != null) {
+                    List<Uri> uriList = new ArrayList<>();
+                    if (o.getData().getClipData() != null) {
+                        int count = o.getData().getClipData().getItemCount();
+                        for (int i = 0; i < count; i++) {
+                            Uri uri = o.getData().getClipData().getItemAt(i).getUri();
+                            uriList.add(uri);
+                        }
+                    } else if (o.getData().getData() != null) {
+                        Uri uri = o.getData().getData();
+                        uriList.add(uri);
+                    }
+                    onImportFilesButtonClicked(uriList);
+                } else if (o.getResultCode() == RESULT_CANCELED) {
+                    Toast.makeText(this, getString(R.string.cancel_import), Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, getString(R.string.unexpected_error_importing), Toast.LENGTH_LONG).show();
+                }
+            }
+        );
+
+        importDownloadsBtn.setOnClickListener(v -> {
+            loadingIndicator.show();
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
+            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            downloadToLocal.launch(intent);
+        });
 
         changeDisplayModeBtn.setOnClickListener(v -> {
             UiModeManager umm = (UiModeManager) getSystemService(UI_MODE_SERVICE);
@@ -151,25 +179,6 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // On return from permission request activity, set preference
-        // based on if the permission was granted or not
-        fh.setPreference(fh.EXTERNAL_STORAGE_PREFERENCE,
-                                Environment.isExternalStorageManager());
-
-        // Add button listener for Importing Downloaded recipes
-        if (Environment.isExternalStorageManager()){
-            importDownloadsBtn.setOnClickListener(v -> {
-                loadingIndicator.show();
-                onImportFilesButtonClicked(v);
-            });
-            importDownloadsBtn.setEnabled(true);
-            importDownloadsBtn.setBackgroundColor(getColor(R.color.secondary));
-        } else {
-            importDownloadsBtn.setOnClickListener(null);
-            importDownloadsBtn.setEnabled(false);
-            importDownloadsBtn.setBackgroundColor(getColor(R.color.inactive));
-        }
-
         refreshRecipeNameList();
         getCategories();
     }
@@ -201,7 +210,6 @@ public class SettingsActivity extends AppCompatActivity {
         //Initialize CircleImageView
         googlePhotoImg = findViewById(R.id.google_account_image);
 
-        changeStoragePermissionBtn = findViewById(R.id.toggle_external_storage_btn);
         changeDisplayModeBtn = findViewById(R.id.change_display_mode);
         importDownloadsBtn = findViewById(R.id.import_downloaded_files_btn);
         changeCategoryOrderBtn = findViewById(R.id.change_category_order_btn);
@@ -292,9 +300,9 @@ public class SettingsActivity extends AppCompatActivity {
      * that to the database.
      */
     private void importLocalFiles(boolean shouldOverwriteDuplicates) throws IOException{
-        Iterator<File> iterator = filesToImport.iterator();
+        Iterator<Uri> iterator = filesToImport.iterator();
         while (iterator.hasNext()){
-            File recipeFile = iterator.next();
+            Uri recipeFile = iterator.next();
             HashMap<String, Object> jsonData = fh.returnGsonFromFile(recipeFile);
 
             // Create Recipe Model
@@ -352,14 +360,19 @@ public class SettingsActivity extends AppCompatActivity {
      * Returns the list of Recipe Book files available for import.
      * @return List of files that can be imported into the application
      */
-    private ArrayList<File> returnAvailableImports(){
-        File[] downloadFiles = fh.getDownloadsFolderFiles();
-        ArrayList<File> availableImports = new ArrayList<>();
-        for (File downloadFile : downloadFiles){
+    private ArrayList<Uri> returnAvailableImports(List<Uri> uriList){
+        ArrayList<Uri> availableImports = new ArrayList<>();
+        for (Uri downloadUri : uriList){
+            DocumentFile df = DocumentFile.fromSingleUri(this, downloadUri);
+            if (df == null) {
+                continue;
+            }
+            String fileName = df.getName();
+
             // Check if the file has an extension, and if that extension is the app recipe extension
-            int index = downloadFile.getName().lastIndexOf('.');
-            if (index > 0 && downloadFile.getName().substring(index + 1).equals(this.getString(R.string.recipe_file_extension))) {
-                availableImports.add(downloadFile);
+            int index = fileName.lastIndexOf('.');
+            if (index > 0 && fileName.substring(index + 1).equals(this.getString(R.string.recipe_file_extension))) {
+                availableImports.add(downloadUri);
             }
         }
         return availableImports;
@@ -368,11 +381,11 @@ public class SettingsActivity extends AppCompatActivity {
     /**
      * Returns the list of Recipe Book files that cannot be imported, and the reason why.
      */
-    private void validateImportFiles(ArrayList<File> availableImports){
+    private void validateImportFiles(ArrayList<Uri> availableImports){
         invalidImports = new HashMap<>();
         duplicateImports = new HashSet<>();
         HashSet<UUID> scannedUuids = new HashSet<>();
-        for (File potentialImport : availableImports){
+        for (Uri potentialImport : availableImports){
             if (!fh.validateRecipeFileFormat(potentialImport, scannedUuids)){
                 invalidImports.put(potentialImport, "The file structure is corrupted, or this unique id was found in another file.");
             } else if (currentRecipeUuids.contains(fh.getImportFileUuid(potentialImport))){
@@ -388,33 +401,35 @@ public class SettingsActivity extends AppCompatActivity {
     /**
      * Creates the popup to import files. After inflating the popup view, it will find all files with
      *  the .rp extension, then determine if any are corrupted, or already exist in the app.
-     * @param view Button trigger view
      */
-    private void onImportFilesButtonClicked(View view){
+    private void onImportFilesButtonClicked(List<Uri> uriList){
         loadingIndicator.show();
         new Thread(() -> {
             // Create empty list of file strings to be used when importing
             filesToImport = new HashSet<>();
 
             // Populate the popup with the importable files
-            ArrayList<File> imports = returnAvailableImports();
+            ArrayList<Uri> imports = returnAvailableImports(uriList);
             validateImportFiles(imports);
             Collections.sort(imports); // Sort for display purposes
 
             // Stop if there are no possible files to import
             if (imports.isEmpty()){
-                Toast.makeText(
-                        view.getContext(),
-                        getString(R.string.no_rp_files_found),
-                        Toast.LENGTH_LONG
-                ).show();
+                runOnUiThread(() -> {
+                    loadingIndicator.hide();
+                    Toast.makeText(
+                            this,
+                            getString(R.string.no_rp_files_found),
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
             } else {
-                createPopupWindow(view, imports);
+                createPopupWindow(imports);
             }
         }).start();
     }
 
-    private void createPopupWindow(View v, ArrayList<File> imports){
+    private void createPopupWindow(ArrayList<Uri> imports){
         // inflate the layout of the popup window
         LayoutInflater inflater = (LayoutInflater)
                 getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -429,7 +444,7 @@ public class SettingsActivity extends AppCompatActivity {
         runOnUiThread(() -> {
             // show the popup window
             // which view you pass in doesn't matter, it is only used for the window token
-            popupWindow.showAtLocation(v, Gravity.CENTER, 0, 0);
+            popupWindow.showAtLocation(importDownloadsBtn, Gravity.CENTER, 0, 0);
 
             // dismiss the popup window when touched
             popupView.setOnTouchListener((popupV, event) -> {
@@ -437,7 +452,7 @@ public class SettingsActivity extends AppCompatActivity {
                 return true;
             });
 
-            for (File importableFile : imports){
+            for (Uri importableFile : imports){
                 View importFileRow = inflater.inflate(R.layout.fragment_import_file_row, null);
                 Button tooltipBtn = importFileRow.findViewById(R.id.import_error_tooltip_btn);
 
@@ -461,8 +476,10 @@ public class SettingsActivity extends AppCompatActivity {
                                 }
                             });
                 }
+
                 // Add the filename, then add this inflated view to the popup scroll view
-                ((TextView)importFileRow.findViewById(R.id.importFilenameText)).setText(importableFile.getName());
+                String importableFileName = Objects.requireNonNull(DocumentFile.fromSingleUri(this, importableFile)).getName();
+                ((TextView)importFileRow.findViewById(R.id.importFilenameText)).setText(importableFileName);
                 ((LinearLayout)popupView.findViewById(R.id.import_popup_table_view)).addView(importFileRow);
             }
 
@@ -538,9 +555,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         try {
             filesToImport = new HashSet<>();
-            for (File importFile : validImports) {
-                filesToImport.add(importFile);
-            }
+            filesToImport.addAll(validImports);
 
             if (validImports.equals(duplicateImports) && !shouldOverwrite){
                 Toast.makeText(v.getContext(), getString(R.string.only_dups), Toast.LENGTH_LONG)

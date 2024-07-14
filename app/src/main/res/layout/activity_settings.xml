@@ -19,17 +19,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/toggle_external_storage_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/secondary"
-        android:text="@string/option_toggle_external_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settings_header_toggle" />
-
-    <com.google.android.material.button.MaterialButton
         android:id="@+id/change_display_mode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -38,14 +27,14 @@
         android:text="@string/option_change_display_mode_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toggle_external_storage_btn" />
+        app:layout_constraintTop_toBottomOf="@+id/settings_header_toggle" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/import_downloaded_files_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:enabled="false"
+        android:backgroundTint="@color/secondary"
         android:text="@string/option_import_downloaded_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

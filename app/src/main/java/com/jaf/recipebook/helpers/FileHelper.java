@@ -1,8 +1,13 @@
 package com.jaf.recipebook.helpers;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -18,10 +23,10 @@ import com.jaf.recipebook.db.tags.TagsModel;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -227,7 +232,7 @@ public class FileHelper {
             return new File(context.getExternalFilesDir(null), filename);
         } else {
             // Fetch internal app file
-            Log.i(TAG, "getFileUri: Grabbing Internal");
+            Log.i(TAG, "getFile: Grabbing Internal");
             return new File(context.getFilesDir(), filename);
         }
     }
@@ -245,22 +250,65 @@ public class FileHelper {
         return stringBuilder.toString();
     }
 
+    public String readUriFile(Uri file) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (InputStream inputStream = context.getContentResolver().openInputStream(file);
+             BufferedReader reader = new BufferedReader(
+                     new InputStreamReader(Objects.requireNonNull(inputStream)))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+        }
+        return stringBuilder.toString();
+    }
+
     public File getDownloadsDir() {
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     }
 
-    public File[] getDownloadsFolderFiles(){
-        return getDownloadsDir().listFiles();
+    public ArrayList<File> getDownloadsFolderFiles(){
+        ArrayList<File> rpFilePaths = new ArrayList<>();
+
+        // Define the projection (the columns to retrieve)
+        String[] projection = {
+                MediaStore.Files.FileColumns._ID,
+                MediaStore.Files.FileColumns.DISPLAY_NAME,
+                MediaStore.Files.FileColumns.DATA
+        };
+
+        // Define the URI to query the downloads folder
+        Uri queryUri = MediaStore.Files.getContentUri("external");
+
+        // Query the MediaStore
+        ContentResolver contentResolver = context.getContentResolver();
+        try (Cursor cursor = contentResolver.query(
+                queryUri,
+                projection,
+                null,
+                null,
+                null)) {
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
+                    String filePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA));
+                    if (filePath != null && filePath.endsWith(".rp")) {
+                        rpFilePaths.add(new File(filePath));
+                    }
+                }
+            }
+        }
+
+        return rpFilePaths;
     }
 
-    public UUID getImportFileUuid(File importFile){
+    public UUID getImportFileUuid(Uri importFile){
         HashMap<String, Object> fileGson = returnGsonFromFile(importFile);
         return UUID.fromString((String) fileGson.get("UUID"));
     }
 
-    public HashMap<String, Object> returnGsonFromFile(File rpFile) {
+    public HashMap<String, Object> returnGsonFromFile(Uri rpFile) {
         try {
-            return new Gson().fromJson(this.readFile(rpFile), HashMap.class);
+            return new Gson().fromJson(this.readUriFile(rpFile), HashMap.class);
         } catch (Exception ex){
             Log.e(TAG, "validateRecipeFileFormat: Failed to interpret JSON content.", ex);
             return null;
@@ -272,7 +320,7 @@ public class FileHelper {
      * @param recipeFile Recipe file to read, should have the ".rp" extension.
      * @return True if the structure is valid.
      */
-    public boolean validateRecipeFileFormat(File recipeFile, HashSet<UUID> scannedUuids){
+    public boolean validateRecipeFileFormat(Uri recipeFile, HashSet<UUID> scannedUuids){
         // Expected File Structure:
         //  {
         //      "NAME": STRING,
@@ -295,7 +343,7 @@ public class FileHelper {
         HashMap<String, Object> jsonData;
         ArrayList<String> failures = new ArrayList<>();
         try {
-            jsonData = new Gson().fromJson(this.readFile(recipeFile), HashMap.class);
+            jsonData = new Gson().fromJson(this.readUriFile(recipeFile), HashMap.class);
         } catch (Exception ex){
             Log.e(TAG, "validateRecipeFileFormat: Failed to interpret JSON content.", ex);
             return false;
@@ -463,19 +511,28 @@ public class FileHelper {
             json.addProperty(JSON_CATEGORY, rm.getCategory());
         }
 
-        File newRpFile = new File(getDownloadsDir().getPath() + "/" + filename + "." + context.getString(R.string.recipe_file_extension));
-        try {
-            if (newRpFile.createNewFile()){
-                FileWriter fw = new FileWriter(newRpFile);
-                fw.write(json.toString());
-                fw.close();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.Downloads.DISPLAY_NAME, filename + "." + context.getString(R.string.recipe_file_extension));
+        contentValues.put(MediaStore.Downloads.MIME_TYPE, "application/com.jaf.recipebook");
+        contentValues.put(MediaStore.Downloads.RELATIVE_PATH, "Download/");
 
-                if (!isBulk){
-                    Toast.makeText(context, context.getString(R.string.saved_recipe_in_downloads), Toast.LENGTH_LONG).show();
+        Uri uri = context.getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues);
+        if (uri != null) {
+            try (OutputStream outputStream = context.getContentResolver().openOutputStream(uri)) {
+                if (outputStream != null) {
+                    outputStream.write(json.toString().getBytes());
+                    Log.d(TAG, "File saved successfully: " + uri.toString());
+
+                    if (!isBulk){
+                        Toast.makeText(context, context.getString(R.string.saved_recipe_in_downloads), Toast.LENGTH_LONG).show();
+                    }
                 }
+            } catch (Exception e) {
+                Toast.makeText(context, context.getString(R.string.failed_to_open_recipe), Toast.LENGTH_LONG).show();
+                return false;
             }
-        } catch (IOException e) {
-            Toast.makeText(context, context.getString(R.string.failed_to_open_recipe), Toast.LENGTH_LONG).show();
+        } else {
+            Log.e(TAG, "Failed to create new MediaStore record.");
             return false;
         }
 

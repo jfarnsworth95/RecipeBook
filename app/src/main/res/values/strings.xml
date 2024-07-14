@@ -87,6 +87,8 @@
     <string name="display_mode_dark_mode">Dark Mode</string>
     <string name="no_rp_files_found">No recipe files (.rp) found to import…</string>
     <string name="no_files_found_for_import">No files selected to import…</string>
+    <string name="cancel_import">Canceled Import…</string>
+    <string name="unexpected_error_importing">Unexpected error when selecting files</string>
 
     <!-- Reorder Categories Page Strings -->
     <string name="confirm_new_order">Confirm Reordering</string>
