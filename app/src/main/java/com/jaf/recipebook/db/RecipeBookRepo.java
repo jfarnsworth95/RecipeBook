@@ -149,8 +149,10 @@ public class RecipeBookRepo {
                         ingredientsDao.insertIngredient(ims);
                     }
 
-                    int tagsDeleted = tagsDao.deleteTagsById(rm.getId());
-                    if (tagsDeleted > 0) {
+                    // Deleting no tags returns 0, which is documented as a failure, so we check
+                    // if there are any tags after running the delete to verify it worked.
+                    tagsDao.deleteTagsById(rm.getId());
+                    if (tagsDao.getTagsForRecipeId(rm.getId()).isEmpty()) {
                         tagsDao.insertTag(tms);
                     }
 
