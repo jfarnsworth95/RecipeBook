@@ -20,6 +20,7 @@
         <item name="android:actionMenuTextColor">@color/white</item>
         <item name="checkboxStyle">@style/Widget.App.CheckBox</item>
         <item name="android:actionButtonStyle">@style/ActionButton</item>
+        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
 
     <style name="Theme.RecipeBook.NoActionBar">

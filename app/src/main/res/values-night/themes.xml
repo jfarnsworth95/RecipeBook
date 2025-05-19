@@ -25,6 +25,7 @@
         <item name="textInputStyle">@style/Theme.RecipeBook.EditText</item>
 
         <item name="colorPrimary">@color/tertiary</item>
+        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
 
     <style name="Widget.App.CheckBox.Imports" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
