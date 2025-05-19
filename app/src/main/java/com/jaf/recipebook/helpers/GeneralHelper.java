@@ -5,6 +5,7 @@ import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
@@ -12,6 +13,7 @@ import android.os.Handler;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -19,6 +21,9 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.jaf.recipebook.R;
 import com.jaf.recipebook.db.RecipeBookDatabase;
@@ -124,6 +129,73 @@ public class GeneralHelper {
         viewToAnim.setBackground(td);
         td.startTransition(2000);
         handler.postDelayed(() -> td.reverseTransition(2000), 2000);
+    }
+
+    /** Defines the operation to be performed with the inset */
+    public enum InsetUsage { IGNORE, PADDING, MARGIN }
+
+    /** Defines the operation to be performed with each inset */
+    public record InsetConfiguration(InsetUsage left, InsetUsage top, InsetUsage right, InsetUsage bottom) {}
+
+    /**
+     * Adds system window insets to the margin of a view.
+     * @param view The view to add insets to
+     * @param insetConfiguration The configuration of the insets
+     */
+    public static void handleInsets(View view, InsetConfiguration insetConfiguration) {
+        // collect initial view values
+        ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        final Rect initialMargins = new Rect(
+                layoutParams != null ? layoutParams.leftMargin : 0,
+                layoutParams != null ? layoutParams.topMargin : 0,
+                layoutParams != null ? layoutParams.rightMargin : 0,
+                layoutParams != null ? layoutParams.bottomMargin : 0
+        );
+        final Rect initialPadding = new Rect(
+                view.getPaddingLeft(),
+                view.getPaddingTop(),
+                view.getPaddingRight(),
+                view.getPaddingBottom()
+        );
+
+        // add handler
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+
+            // get the insets
+            Insets systemInsets = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+
+            // map the inset values to padding and margin
+            Rect padding = new Rect(
+                    insetConfiguration.left() == InsetUsage.PADDING ? systemInsets.left : 0,
+                    insetConfiguration.top() == InsetUsage.PADDING ? systemInsets.top : 0,
+                    insetConfiguration.right() == InsetUsage.PADDING ? systemInsets.right : 0,
+                    insetConfiguration.bottom() == InsetUsage.PADDING ? systemInsets.bottom : 0
+            );
+            v.setPadding(
+                    initialPadding.left + padding.left,
+                    initialPadding.top + padding.top,
+                    initialPadding.right + padding.right,
+                    initialPadding.bottom + padding.bottom
+            );
+
+            Rect margin = new Rect(
+                    insetConfiguration.left() == InsetUsage.MARGIN ? systemInsets.left : 0,
+                    insetConfiguration.top() == InsetUsage.MARGIN ? systemInsets.top : 0,
+                    insetConfiguration.right() == InsetUsage.MARGIN ? systemInsets.right : 0,
+                    insetConfiguration.bottom() == InsetUsage.MARGIN ? systemInsets.bottom : 0
+            );
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            if (params != null) {
+                params.leftMargin = initialMargins.left + margin.left;
+                params.topMargin = initialMargins.top + margin.top;
+                params.rightMargin = initialMargins.right + margin.right;
+                params.bottomMargin = initialMargins.bottom + margin.bottom;
+                v.setLayoutParams(params);
+            }
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
 }
